@@ -33,13 +33,13 @@ end
 abstract type AbstractLogger end 
 
 mutable struct Logger{T<:Real} <: AbstractLogger
-    amount::Vector{T}
-    interest::Vector{T}
-    inflation::Vector{T}
+    net_worth::Array{T,2}
+    interest::Array{T,2}
+    inflation::Array{T,2}
 end
 
-function Logger()
-    return Logger(Float64[], Float64[], Float64[])
+function Logger(;n_steps, n_reps)
+    return Logger(zeros(n_steps, n_reps), zeros(n_steps, n_reps), zeros(n_steps, n_reps))
 end
 
 abstract type AbstractCalculator end 
@@ -47,6 +47,8 @@ abstract type AbstractCalculator end
 @concrete mutable struct Calculator{E<:AbstractEvents,S<:AbstractState} <: AbstractCalculator
     Δt::Float64
     n_years::Int
+    rep::Int
+    time_step::Int
     start_amount::Float64
     state::S
     events::E
@@ -74,6 +76,8 @@ function Calculator(;
     return Calculator(    
         Δt,
         n_years,
+        0,
+        0,
         start_amount,
         state,
         events,

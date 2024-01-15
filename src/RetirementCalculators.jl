@@ -12,6 +12,7 @@ module RetirementCalculators
     export Logger
     export State 
 
+    export get_times
     export invest!
     export simulate! 
     export update!
