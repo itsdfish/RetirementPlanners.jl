@@ -4,6 +4,7 @@ authors = ["itsdfish <itsdfish@gmail.com> and contributors"]
 version = "1.0.0-DEV"
 
 [deps]
+ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 

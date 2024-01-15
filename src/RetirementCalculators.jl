@@ -1,5 +1,7 @@
 module RetirementCalculators
 
+    using ConcreteStructs 
+    
     export AbstractCalculator
     export AbstractEvents 
     export AbstractLogger

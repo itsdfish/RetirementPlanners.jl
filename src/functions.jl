@@ -18,24 +18,14 @@ function _simulate!(calc::Calculator, logger; kwargs...)
 end 
 
 # periodic update within simulation 
-function update!(calc::AbstractCalculator, logger, t; kwargs...)
-    withdraw!(calc, t; kwargs...)
-    invest!(calc, t; kwargs...) 
-    update_inflation!(calc, t; kwargs...) 
-    update_interest!(calc, t; kwargs...) 
-    update_net_worth!(calc, t; kwargs...)
-    log!(calc, logger; kwargs...)
+function update!(calc::AbstractCalculator, logger, t; 
+        kw_withdraw=(), kw_invest=(), kw_inflation=(), 
+        kw_interest=(), kw_net_worth=(), kw_log=())
+    calc.withdraw!(calc, t; kw_withdraw...)
+    calc.invest!(calc, t; kw_invest...) 
+    calc.update_inflation!(calc, t; kw_inflation...) 
+    calc.update_interest!(calc, t; kw_interest...) 
+    calc.update_net_worth!(calc, t; kw_net_worth...)
+    calc.log!(calc, logger; kw_log...)
     return nothing 
 end 
-
-function update_interest! end
-
-function withdraw! end
-
-function invest! end
-
-function update_inflation! end
-
-function update_net_worth! end
-
-function log! end

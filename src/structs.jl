@@ -44,12 +44,18 @@ end
 
 abstract type AbstractCalculator end 
 
-mutable struct Calculator{E<:AbstractEvents,S<:AbstractState} <: AbstractCalculator
+@concrete mutable struct Calculator{E<:AbstractEvents,S<:AbstractState} <: AbstractCalculator
     Δt::Float64
     n_years::Int
     start_amount::Float64
     state::S
-    events::E 
+    events::E
+    withdraw!
+    invest!
+    update_inflation!
+    update_interest!
+    update_net_worth!
+    log! 
 end
 
 function Calculator(;
@@ -57,6 +63,24 @@ function Calculator(;
     n_years,
     start_amount,
     state = State(),
-    events)
-    return Calculator(Δt, n_years, start_amount, state, events)
+    events,
+    withdraw!,
+    invest!,
+    update_inflation!,
+    update_interest!,
+    update_net_worth!,
+    log!)
+
+    return Calculator(    
+        Δt,
+        n_years,
+        start_amount,
+        state,
+        events,
+        withdraw!,
+        invest!,
+        update_inflation!,
+        update_interest!,
+        update_net_worth!,
+        log!)
 end
