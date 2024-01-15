@@ -21,23 +21,21 @@ abstract type AbstractEvents end
 
 mutable struct Events <: AbstractEvents
     withdraw_start::Float64
-    n_work_years::Float64
     social_security_start::Float64  
 end
 
 function Events(;
     withdraw_start,
-    n_work_years,
     social_security_start)
-    Events(withdraw_start, n_work_years, social_security_start)
+    Events(withdraw_start, social_security_start)
 end
 
 abstract type AbstractLogger end 
 
 mutable struct Logger{T<:Real} <: AbstractLogger
     amount::Vector{T}
-    time::Vector{T}
     interest::Vector{T}
+    inflation::Vector{T}
 end
 
 function Logger()

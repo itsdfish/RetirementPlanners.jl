@@ -12,7 +12,6 @@ module RetirementCalculators
 
     export invest!
     export simulate! 
-    export to_years
     export update!
     export update_inflation!
     export update_interest!
