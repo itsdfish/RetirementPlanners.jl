@@ -1,3 +1,16 @@
+"""
+    simulate!(calc::AbstractCalculator, logger::AbstractLogger, n_reps; kwargs...)
+
+# Arguments 
+
+- `calc::AbstractCalculator`: an abstract calculator object 
+- `logger::AbstractLogger`: an object for storing variables of the simulation
+- `n_reps`: the number of times to repeat the Monte Carlo simulation
+
+# Keywords 
+
+- `kwargs...`: optional keyword arguments passed to `update!`
+"""
 function simulate!(calc::AbstractCalculator, logger::AbstractLogger, n_reps; kwargs...)
     for rep ∈ 1:n_reps 
         calc.rep = rep
@@ -16,7 +29,37 @@ function _simulate!(calc::AbstractCalculator, logger::AbstractLogger; kwargs...)
     return nothing 
 end 
 
-# periodic update within simulation 
+"""
+    update!(calc::AbstractCalculator, logger::AbstractLogger, t; 
+            kw_withdraw=(), kw_invest=(), kw_inflation=(), 
+            kw_interest=(), kw_net_worth=(), kw_log=())
+        
+Performs an update on each time step by calling the following functions defined in `calc`:
+
+- `withdraw!`: withdraw money
+- `invest!`: invest money
+- `update_inflation!`: compute inflation
+- `update_interest!`: compute interest 
+- `update_net_worth!`: compute net worth for the time step 
+- `log!`: log desired variables 
+
+Each function except `log!` has the signature `my_func(calc, t; kwargs...)`. The function `log!` has the signature 
+`log!(calc, logger; kwargs...)`. 
+
+# Arguments 
+
+- `calc::AbstractCalculator`: an abstract calculator object 
+- `t`: time in years 
+
+# Keywords 
+
+- `kw_withdraw = ()`: optional keyword arguments passed to `withdraw!`
+- `kw_invest = ()`: optional keyword arguments passed to `invest!`
+- `kw_inflation = ()`: optional keyword arguments passed to `update_inflation!`
+- `kw_interest = ()`: optional keyword arguments passed to `update_interest!` 
+- `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
+- `kw_log = ()`: optional keyword arguments passed to `log!`
+"""
 function update!(calc::AbstractCalculator, logger::AbstractLogger, t; 
         kw_withdraw=(), kw_invest=(), kw_inflation=(), 
         kw_interest=(), kw_net_worth=(), kw_log=())

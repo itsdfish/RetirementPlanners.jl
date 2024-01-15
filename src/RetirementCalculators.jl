@@ -3,12 +3,12 @@ module RetirementCalculators
     using ConcreteStructs 
     
     export AbstractCalculator
-    export AbstractEvents 
+    export AbstractEvent
     export AbstractLogger
     export AbstractState 
 
     export Calculator
-    export Events 
+    export Event
     export Logger
     export State 
 
