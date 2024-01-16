@@ -1,9 +1,9 @@
 """
-    simulate!(calc::AbstractCalculator, logger::AbstractLogger, n_reps; kwargs...)
+    simulate!(model::AbstractModel, logger::AbstractLogger, n_reps; kwargs...)
 
 # Arguments 
 
-- `calc::AbstractCalculator`: an abstract calculator object 
+- `model::AbstractModel`: an abstract Model object 
 - `logger::AbstractLogger`: an object for storing variables of the simulation
 - `n_reps`: the number of times to repeat the Monte Carlo simulation
 
@@ -11,30 +11,30 @@
 
 - `kwargs...`: optional keyword arguments passed to `update!`
 """
-function simulate!(calc::AbstractCalculator, logger::AbstractLogger, n_reps; kwargs...)
+function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps; kwargs...)
     for rep ∈ 1:n_reps 
-        calc.rep = rep
-        _simulate!(calc, logger; kwargs...)
+        model.rep = rep
+        _simulate!(model, logger; kwargs...)
     end
     return nothing
 end
 
-function _simulate!(calc::AbstractCalculator, logger::AbstractLogger; kwargs...)
-    (;Δt,) = calc
-    calc.state.net_worth = calc.start_amount
-    for (s,t) ∈ enumerate(get_times(calc))
-        calc.time_step = s
-        update!(calc, logger, t; kwargs...)
+function _simulate!(model::AbstractModel, logger::AbstractLogger; kwargs...)
+    (;Δt,) = model
+    model.state.net_worth = model.start_amount
+    for (s,t) ∈ enumerate(get_times(model))
+        model.time_step = s
+        update!(model, logger, t; kwargs...)
     end
     return nothing 
 end 
 
 """
-    update!(calc::AbstractCalculator, logger::AbstractLogger, t; 
+    update!(model::AbstractModel, logger::AbstractLogger, t; 
             kw_withdraw=(), kw_invest=(), kw_inflation=(), 
             kw_interest=(), kw_net_worth=(), kw_log=())
         
-Performs an update on each time step by calling the following functions defined in `calc`:
+Performs an update on each time step by calling the following functions defined in `model`:
 
 - `withdraw!`: withdraw money
 - `invest!`: invest money
@@ -43,12 +43,12 @@ Performs an update on each time step by calling the following functions defined 
 - `update_net_worth!`: compute net worth for the time step 
 - `log!`: log desired variables 
 
-Each function except `log!` has the signature `my_func(calc, t; kwargs...)`. The function `log!` has the signature 
-`log!(calc, logger; kwargs...)`. 
+Each function except `log!` has the signature `my_func(model, t; kwargs...)`. The function `log!` has the signature 
+`log!(model, logger; kwargs...)`. 
 
 # Arguments 
 
-- `calc::AbstractCalculator`: an abstract calculator object 
+- `model::AbstractModel`: an abstract Model object 
 - `t`: time in years 
 
 # Keywords 
@@ -60,16 +60,16 @@ Each function except `log!` has the signature `my_func(calc, t; kwargs...)`. The
 - `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
-function update!(calc::AbstractCalculator, logger::AbstractLogger, t; 
+function update!(model::AbstractModel, logger::AbstractLogger, t; 
         kw_withdraw=(), kw_invest=(), kw_inflation=(), 
         kw_interest=(), kw_net_worth=(), kw_log=())
-    calc.withdraw!(calc, t; kw_withdraw...)
-    calc.invest!(calc, t; kw_invest...) 
-    calc.update_inflation!(calc, t; kw_inflation...) 
-    calc.update_interest!(calc, t; kw_interest...) 
-    calc.update_net_worth!(calc, t; kw_net_worth...)
-    calc.log!(calc, logger; kw_log...)
+    model.withdraw!(model, t; kw_withdraw...)
+    model.invest!(model, t; kw_invest...) 
+    model.update_inflation!(model, t; kw_inflation...) 
+    model.update_interest!(model, t; kw_interest...) 
+    model.update_net_worth!(model, t; kw_net_worth...)
+    model.log!(model, logger; kw_log...)
     return nothing 
 end 
 
-get_times(calc::AbstractCalculator) = calc.Δt:calc.Δt:calc.n_years
+get_times(model::AbstractModel) = model.Δt:model.Δt:model.n_years

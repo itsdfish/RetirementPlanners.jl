@@ -1,13 +1,13 @@
-module RetirementCalculators
+module RetirementPlanners
 
     using ConcreteStructs 
     
-    export AbstractCalculator
+    export AbstractModel
     export AbstractEvent
     export AbstractLogger
     export AbstractState 
 
-    export Calculator
+    export Model
     export Event
     export Logger
     export State 

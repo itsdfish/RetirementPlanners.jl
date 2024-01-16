@@ -1,6 +1,6 @@
-using RetirementCalculators
+using RetirementPlanners
 using Test
 
-@testset "RetirementCalculators.jl" begin
+@testset "RetirementPlanners.jl" begin
     # Write your tests here.
 end

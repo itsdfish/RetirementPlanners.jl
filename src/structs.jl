@@ -9,12 +9,14 @@ Represents the state of the model, which is updated on each iteration.
 
 - `interest_rate::Float64`: interest rate of investment during the current time period 
 - `inflation_rate::Float64`: the inflation rate during the current time period 
+- `invest_amount::Float64`: the amount invested during the current time period 
 - `withdraw_amount::Float64`: the amount deducted from investments during the current time period 
 - `net_worth::Float64`: total value of the investment during the current time period 
 """
 mutable struct State <: AbstractState
     interest_rate::Float64
     inflation_rate::Float64  
+    invest_amount::Float64
     withdraw_amount::Float64
     net_worth::Float64
 end
@@ -22,7 +24,8 @@ end
 """
     State(;
         interest_rate = 0.0, 
-        inflation_rate = 0.0, 
+        inflation_rate = 0.0,
+
         withdraw_amount = 0.0, 
         net_worth = 0.0
     )
@@ -37,11 +40,20 @@ Constructor for a state object, which represents the state of the model on each 
 - `net_worth::Float64`: total value of the investment during the current time period 
 """
 function State(;
-    interest_rate = 0.0, 
-    inflation_rate = 0.0, 
-    withdraw_amount = 0.0, 
-    net_worth = 0.0)
-    return State(interest_rate, inflation_rate, withdraw_amount, net_worth)
+        interest_rate = 0.0, 
+        inflation_rate = 0.0, 
+        invest_amount = 0.0,
+        withdraw_amount = 0.0, 
+        net_worth = 0.0
+    )
+
+    return State(
+        interest_rate,
+        inflation_rate,
+        invest_amount,
+        withdraw_amount,
+        net_worth
+    )
 end
 
 abstract type AbstractEvent end 
@@ -123,12 +135,12 @@ function Logger(;n_steps, n_reps)
     return Logger(zeros(n_steps, n_reps), zeros(n_steps, n_reps), zeros(n_steps, n_reps))
 end
 
-abstract type AbstractCalculator end 
+abstract type AbstractModel end 
 
 """
-    Calculator{D<:Dict,S} <: AbstractCalculator
+    Model{D<:Dict,S} <: AbstractModel
 
-The default retirement simulation calculator. 
+The default retirement simulation Model. 
 
 # Fields 
 
@@ -146,7 +158,7 @@ The default retirement simulation calculator.
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 """
-@concrete mutable struct Calculator{D<:Dict,S} <: AbstractCalculator
+@concrete mutable struct Model{D<:Dict,S} <: AbstractModel
     Δt::Float64
     n_years::Int
     rep::Int
@@ -162,7 +174,7 @@ The default retirement simulation calculator.
     log! 
 end
 
-function Calculator(;
+function Model(;
     Δt,
     n_years,
     start_amount,
@@ -175,7 +187,7 @@ function Calculator(;
     update_net_worth!,
     log!)
 
-    return Calculator(    
+    return Model(    
         Δt,
         n_years,
         0,
