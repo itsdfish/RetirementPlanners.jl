@@ -65,47 +65,6 @@ function State(;
     )
 end
 
-abstract type AbstractEvent end 
-
-"""
-    struct Event{T} <: AbstractEvent
-
-An object which indicates the onset of a change in the function of the simulation. 
-
-# Fields 
-
-- `start_time::T`: event onset 
-- `end_time::T`: the end time of the event 
-"""
-mutable struct Event{T} <: AbstractEvent
-    start_time::T
-    end_time::T
-end
-
-"""
-    Event(;
-        start_time,
-        end_time = Inf
-    )
-
-An object which indicates the onset of a change in the function of the simulation. 
-
-# Keywords 
-
-- `start_time::T`: event onset 
-- `end_time::T` = Inf: the end time of the event 
-"""
-function Event(;
-    start_time,
-    end_time = Inf)
-    return Event(start_time, end_time)
-end
-
-function Event(start_time, end_time)
-    s,e = promote_type(start_time, end_time)
-    return Event(s, e)
-end
-
 abstract type AbstractLogger end 
 
 """
@@ -147,7 +106,7 @@ end
 abstract type AbstractModel end 
 
 """
-    Model{D<:Dict,S} <: AbstractModel
+    Model{S} <: AbstractModel
 
 The default retirement simulation Model. 
 
@@ -158,7 +117,6 @@ The default retirement simulation Model.
 - `start_age::Float64`: age at the beginning of the simulation
 - `start_amount::Float64`: initial investment amount 
 - `state::S`: the current state of the system 
-- `events::D`: a dictionary of events which occur during the simulation
 - `withdraw!`: a function called on each time step to withdraw from investments 
 - `invest!`: a function called on each time step to invest money into investments 
 - `update_income!`: a function called on each time step to update income sources 
@@ -167,13 +125,12 @@ The default retirement simulation Model.
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 """
-@concrete mutable struct Model{D<:Dict,S} <: AbstractModel
+@concrete mutable struct Model{S} <: AbstractModel
     Δt::Float64
     n_years::Float64
     start_age::Float64
     start_amount::Float64
     state::S
-    events::D
     withdraw!
     invest!
     update_income!
@@ -184,19 +141,19 @@ The default retirement simulation Model.
 end
 
 function Model(;
-    Δt,
-    n_years,
-    start_age,
-    start_amount,
-    state = State(),
-    events = default_events(),
-    withdraw! = fixed_withdraw,
-    invest! = fixed_investment,
-    update_income! = (model, t) -> (),
-    update_inflation! = fixed_inflation,
-    update_interest! = fixed_interest,
-    update_net_worth! = (model, t) -> (),
-    log!)
+        Δt,
+        n_years,
+        start_age,
+        start_amount,
+        state = State(),
+        withdraw! = fixed_withdraw,
+        invest! = fixed_investment,
+        update_income! = (model, t) -> (),
+        update_inflation! = fixed_inflation,
+        update_interest! = fixed_interest,
+        update_net_worth! = default_net_worth,
+        log! = default_log!
+    )
 
     return Model(    
         Δt,
@@ -204,19 +161,12 @@ function Model(;
         start_age,
         start_amount,
         state,
-        events,
         withdraw!,
         invest!,
         update_income!,
         update_inflation!,
         update_interest!,
         update_net_worth!,
-        log!)
-end
-
-function default_events()
-    return Dict(
-        :retirement => Event(67.0),
-        :stop_investing => Event(67.0),
-     )
+        log!
+    )
 end

@@ -4,12 +4,10 @@ module RetirementPlanners
     using PrettyTables 
     
     export AbstractModel
-    export AbstractEvent
     export AbstractLogger
     export AbstractState 
 
     export Model
-    export Event
     export Logger
     export State 
 
@@ -17,8 +15,12 @@ module RetirementPlanners
     export simulate! 
     export update!
 
+    export default_log!
+    export default_net_worth
     export fixed_inflation
     export fixed_interest 
+    export fixed_investment
+    export fixed_withdraw
 
     include("structs.jl")
     include("core.jl")

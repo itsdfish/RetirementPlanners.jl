@@ -2,10 +2,6 @@ function Base.show(io::IO, ::MIME"text/plain", model::AbstractModel)
     return _show(io::IO, model)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", state::AbstractState)
-    return _show(io::IO, state)
-end
-
 function Base.show(io::IO, ::MIME"text/plain", logger::AbstractLogger)
     return _show(io::IO, logger)
 end
