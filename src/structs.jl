@@ -153,8 +153,9 @@ The default retirement simulation Model.
 
 # Fields 
 
-- `Δt::Float64`:
-- `n_years::Int`:
+- `Δt::Float64`: the time step of the simulation in years
+- `n_years::Float64`: the duration of the simulation in years
+- `start_age::Float64`: age at the beginning of the simulation
 - `start_amount::Float64`: initial investment amount 
 - `state::S`: the current state of the system 
 - `events::D`: a dictionary of events which occur during the simulation
@@ -168,7 +169,8 @@ The default retirement simulation Model.
 """
 @concrete mutable struct Model{D<:Dict,S} <: AbstractModel
     Δt::Float64
-    n_years::Int
+    n_years::Float64
+    start_age::Float64
     start_amount::Float64
     state::S
     events::D
@@ -184,20 +186,22 @@ end
 function Model(;
     Δt,
     n_years,
+    start_age,
     start_amount,
     state = State(),
-    events = Dict(),
-    withdraw! = (model, t) -> (),
-    invest! = (model, t) -> (),
+    events = default_events(),
+    withdraw! = fixed_withdraw,
+    invest! = fixed_investment,
     update_income! = (model, t) -> (),
-    update_inflation! = (model, t) -> (),
-    update_interest! = (model, t) -> (),
+    update_inflation! = fixed_inflation,
+    update_interest! = fixed_interest,
     update_net_worth! = (model, t) -> (),
     log!)
 
     return Model(    
         Δt,
         n_years,
+        start_age,
         start_amount,
         state,
         events,
@@ -208,4 +212,11 @@ function Model(;
         update_interest!,
         update_net_worth!,
         log!)
+end
+
+function default_events()
+    return Dict(
+        :retirement => Event(67.0),
+        :stop_investing => Event(67.0),
+     )
 end

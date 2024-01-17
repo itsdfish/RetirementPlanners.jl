@@ -1,6 +1,7 @@
 module RetirementPlanners
 
-    using ConcreteStructs 
+    using ConcreteStructs
+    using PrettyTables 
     
     export AbstractModel
     export AbstractEvent
@@ -16,7 +17,11 @@ module RetirementPlanners
     export simulate! 
     export update!
 
-    include("structs.jl")
-    include("functions.jl")
+    export fixed_inflation
+    export fixed_interest 
 
+    include("structs.jl")
+    include("core.jl")
+    include("update_functions.jl")
+    include("utilities.jl")
 end

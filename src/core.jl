@@ -84,4 +84,7 @@ Returns the time steps used in the simulation.
 
 - `model::AbstractModel`: an abstract Model object 
 """
-get_times(model::AbstractModel) = model.Δt:model.Δt:model.n_years
+function get_times(model::AbstractModel)
+    (;start_age,Δt,n_years) = model 
+    return (start_age+Δt):Δt:(start_age+n_years)
+end
