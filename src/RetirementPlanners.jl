@@ -21,6 +21,9 @@ module RetirementPlanners
     export fixed_interest 
     export fixed_investment
     export fixed_withdraw
+    export fixed_income
+    export variable_inflation
+    export variable_interest
 
     include("structs.jl")
     include("core.jl")

@@ -1,6 +1,8 @@
 """
     fixed_inflation(model::AbstractModel, t; inflation_rate = .03)
 
+Returns a fixed inflation rate of a specified value.
+
 # Arguments
 
 - `model::AbstractModel`: an abstract Model object 
@@ -16,7 +18,28 @@ function fixed_inflation(model::AbstractModel, t; inflation_rate = .03)
 end
 
 """
-    interest_rate(model::AbstractModel, t; inflation_rate = .07)
+    variable_inflation(model::AbstractModel, t; distribution = Normal(.03, .01))
+
+Returns an interest rate sampled from a specified distribution.
+
+# Arguments
+
+- `model::AbstractModel`: an abstract Model object 
+- `t`: current time of simulation in years 
+
+# Keywords
+
+- `distribution = Normal(.03, .01)`: the distribution of inflation per year 
+"""
+function variable_inflation(model::AbstractModel, t; distribution = Normal(.03, .01))
+    model.state.inflation_rate = rand(distribution)
+    return nothing
+end
+
+"""
+    fixed_interest(model::AbstractModel, t; interest_rate = .07)
+
+Returns a fixed interesting rate using a specified value.
 
 # Arguments
 
@@ -29,6 +52,25 @@ end
 """
 function fixed_interest(model::AbstractModel, t; interest_rate = .07)
     model.state.interest_rate = interest_rate
+    return nothing
+end
+
+"""
+    variable_interest(model::AbstractModel, t; distribution = Normal(.07, .05))
+
+Returns interest rate sampled from a specified distribution.
+
+# Arguments
+
+- `model::AbstractModel`: an abstract Model object 
+- `t`: current time of simulation in years 
+
+# Keywords
+
+- `distribution = Normal(.07, .05)`: the distribution of interest per year 
+"""
+function variable_interest(model::AbstractModel, t; distribution = Normal(.07, .05))
+    model.state.interest_rate = rand(distribution)
     return nothing
 end
 
@@ -62,11 +104,11 @@ end
 
 """
     fixed_investment(model::AbstractModel, t;
-        invest_amount = 3000.0,
-        end_age = 67.0
+        income_amount = 3000.0,
+        start_age = 67.0
     )
 
-Contibute a fixed amount to investments per time step.
+Recieve a fixed amount of income (e.g., social security) per time step.
 
 # Arguments
 
@@ -76,10 +118,10 @@ Contibute a fixed amount to investments per time step.
 # Keywords
 
 - `invest_amount = 3000.0`: the amount contributed to investments per time step
-- `end_age = 67.0`: the age at which investing stops 
+- `start_age = 67.0`: the age at which investing stops 
 """
 function fixed_investment(model::AbstractModel, t;
-        invest_amount = 3000.0,
+        invest_amount = 1000.0,
         end_age = 67.0
     )
     if end_age ≥ t 
@@ -89,11 +131,37 @@ function fixed_investment(model::AbstractModel, t;
 end
 
 """
+    fixed_income(model::AbstractModel, t;
+        income_amount = 1500.0,
+        start_age = 67.0
+    )
+
+Recieve a fixed amount of income (e.g., social security, pension) per time step
+
+# Arguments
+
+- `model::AbstractModel`: an abstract Model object 
+- `t`: current time of simulation in years 
+
+# Keywords
+
+- `income_amount = 1500.0`: the amount contributed to investments per time step
+- `start_age = 67.0`: the age at which investing stops 
+"""
+function fixed_income(model::AbstractModel, t;
+        income_amount = 1500.0,
+        start_age = 67.0
+    )
+    if start_age ≤ t 
+        model.state.income_amount = income_amount
+    end
+    return nothing
+end
+
+"""
     default_net_worth(model::AbstractModel, t)
 
 Computes net worth for the current time step as follows:
-
-
 
 # Arguments
 

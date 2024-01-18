@@ -1,3 +1,8 @@
+"""
+    AbstractState
+
+An abstract type for tracking the state of the model during simulation.     
+"""
 abstract type AbstractState end
 
 """
@@ -18,7 +23,7 @@ Represents the state of the model, which is updated on each iteration.
 mutable struct State <: AbstractState
     interest_rate::Float64
     inflation_rate::Float64  
-    income_ammount::Float64
+    income_amount::Float64
     invest_amount::Float64
     withdraw_amount::Float64
     net_worth::Float64
@@ -65,6 +70,11 @@ function State(;
     )
 end
 
+"""
+    AbstractLogger
+
+An abstract type for recording the state of the model during simulation.     
+"""
 abstract type AbstractLogger end 
 
 """
@@ -103,6 +113,11 @@ function Logger(;n_steps, n_reps)
     return Logger(zeros(n_steps, n_reps), zeros(n_steps, n_reps), zeros(n_steps, n_reps))
 end
 
+"""
+    AbstractModel
+
+An abstract model type for simulating retirement investments.
+"""
 abstract type AbstractModel end 
 
 """
@@ -113,7 +128,7 @@ The default retirement simulation Model.
 # Fields 
 
 - `Δt::Float64`: the time step of the simulation in years
-- `n_years::Float64`: the duration of the simulation in years
+- `duration::Float64`: the duration of the simulation in years
 - `start_age::Float64`: age at the beginning of the simulation
 - `start_amount::Float64`: initial investment amount 
 - `state::S`: the current state of the system 
@@ -125,11 +140,11 @@ The default retirement simulation Model.
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 """
-@concrete mutable struct Model{S} <: AbstractModel
-    Δt::Float64
-    n_years::Float64
-    start_age::Float64
-    start_amount::Float64
+@concrete mutable struct Model{S,T} <: AbstractModel
+    Δt::T
+    duration::T
+    start_age::T
+    start_amount::T
     state::S
     withdraw!
     invest!
@@ -142,22 +157,22 @@ end
 
 function Model(;
         Δt,
-        n_years,
+        duration,
         start_age,
         start_amount,
         state = State(),
         withdraw! = fixed_withdraw,
         invest! = fixed_investment,
-        update_income! = (model, t) -> (),
+        update_income! = fixed_income,
         update_inflation! = fixed_inflation,
         update_interest! = fixed_interest,
         update_net_worth! = default_net_worth,
         log! = default_log!
     )
-
+    Δt,duration,start_age,start_amount = promote(Δt, duration, start_age, start_amount)
     return Model(    
         Δt,
-        n_years,
+        duration,
         start_age,
         start_amount,
         state,

@@ -54,7 +54,7 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 
 # Keywords 
 
-- `kw_income = (),`: optional keyword arguments passed to `update_income!`
+- `kw_income = ()`: optional keyword arguments passed to `update_income!`
 - `kw_withdraw = ()`: optional keyword arguments passed to `withdraw!`
 - `kw_invest = ()`: optional keyword arguments passed to `invest!`
 - `kw_inflation = ()`: optional keyword arguments passed to `update_inflation!`
@@ -85,6 +85,6 @@ Returns the time steps used in the simulation.
 - `model::AbstractModel`: an abstract Model object 
 """
 function get_times(model::AbstractModel)
-    (;start_age,Δt,n_years) = model 
-    return (start_age+Δt):Δt:(start_age+n_years)
+    (;start_age,Δt,duration) = model 
+    return (start_age+Δt):Δt:(start_age+duration)
 end
