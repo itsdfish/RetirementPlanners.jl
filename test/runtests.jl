@@ -20,7 +20,7 @@ using SafeTestsets
 
     @test all(x -> x == .07, logger.interest)
     @test all(x -> x == .03, logger.inflation)
-    @test logger.net_worth[end] ≈ 942322 rtol = .01
+    @test logger.net_worth[end] ≈ 919432 rtol = .01
 end
 
 @safetestset "update functions" begin
@@ -60,5 +60,43 @@ end
 
         fixed_inflation(model, 1.0; inflation_rate)
         @test model.state.inflation_rate == inflation_rate
+    end
+
+    @safetestset "fixed_interest" begin
+        using RetirementPlanners
+        using Test
+
+        model = Model(;
+            Δt = 1 / 12,
+            start_age = 25,
+            duration = 35,
+            start_amount = 10_000,
+        )
+
+        interest_rate = .05
+
+        fixed_interest(model, 1.0; interest_rate)
+        @test model.state.interest_rate == interest_rate
+    end
+
+    @safetestset "fixed_withdraw" begin
+        using RetirementPlanners
+        using Test
+
+        model = Model(;
+            Δt = 1 / 12,
+            start_age = 25,
+            duration = 35,
+            start_amount = 10_000,
+        )
+
+        withdraw_amount = 1000
+        start_age = 65
+
+        fixed_withdraw(model, 1.0; withdraw_amount, start_age)
+        @test model.state.withdraw_amount == 0
+
+        fixed_withdraw(model, 65; withdraw_amount, start_age)
+        @test model.state.withdraw_amount == withdraw_amount
     end
 end

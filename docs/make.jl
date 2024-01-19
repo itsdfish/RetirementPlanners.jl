@@ -3,9 +3,10 @@ using RetirementPlanners
 
 makedocs(
     warnonly = true,
-    sitename="RetirementPlanners",
-    format=Documenter.HTML(
-        assets=[
+    sitename = "RetirementPlanners",
+    format = Documenter.HTML(
+        #example_size_threshold = nothing,
+        assets = [
             asset(
                 "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
                 class=:css,
@@ -13,18 +14,22 @@ makedocs(
         ],
         collapselevel=1,
     ),
-    modules=[
+    modules = [
         RetirementPlanners, 
         # Base.get_extension(SequentialSamplingModels, :TuringExt),  
         # Base.get_extension(SequentialSamplingModels, :PlotsExt) 
     ],
-    pages=[
+    pages = [
         "Home" => "index.md",
-        "Basic Usage" => "basic_usage.md",
+        "Examples" => [
+            "Basic Example" => "basic_example.md",
+            "Intermediate Example" => "intermediate_example.md",
+            "Advanced Example" => "advanced_example.md"
+        ],
         "API" => "api.md"
     ]
 )
 
 deploydocs(
-    repo="github.com/itsdfish/RetirementPlanners.jl.git",
+    repo = "github.com/itsdfish/RetirementPlanners.jl.git",
 )

@@ -32,6 +32,7 @@ update!
 
 ```@docs
 fixed_income
+variable_income
 ```
 
 ### Update Inflation
@@ -52,6 +53,7 @@ variable_interest
 
 ```@docs 
 fixed_investment
+variable_investment
 ```
 
 ### Log
@@ -69,4 +71,5 @@ default_net_worth
 
 ```@docs 
 fixed_withdraw
+variable_withdraw
 ```
