@@ -13,7 +13,8 @@ The purpose of this example is to illustrate how to use RetirementPlanners.jl in
 
 The first step is to load the packages required for simulating a retirement scenario and analyzing the results. With the `using` keyword, the code block below loads `RetirementPlanners` to run the simulation, and `Plots` to plot the results of the simulation. 
 
-```@example intermediate 
+```@example intermediate
+using Distributions 
 using Plots
 using RetirementPlanners
 ```
@@ -62,7 +63,7 @@ config = (
     ),
     # interest parameters
     kw_interest = (
-        interest_rate = .08,
+        distribution = Normal(.08, .08),
     ),
     # inflation parameters
     kw_inflation = (
@@ -82,7 +83,7 @@ The next step is to initialize the data logger. On each time step, the data logg
 ```@example intermediate 
 times = get_times(model)
 n_steps = length(times)
-n_reps = 1
+n_reps = 10_000
 logger = Logger(;n_reps, n_steps)
 ```
 
@@ -90,12 +91,12 @@ logger = Logger(;n_reps, n_steps)
 
 Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. The optional configuration object is passed as a variable keyword using `; config...`, which maps the nested keywords in the `NamedTuple` to the corresponding keywords defined in the `simulate!` method signature. 
 
-```@example basic
-simulate!(model, logger, n_reps; config...)
+```@example intermediate
+#simulate!(model, logger, n_reps; config...)
 ```
 
 The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
 
 ```@example intermediate 
-plot(times, logger.net_worth, xlabel="Age", ylabel="Net Worth")
+#plot(times, logger.net_worth, xlabel="Age", ylabel="Net Worth")
 ```

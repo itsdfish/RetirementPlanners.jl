@@ -26,7 +26,6 @@ function fixed_income(model::AbstractModel, t;
     return nothing
 end
 
-
 """
     variable_income(model::AbstractModel, t; 
         start_age = 67,
@@ -183,7 +182,7 @@ function variable_investment(model::AbstractModel, t;
         distribution = Normal(1000, 200)
     )
     if end_age ≥ t 
-        model.state.invest_amount = invest_amount
+        model.state.invest_amount = rand(distribution)
     end
     return nothing
 end
@@ -249,7 +248,8 @@ function fixed_withdraw(model::AbstractModel, t;
         start_age = 67.0
     )
     if start_age ≤ t 
-        model.state.withdraw_amount = withdraw_amount
+        adjustment = max(min(model.state.net_worth, withdraw_amount), 0)
+        model.state.withdraw_amount = adjustment
     end
     return nothing
 end
@@ -278,7 +278,9 @@ function variable_withdraw(model::AbstractModel, t;
         distribution = Normal(2500, 500)
     )
     if start_age ≤ t 
-        model.state.withdraw_amount = rand(distribution)
+        withdraw_amount = rand(distribution)
+        adjustment = max(min(model.state.net_worth, withdraw_amount), 0)
+        model.state.withdraw_amount = adjustment
     end
     return nothing
 end

@@ -1,7 +1,8 @@
 module RetirementPlanners
 
     using ConcreteStructs
-    using PrettyTables 
+    using Distributions: Normal 
+    using PrettyTables
     
     export AbstractModel
     export AbstractLogger
