@@ -62,7 +62,7 @@ config = (
     ),
     # interest parameters
     kw_interest = (
-        interest_rate = .08,
+        distribution = Normal(.08, .08),
     ),
     # inflation parameters
     kw_inflation = (
@@ -90,7 +90,7 @@ logger = Logger(;n_reps, n_steps)
 
 Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. The optional configuration object is passed as a variable keyword using `; config...`, which maps the nested keywords in the `NamedTuple` to the corresponding keywords defined in the `simulate!` method signature. 
 
-```@example basic
+```@example intermediate
 simulate!(model, logger, n_reps; config...)
 ```
 
