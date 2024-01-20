@@ -1,6 +1,8 @@
 module RetirementPlanners
 
     using ConcreteStructs
+    using DataFrames
+    using Distributed: pmap
     using Distributions: Normal 
     using PrettyTables
     
@@ -34,4 +36,5 @@ module RetirementPlanners
     include("core.jl")
     include("update_functions.jl")
     include("utilities.jl")
+    include("simulations.jl")
 end
