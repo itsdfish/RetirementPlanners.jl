@@ -1,8 +1,6 @@
 module RetirementPlanners
 
     using ConcreteStructs
-    using DataFrames
-    using Distributed: pmap
     using Distributions: Normal 
     using PrettyTables
     
@@ -15,6 +13,7 @@ module RetirementPlanners
     export State 
 
     export get_times
+    export grid_search
     export simulate! 
     export update!
 
@@ -36,5 +35,5 @@ module RetirementPlanners
     include("core.jl")
     include("update_functions.jl")
     include("utilities.jl")
-    include("simulations.jl")
+    #include("simulations.jl")
 end

@@ -96,15 +96,17 @@ Now that we have specified the parameters of the simulation, we can use the func
 simulate!(model, logger, n_reps; config...)
 ```
 
-The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
+The code block below plots five simulation runs. As you can see, there is marked variability between the simulation runs, particularly during the retirement phase following peak net worth. 
 
 ```@example intermediate 
 plot(times, logger.net_worth[:,1:5], xlabel="Age", 
     leg=false, ylabel="Net Worth")
 ```
+One way to assess the robustness of a retirement plan is to compute the probability of *survival* (e.g., having net worth greater than zero) at each time point. The code block below illustrates how to compute and plot the survival probability.
 
 ```@example intermediate
 survival_probs = mean(logger.net_worth .> 0, dims=2)
 plot(times, survival_probs,  leg=false, xlabel="Age (years)", 
     ylabel="Survival Probability", ylims = (0,1.05))
 ```
+The plot above reveals that the survival probability drops rapidly around age 70, reaching about 25% at age 80. Depending on your life expectancy and risk tolerance, you might want to adjust some parameters of your retirement plan: perhaps working more years and/or investing more money.

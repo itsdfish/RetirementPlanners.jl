@@ -109,3 +109,26 @@ end
         @test model.state.withdraw_amount == 800
     end
 end
+
+@safetestset "permute" begin
+    using RetirementPlanners
+    using DataFrames
+    using RetirementPlanners: permute
+    using Test
+
+    np = (
+        a = [6,5],
+        b = [1,2],
+        c = [77]
+    )
+
+    x = permute(np)
+    
+    ground_truth = [(;a,b,c) for a ∈ np.a for b ∈ np.b for c ∈ np.c]
+
+    for g ∈ ground_truth
+        @test g ∈ x 
+    end
+
+    @test length(x) == 4
+end
