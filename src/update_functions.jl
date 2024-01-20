@@ -20,12 +20,9 @@ function fixed_income(model::AbstractModel, t;
         income_amount = 1500.0,
         start_age = 67.0
     )
-    if start_age ≤ t 
-        model.state.income_amount = income_amount
-    end
+    model.state.income_amount = start_age ≤ t ? income_amount : 0.0
     return nothing
 end
-
 
 """
     variable_income(model::AbstractModel, t; 
@@ -50,9 +47,7 @@ function variable_income(model::AbstractModel, t;
         start_age = 67,
         distribution = Normal(1500,300)
     )
-    if start_age ≤ t 
-        model.state.income_amount = rand(distribution)
-    end
+    model.state.income_amount = start_age ≤ t ? rand(distribution) : 0.0
     return nothing
 end
 
@@ -154,9 +149,7 @@ function fixed_investment(model::AbstractModel, t;
         invest_amount = 1000.0,
         end_age = 67.0
     )
-    if end_age ≥ t 
-        model.state.invest_amount = invest_amount
-    end
+    model.state.invest_amount = end_age ≥ t ? invest_amount : 0.0
     return nothing
 end
 
@@ -182,9 +175,7 @@ function variable_investment(model::AbstractModel, t;
         end_age = 67.0, 
         distribution = Normal(1000, 200)
     )
-    if end_age ≥ t 
-        model.state.invest_amount = rand(distribution)
-    end
+    model.state.invest_amount = end_age ≥ t ? rand(distribution) : 0.0
     return nothing
 end
 
@@ -199,6 +190,7 @@ Computes net worth for the current time step as follows:
 - `t`: current time of simulation in years 
 """
 function default_net_worth(model::AbstractModel, t; _...)
+    # println("age $t net worth $(model.state.net_worth) withdraw amount $(model.state.withdraw_amount)")
     model.state.net_worth -= model.state.withdraw_amount
     model.state.net_worth += model.state.invest_amount
     real_growth = (1 + model.state.interest_rate) / (1 + model.state.inflation_rate) - 1
@@ -248,8 +240,13 @@ function fixed_withdraw(model::AbstractModel, t;
         withdraw_amount = 3000.0,
         start_age = 67.0
     )
+    model.state.withdraw_amount = 0.0
     if start_age ≤ t 
-        model.state.withdraw_amount = withdraw_amount
+        if model.state.net_worth < withdraw_amount
+            model.state.withdraw_amount = model.state.net_worth
+        else
+            model.state.withdraw_amount = withdraw_amount
+        end
     end
     return nothing
 end
@@ -278,7 +275,15 @@ function variable_withdraw(model::AbstractModel, t;
         distribution = Normal(2500, 500)
     )
     if start_age ≤ t 
-        model.state.withdraw_amount = rand(distribution)
+        withdraw_amount = rand(distribution)
+        if model.state.net_worth < withdraw_amount
+            model.state.withdraw_amount = model.state.net_worth
+        else
+            model.state.withdraw_amount = withdraw_amount
+        end
+    else 
+        model.state.withdraw_amount = 0.0
     end
+
     return nothing
 end

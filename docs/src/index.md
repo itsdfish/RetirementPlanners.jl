@@ -1,10 +1,13 @@
 ## Overview
 
-This package provides a flexible framework for performing Monte Carlo simulations of retirement investment performance under various assumptions specifed by the user. A major goal of the framework is to allow the user to customize the details of the simulation. 
+`RetirementPlanners.jl` is a framework for performing Monte Carlo simulations of retirement investment performance under various assumptions specifed by the user. The primary goal of the framework is to provide a high degree of flexibility and customization while offering a set of user-friendly options from which users can choose. This goal is achieved as follows:
+
+1. The package allows the user to tweak the investment simulations by selecting from a set of pre-defined update functions which have modifiable parameters.
+2. The package allows the user to define custom update functions which integrate seamlessly with the API. 
 
 ## How does it work?
 
-RetirementPlanners.jl performs a discrete time simulation in which a fuction `update!` is called on each time step. By default, `update!` calls seven subordinate functions, which must be defined by the user:
+`RetirementPlanners.jl` performs a discrete time simulation, meaning the state of the system is updated at fixed time steps—typically, representing years or months. On each time step, the `update!` is called, and updates the system in a manner defined by the user. By default, `update!` calls seven subordinate functions, which must be defined by the user:
 
 1. `withdraw!`: withdraw money
 2. `invest!`: invest money
@@ -14,15 +17,18 @@ RetirementPlanners.jl performs a discrete time simulation in which a fuction `up
 6. `update_net_worth!`: compute net worth 
 7. `log!`: log desired variables
 
-Two arguments are passed to each update function above: (1) a model object, and (2) an optional set of keyword arguments. By default, the model object contains a state object, which tracks quantities, such as the interest (growth) rate, the inflation rate, and net worth on the current time step. In addition, the model object contains a dictionary of user defined events, which define the onset of changes in the behavior of the simulation (such as when retirement begins). 
+The [API](api.md) describes pre-defined update functions from which you can choose. In addition, you may define your own update functions as needed. 
 
 ### Customization 
 
-The package provides many opportunities to customize the simulation. First, each of the six update functions must be specified by the user. Because the functions are arguments in the simulation, you may iterate through numerous functions to stress test your investment plan under alternative assumptions. Second, you can create a new `Model` type and extent the `update!` function so that a different set of update functions are called. 
+There are three ways to customize your retirement investment simulation. From simplest to most complex, they are as follows:
 
-### Batteries Included
+1. You can select any combination of pre-defined update functions and modify their default parameter values.
+2. You can define custom update functions to add new capabilities and have more fine-grained control over
+    the behavior of the simulation.
+3. You can create a new subtype of `AbstractModel`, which will allow you to extend the `update!` function. This will allow you to call a different set of functions than the seven update functions described above. 
 
-Future iterations of the package will include a variety of common update functions. These functions will be useful for performing simple simulations. 
+Of course, these are not mutually exclusive approaches. You may use any combination of the three approaches to create your desired retirement investment simulation. 
 
 ## Installation
 

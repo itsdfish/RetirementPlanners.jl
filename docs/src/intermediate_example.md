@@ -13,7 +13,8 @@ The purpose of this example is to illustrate how to use RetirementPlanners.jl in
 
 The first step is to load the packages required for simulating a retirement scenario and analyzing the results. With the `using` keyword, the code block below loads `RetirementPlanners` to run the simulation, and `Plots` to plot the results of the simulation. 
 
-```@example intermediate 
+```@example intermediate
+using Distributions 
 using Plots
 using RetirementPlanners
 ```
@@ -33,7 +34,7 @@ In this basic example, we will assume the subject starts saving for retirement a
 model = Model(;
     Δt = 1 / 12,
     start_age = 25,
-    duration = 45,
+    duration = 55,
     start_amount = 10_000,
     withdraw! = variable_withdraw,
     invest! = variable_investment,
@@ -82,7 +83,7 @@ The next step is to initialize the data logger. On each time step, the data logg
 ```@example intermediate 
 times = get_times(model)
 n_steps = length(times)
-n_reps = 1
+n_reps = 10_000
 logger = Logger(;n_reps, n_steps)
 ```
 
@@ -97,5 +98,12 @@ simulate!(model, logger, n_reps; config...)
 The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
 
 ```@example intermediate 
-plot(times, logger.net_worth, xlabel="Age", ylabel="Net Worth")
+plot(times, logger.net_worth[:,1:5], xlabel="Age", 
+    leg=false, ylabel="Net Worth")
+```
+
+```@example intermediate
+survival_probs = mean(logger.net_worth .> 0, dims=2)
+plot(times, survival_probs,  leg=false, xlabel="Age (years)", 
+    ylabel="Survival Probability", ylims = (0,1.05))
 ```

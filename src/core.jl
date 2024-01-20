@@ -20,7 +20,7 @@ end
 
 function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...)
     (;Δt,) = model
-    model.state.net_worth = model.start_amount
+    reset!(model)
     for (s,t) ∈ enumerate(get_times(model))
         update!(model, logger, s, rep, t; kwargs...)
     end
@@ -66,8 +66,8 @@ function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t;
         kw_income=(), kw_withdraw=(), kw_invest=(), kw_inflation=(),
         kw_interest=(), kw_net_worth=(), kw_log=())
     model.update_income!(model, t; kw_income...)
-    model.withdraw!(model, t; kw_withdraw...)
     model.invest!(model, t; kw_invest...) 
+    model.withdraw!(model, t; kw_withdraw...)
     model.update_inflation!(model, t; kw_inflation...) 
     model.update_interest!(model, t; kw_interest...) 
     model.update_net_worth!(model, t; kw_net_worth...)
@@ -87,4 +87,19 @@ Returns the time steps used in the simulation.
 function get_times(model::AbstractModel)
     (;start_age,Δt,duration) = model 
     return (start_age+Δt):Δt:(start_age+duration)
+end
+
+"""
+    reset!(model::AbstractModel)
+
+Sets all values of the state object to zero, except net worth, which is set to `start_amount`.
+
+# Arguments
+
+- `model::AbstractModel`: an abstract Model object 
+"""
+function reset!(model::AbstractModel)
+    model.state = State()
+    model.state.net_worth = model.start_amount
+    return nothing
 end

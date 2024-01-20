@@ -13,14 +13,15 @@ using SafeTestsets
 
     times = get_times(model)
     n_steps = length(times)
-    n_reps = 1
+    n_reps = 2
     logger = Logger(;n_reps, n_steps)
 
     simulate!(model, logger, n_reps)
 
     @test all(x -> x == .07, logger.interest)
     @test all(x -> x == .03, logger.inflation)
-    @test logger.net_worth[end] ≈ 919432 rtol = .01
+    @test logger.net_worth[end,1] ≈ 919432 rtol = .01
+    @test logger.net_worth[end,1] ≈ 919432 rtol = .01
 end
 
 @safetestset "update functions" begin
@@ -81,6 +82,7 @@ end
 
     @safetestset "fixed_withdraw" begin
         using RetirementPlanners
+        using RetirementPlanners: reset!
         using Test
 
         model = Model(;
@@ -93,10 +95,17 @@ end
         withdraw_amount = 1000
         start_age = 65
 
+        reset!(model)
         fixed_withdraw(model, 1.0; withdraw_amount, start_age)
         @test model.state.withdraw_amount == 0
-
-        fixed_withdraw(model, 65; withdraw_amount, start_age)
+        
+        reset!(model)
+        fixed_withdraw(model, start_age; withdraw_amount, start_age)
         @test model.state.withdraw_amount == withdraw_amount
+
+        model.start_amount = 800
+        reset!(model)
+        fixed_withdraw(model, start_age; withdraw_amount, start_age)
+        @test model.state.withdraw_amount == 800
     end
 end
