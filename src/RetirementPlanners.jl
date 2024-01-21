@@ -1,19 +1,25 @@
 module RetirementPlanners
 
     using ConcreteStructs
+    using Distributions: ContinuousUnivariateDistribution
     using Distributions: Normal 
     using PrettyTables
     
+    import Distributions: rand 
+
     export AbstractModel
     export AbstractLogger
     export AbstractState 
 
+    export GBM
     export Model
     export Logger
     export State 
 
     export get_times
     export grid_search
+    export increment
+    export rand
     export simulate! 
     export update!
 
@@ -35,5 +41,5 @@ module RetirementPlanners
     include("core.jl")
     include("update_functions.jl")
     include("utilities.jl")
-    #include("simulations.jl")
+    include("distributions.jl")
 end

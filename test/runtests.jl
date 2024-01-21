@@ -133,3 +133,29 @@ end
 
     @test length(x) == 4
 end
+
+@safetestset "Geometric Brownian Motion" begin
+    using Distributions
+    using Random
+    using RetirementPlanners
+    using Test
+    
+    Random.seed!(588)
+    
+    Δt = 1 / 100 
+    n_years = 10 
+    n_steps = Int(n_years / Δt)
+    n_reps = 15_000 
+    times = range(0, n_years, length=n_steps+1)
+
+    μ = .10 
+    σ = .10
+    dist = GBM(;μ, σ, x0=1)
+
+    prices = rand(dist, n_steps, n_reps; Δt)
+
+    @test mean(prices) ≈ exp.(μ * times) rtol = .01
+    @test var(prices) ≈ exp.(2 * μ * times) .* (exp.(σ^2 * times) .- 1) rtol = .01
+
+
+end
