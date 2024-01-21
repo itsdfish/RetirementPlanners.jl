@@ -11,14 +11,14 @@
 
 - `kwargs...`: optional keyword arguments passed to `update!`
 """
-function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps; kwargs...)
+function simulate!(model::AbstractModel, logger, n_reps; kwargs...)
     for rep ∈ 1:n_reps 
         _simulate!(model, logger, rep; kwargs...)
     end
     return nothing
 end
 
-function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...)
+function _simulate!(model::AbstractModel, logger, rep; kwargs...)
     (;Δt,) = model
     reset!(model)
     for (s,t) ∈ enumerate(get_times(model))
@@ -62,7 +62,7 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
-function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t; 
+function update!(model::AbstractModel, logger, step, rep, t; 
         kw_income=(), kw_withdraw=(), kw_invest=(), kw_inflation=(),
         kw_interest=(), kw_net_worth=(), kw_log=())
     model.update_income!(model, t; kw_income...)
@@ -71,7 +71,7 @@ function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t;
     model.update_inflation!(model, t; kw_inflation...) 
     model.update_interest!(model, t; kw_interest...) 
     model.update_net_worth!(model, t; kw_net_worth...)
-    model.log!(model, logger, step, rep; kw_log...)
+    model.log!(model, logger, t, rep; kw_log...)
     return nothing 
 end 
 

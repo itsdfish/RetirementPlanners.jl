@@ -32,12 +32,13 @@ module DataFramesExt
         kwargs...,
         )
 
-        if include_constants
-            output_params = collect(keys(config))
-        else
-            output_params = [k for (k, v) in config if typeof(v) <: Vector]
-        end
-
+        # if include_constants
+        #     output_params = collect(keys(config))
+        # else
+        #     f(K, V) = [k for (k, v) in zip(Ks, Vs) if typeof(v) <: Vector]
+        #     output_params = map(x -> f(x...), )
+        # end
+        # println("output_params $output_params")
         _config = map(d -> permute(d), config)
         config_keys = keys(_config)
         ranges = map(k -> 1:length(_config[k]), config_keys)
