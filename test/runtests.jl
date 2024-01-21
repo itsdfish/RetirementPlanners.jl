@@ -113,8 +113,9 @@ end
 @safetestset "permute" begin
     using RetirementPlanners
     using DataFrames
-    using RetirementPlanners: permute
     using Test
+
+    ext = Base.get_extension(RetirementPlanners, :DataFramesExt)
 
     np = (
         a = [6,5],
@@ -122,7 +123,7 @@ end
         c = [77]
     )
 
-    x = permute(np)
+    x = ext.permute(np)
     
     ground_truth = [(;a,b,c) for a ∈ np.a for b ∈ np.b for c ∈ np.c]
 

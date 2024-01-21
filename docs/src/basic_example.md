@@ -34,7 +34,7 @@ In this basic example, we will assume you start saving for retirement at age 25,
 model = Model(;
     Δt = 1 / 12,
     start_age = 25,
-    duration = 45,
+    duration = 55,
     start_amount = 10_000,
 )
 ```
