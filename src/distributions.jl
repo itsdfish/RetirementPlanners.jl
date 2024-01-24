@@ -9,15 +9,17 @@ growth of stocks.
 - `μ::T`: growth rate
 - `σ::T`: volitility in growth rate 
 - `x0::T`: initial value of stock 
+- `x::T`: current value
 """
 mutable struct GBM{T<:Real} <: ContinuousUnivariateDistribution
     μ::T
     σ::T
-    x0::T 
+    x0::T
+    x::T 
 end
 
 """
-    GBM(;μ, σ, x0)
+    GBM(;μ, σ, x0, x=x0)
 
 A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
 growth of stocks. 
@@ -26,15 +28,16 @@ growth of stocks.
 
 - `μ::T`: growth rate
 - `σ::T`: volitility in growth rate 
-- `x0::T`: initial value of stock 
+- `x0::T=1.0`: initial value of stock 
+- `x::T=x0`: current value
 """
-function GBM(;μ, σ, x0)
-    μ,σ,x0 = promote(μ, σ, x0)
-    return GBM(μ, σ, x0)
+function GBM(;μ, σ, x0=1.0, x=x0)
+    μ,σ,x0,x = promote(μ, σ, x0, x)
+    return GBM(μ, σ, x0, x)
 end
 
 """
-    increment(dist::GBM, x; Δt)
+    increment!(dist::GBM, Δt)
 
 Increment the stock price over the period `Δt`.
 
@@ -47,9 +50,10 @@ Increment the stock price over the period `Δt`.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function increment(dist::GBM, x; Δt)
-    (;μ,σ) = dist 
-    return x * (μ * Δt + σ * randn() * √(Δt))
+function increment!(dist::GBM; Δt)
+    (;μ,σ,x) = dist 
+    dist.x += x * (μ * Δt + σ * randn() * √(Δt))
+    return nothing
 end
 
 function rand(dist::GBM, n_steps, n_reps; Δt)
@@ -57,12 +61,12 @@ function rand(dist::GBM, n_steps, n_reps; Δt)
 end
 
 function rand(dist::GBM, n_steps; Δt)
-    x = dist.x0 
     prices = fill(0.0, n_steps + 1)
-    prices[1] = x
+    dist.x = dist.x0 
+    prices[1] = dist.x
     for i ∈ 2:(n_steps+1)
-        x += increment(dist, x; Δt)
-        prices[i] = x
+        increment!(dist; Δt)
+        prices[i] = dist.x
     end
     return prices 
 end

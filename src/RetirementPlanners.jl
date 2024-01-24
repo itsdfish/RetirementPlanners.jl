@@ -18,10 +18,14 @@ module RetirementPlanners
 
     export get_times
     export grid_search
-    export increment
+    export increment!
+    export plot_gradient
     export rand
     export simulate! 
     export update!
+
+    export dynamic_inflation
+    export dynamic_interest
 
     export default_log!
     export default_net_worth

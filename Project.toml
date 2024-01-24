@@ -12,12 +12,15 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+SmoothingSplines = "102930c3-cf33-599f-b3b1-9a29a5acab30"
 
 [weakdeps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [extensions]
 DataFramesExt = "DataFrames"
+PlotsExt = "Plots"
 
 [compat]
 ConcreteStructs = "0.2.3"
@@ -25,13 +28,17 @@ DataFrames = "1.6.1"
 Distributed = "1"
 Distributions = "0.25.0"
 NamedTupleTools = "0.14.0"
+Plots = "1.4.0"
 PrettyTables = "2.3.1"
+ProgressMeter = "1.9.0"
 Random = "1"
 SafeTestsets = "0.1.0"
+SmoothingSplines = "0.3.0"
 julia = "1"
 
 [extras]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
