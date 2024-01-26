@@ -5,7 +5,6 @@ version = "0.1.0"
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
-Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
@@ -13,6 +12,7 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SmoothingSplines = "102930c3-cf33-599f-b3b1-9a29a5acab30"
+ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 
 [weakdeps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -25,7 +25,6 @@ PlotsExt = "Plots"
 [compat]
 ConcreteStructs = "0.2.3"
 DataFrames = "1.6.1"
-Distributed = "1"
 Distributions = "0.25.0"
 NamedTupleTools = "0.14.0"
 Plots = "1.4.0"
@@ -34,6 +33,7 @@ ProgressMeter = "1.9.0"
 Random = "1"
 SafeTestsets = "0.1.0"
 SmoothingSplines = "0.3.0"
+ThreadsX = "0.1.11"
 julia = "1"
 
 [extras]

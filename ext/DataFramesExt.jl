@@ -1,7 +1,7 @@
 module DataFramesExt
 
     using DataFrames
-    using Distributed: pmap
+    using ThreadsX
     using ProgressMeter
     using NamedTupleTools
     using RetirementPlanners
@@ -29,7 +29,7 @@ module DataFramesExt
         parallel::Bool = false,
         n = 1,
         showprogress::Bool = false,
-        dependent_values = Int[],
+        yoked_values = (),
         kwargs...,
         )
 
@@ -39,12 +39,11 @@ module DataFramesExt
         #     output_params = [k for (k, v) in config if typeof(v) <: Vector]
         # end
 
-            
+        np_combs = make_nps(config, yoked_values)    
 
-        progress = ProgressMeter.Progress(length(indices); enabled = showprogress)
-        mapfun = parallel ? pmap : map
-        all_data = ProgressMeter.progress_map(indices; mapfun, progress) do indices
-            x = map(i -> _config[i[1]][i[2]], zip(config_keys, indices))
+        progress = ProgressMeter.Progress(length(np_combs); enabled = showprogress)
+        mapfun = parallel ? ThreadsX.map : map
+        all_data = ProgressMeter.progress_map(indices; mapfun, progress) do np_combs
 
             #run_single(model, Logger, n_reps; config=np)
         end
@@ -65,6 +64,7 @@ module DataFramesExt
     end
 
     function matches(config, match_pairs)
+        isempty(match_pairs) ? (return true) : false
         for (k,v) ∈ match_pairs 
             if get_value(config, k) == get_value(config, v)
                 return true

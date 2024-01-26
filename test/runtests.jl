@@ -134,6 +134,41 @@ end
     @test length(x) == 4
 end
 
+@safetestset "make_nps" begin
+    using RetirementPlanners
+    using DataFrames
+    using Test
+
+    ext = Base.get_extension(RetirementPlanners, :DataFramesExt)
+
+    np = (
+        np1 = (
+            a = [6,5],
+            b = [4,3],
+        ),
+        np2 = (
+            c = [6,5],
+            d = 10,
+        ),
+    )
+
+    dependent_values = [Pair((:np1,:a), (:np2,:c))]
+    test_vals = ext.make_nps(np, dependent_values)
+    
+    ground_truth = [
+        (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
+        (np1 = (a = 6, b = 3), np2 = (d = 10, c = 6)),
+        (np1 = (a = 5, b = 4), np2 = (d = 10, c = 5)),
+        (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5)),
+    ]
+
+    for g ∈ ground_truth
+        @test g ∈ test_vals
+    end
+
+    @test length(test_vals) == 4
+end
+
 @safetestset "Geometric Brownian Motion" begin
     using Distributions
     using Random

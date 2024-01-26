@@ -1,5 +1,6 @@
+abstract type AbstractGBM <: ContinuousUnivariateDistribution end
 """
-    GBM{T<:Real} <: ContinuousUnivariateDistribution
+    GBM{T<:Real} <: AbstractGBM
 
 A distribution object for Geometric Brownian Motion (GBM), which is used to model 
 growth of stocks. 
@@ -11,14 +12,14 @@ growth of stocks.
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 """
-mutable struct GBM{T<:Real} <: ContinuousUnivariateDistribution
+mutable struct GBM{T<:Real} <: AbstractGBM
     μ::T
     σ::T
     x0::T
     x::T 
 end
 
-Base.broadcastable(dist::GBM) = Ref(dist)
+Base.broadcastable(dist::AbstractGBM) = Ref(dist)
 
 """
     GBM(;μ, σ, x0, x=x0)
@@ -39,7 +40,7 @@ function GBM(;μ, σ, x0=1.0, x=x0)
 end
 
 """
-    increment!(dist::GBM, Δt)
+    increment!(dist::AbstractGBM, Δt)
 
 Increment the stock price over the period `Δt`.
 
@@ -52,13 +53,13 @@ Increment the stock price over the period `Δt`.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function increment!(dist::GBM; Δt)
+function increment!(dist::AbstractGBM; Δt)
     (;μ,σ,x) = dist 
     dist.x += x * (μ * Δt + σ * randn() * √(Δt))
     return nothing
 end
 
-function rand(dist::GBM, n_steps, n_reps; Δt)
+function rand(dist::AbstractGBM, n_steps, n_reps; Δt)
     return [rand(dist, n_steps; Δt) for _ ∈ 1:n_reps]
 end
 
@@ -73,6 +74,6 @@ function rand(dist::GBM, n_steps; Δt)
     return prices 
 end
 
-mean(dist::GBM, t) = exp(dist.μ * t)
-var(dist::GBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
-std(dist::GBM, t) = √(var(dist, t))
+mean(dist::AbstractGBM, t) = exp(dist.μ * t)
+var(dist::AbstractGBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
+std(dist::AbstractGBM, t) = √(var(dist, t))
