@@ -11,21 +11,35 @@
 
 - `kwargs...`: optional keyword arguments passed to `update!`
 """
-function simulate!(model::AbstractModel, logger, n_reps; kwargs...)
+function simulate!(model::AbstractModel, n_reps; kwargs...)
+    data = setup_data(model, n_reps)
+    model.step_count = 1
     for rep ∈ 1:n_reps 
-        _simulate!(model, logger, rep; kwargs...)
+        _simulate!(model, data, rep; kwargs...)
     end
-    return nothing
+    return data
 end
 
-function _simulate!(model::AbstractModel, logger, rep; kwargs...)
+function _simulate!(model::AbstractModel, data, rep; kwargs...)
     (;Δt,) = model
     reset!(model)
     for (s,t) ∈ enumerate(get_times(model))
-        update!(model, logger, s, rep, t; kwargs...)
+        update!(model, data, s, rep, t; kwargs...)
+        model.step_count += 1
     end
     return nothing 
 end 
+
+function setup_data(model::AbstractModel, n_reps)
+    times = get_times(model)
+    n_steps = length(times)
+    fields = fieldnames(typeof(model.state))
+    n_cols = length(fields)
+    df = DataFrame(fill(0.0, n_reps * n_steps, n_cols), [fields...,])
+    df.rep = repeat(1:n_reps, inner=n_steps)
+    df.time = repeat(times, n_reps)
+    return df
+end
 
 """
     update!(model::AbstractModel, logger::AbstractLogger, step, rep, t; 

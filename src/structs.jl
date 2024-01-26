@@ -145,6 +145,7 @@ The default retirement simulation Model.
     duration::T
     start_age::T
     start_amount::T
+    step_count::Int
     state::S
     withdraw!
     invest!
@@ -160,6 +161,7 @@ function Model(;
         duration,
         start_age,
         start_amount,
+        step_count = 1,
         state = State(),
         withdraw! = fixed_withdraw,
         invest! = fixed_investment,
@@ -175,6 +177,7 @@ function Model(;
         duration,
         start_age,
         start_amount,
+        step_count,
         state,
         withdraw!,
         invest!,

@@ -1,5 +1,7 @@
 function grid_search end 
 
+function plot_gradient end
+
 function Base.show(io::IO, ::MIME"text/plain", model::AbstractModel)
     return _show(io::IO, model)
 end

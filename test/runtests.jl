@@ -133,3 +133,64 @@ end
 
     @test length(x) == 4
 end
+
+@safetestset "make_nps" begin
+    using RetirementPlanners
+    using DataFrames
+    using Test
+
+    ext = Base.get_extension(RetirementPlanners, :DataFramesExt)
+
+    np = (
+        np1 = (
+            a = [6,5],
+            b = [4,3],
+        ),
+        np2 = (
+            c = [6,5],
+            d = 10,
+        ),
+    )
+
+    dependent_values = [Pair((:np1,:a), (:np2,:c))]
+    test_vals = ext.make_nps(np, dependent_values)
+    
+    ground_truth = [
+        (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
+        (np1 = (a = 6, b = 3), np2 = (d = 10, c = 6)),
+        (np1 = (a = 5, b = 4), np2 = (d = 10, c = 5)),
+        (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5)),
+    ]
+
+    for g ∈ ground_truth
+        @test g ∈ test_vals
+    end
+
+    @test length(test_vals) == 4
+end
+
+@safetestset "Geometric Brownian Motion" begin
+    using Distributions
+    using Random
+    using RetirementPlanners
+    using Test
+    
+    Random.seed!(588)
+    
+    Δt = 1 / 100 
+    n_years = 10 
+    n_steps = Int(n_years / Δt)
+    n_reps = 15_000 
+    times = range(0, n_years, length=n_steps+1)
+
+    μ = .10 
+    σ = .10
+    dist = GBM(;μ, σ, x0=1)
+
+    prices = rand(dist, n_steps, n_reps; Δt)
+
+    @test mean(prices) ≈ mean.(dist, times) rtol = .01
+    @test var(prices) ≈ var.(dist, times) rtol = .01
+    @test std(prices) ≈ std.(dist, times) rtol = .01
+
+end
