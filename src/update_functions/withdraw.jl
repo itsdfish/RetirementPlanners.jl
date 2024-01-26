@@ -55,6 +55,7 @@ function variable_withdraw(model::AbstractModel, t;
         start_age = 67, 
         distribution = Normal(2500, 500)
     )
+
     if start_age ≤ t 
         withdraw_amount = rand(distribution)
         if model.state.net_worth < withdraw_amount

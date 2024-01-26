@@ -33,29 +33,21 @@ module DataFramesExt
         kwargs...,
         )
 
-        # if include_constants
-        #     output_params = collect(keys(config))
-        # else
-        #     output_params = [k for (k, v) in config if typeof(v) <: Vector]
-        # end
-
         np_combs = make_nps(config, yoked_values)    
+        var_parms = get_var_parms(config)
+        times = get_times(model)
+        n_steps = length(times)
+
 
         progress = ProgressMeter.Progress(length(np_combs); enabled = showprogress)
         mapfun = parallel ? ThreadsX.map : map
-        all_data = ProgressMeter.progress_map(indices; mapfun, progress) do np_combs
-
-            #run_single(model, Logger, n_reps; config=np)
+        all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
+            var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
+            
+            logger = Logger(;n_steps, n_reps)
+            simulate!(model, logger, n_reps; np_combs...);
+            return var_vals, logger
         end
-
-        # df_agent = DataFrame()
-        # df_model = DataFrame()
-        # for (df1, df2) in all_data
-        #     append!(df_agent, df1)
-        #     append!(df_model, df2)
-        # end
-
-        # return df_agent, df_model
     end
 
     function make_np(config, config_keys, index)
@@ -105,6 +97,18 @@ module DataFramesExt
                 merge(non_iterable_np, dd)
             end
         end)
+    end
+
+    function get_var_parms(config)
+        output = Vector{Tuple{Symbol, Symbol}}()
+        for (k1,v1) ∈ pairs(config)
+            for (k2,v2) ∈ pairs(config[k1])
+                if typeof(v2) <: Vector
+                    push!(output, (k1,k2))
+                end
+            end
+        end
+        return output
     end
 
     function run_single(
