@@ -154,8 +154,8 @@ end
 
     prices = rand(dist, n_steps, n_reps; Δt)
 
-    @test mean(prices) ≈ exp.(μ * times) rtol = .01
-    @test var(prices) ≈ exp.(2 * μ * times) .* (exp.(σ^2 * times) .- 1) rtol = .01
-
+    @test mean(prices) ≈ mean.(dist, times) rtol = .01
+    @test var(prices) ≈ var.(dist, times) rtol = .01
+    @test std(prices) ≈ std.(dist, times) rtol = .01
 
 end

@@ -29,28 +29,24 @@ module DataFramesExt
         parallel::Bool = false,
         n = 1,
         showprogress::Bool = false,
+        dependent_values = Int[],
         kwargs...,
         )
 
-        if include_constants
-            output_params = collect(keys(config))
-        else
-            output_params = [k for (k, v) in config if typeof(v) <: Vector]
-        end
+        # if include_constants
+        #     output_params = collect(keys(config))
+        # else
+        #     output_params = [k for (k, v) in config if typeof(v) <: Vector]
+        # end
 
-        _config = map(d -> permute(d), config)
-        config_keys = keys(_config)
-        ranges = map(k -> 1:length(_config[k]), config_keys)
-        indices = Iterators.product(ranges...)
+            
+
         progress = ProgressMeter.Progress(length(indices); enabled = showprogress)
         mapfun = parallel ? pmap : map
         all_data = ProgressMeter.progress_map(indices; mapfun, progress) do indices
             x = map(i -> _config[i[1]][i[2]], zip(config_keys, indices))
-            np = NamedTuple{config_keys}(x)
-            println(np)
-            println("")
 
-            run_single(model, Logger, n_reps; config=np)
+            #run_single(model, Logger, n_reps; config=np)
         end
 
         # df_agent = DataFrame()
@@ -61,6 +57,34 @@ module DataFramesExt
         # end
 
         # return df_agent, df_model
+    end
+
+    function make_np(config, config_keys, index)
+        x = map(i -> config[i[1]][i[2]], zip(config_keys, index))
+        return NamedTuple{config_keys}(x)
+    end
+
+    function matches(config, match_pairs)
+        for (k,v) ∈ match_pairs 
+            if get_value(config, k) == get_value(config, v)
+                return true
+            end
+        end
+        return false 
+    end
+
+    function get_value(config, k) 
+        return config[k[1]][k[2]]
+    end
+
+    function make_nps(config, dependent_values)
+        _config = map(d -> permute(d), config)
+        config_keys = keys(_config)
+        ranges = map(k -> 1:length(_config[k]), config_keys)
+        indices = Iterators.product(ranges...) |> collect
+        nps = map(index -> make_np(_config, config_keys, index), indices[:])
+        filter!(x -> matches(x, dependent_values), nps)
+        return nps 
     end
 
     # This function is taken from DrWatson:

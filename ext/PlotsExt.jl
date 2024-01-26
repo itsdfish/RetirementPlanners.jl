@@ -36,15 +36,14 @@ module PlotsExt
         μp = SmoothingSplines.predict(splμ, x₀)
         σp = SmoothingSplines.predict(splσ, x₀)
 
-
         # PLOT RIBBONS WITH ALPHA TRANSPARENCY SCALED:
         qq = @. quantile(truncated(Normal(μp, σp), 0, Inf), LinRange(0.01, 0.99, n_slices))
-        α = [LinRange(0.10, 0.5, n_slices÷2); LinRange(0.5, 0.10, n_slices÷2)]
+        α = [LinRange(0.15, 0.5, n_slices÷2); LinRange(0.5, 0.15, n_slices÷2)]
         p1 = plot(legend=false, grid=false)
         for i in 2:n_slices-1
             yᵢ = getindex.(qq, i)
             dy = yᵢ - getindex.(qq, i-1)
-            plot!(x₀, yᵢ - dy/2, lw=0, color=:darkred, fillalpha=α[i], ribbon=dy; kwargs...)
+            plot!(x₀, yᵢ - dy/2, lw=0, color=:purple, fillalpha=α[i], ribbon=dy; kwargs...)
         end
         plot!(x, y[:,1:n_lines])
         return p1

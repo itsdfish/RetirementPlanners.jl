@@ -18,6 +18,8 @@ mutable struct GBM{T<:Real} <: ContinuousUnivariateDistribution
     x::T 
 end
 
+Base.broadcastable(dist::GBM) = Ref(dist)
+
 """
     GBM(;μ, σ, x0, x=x0)
 
@@ -70,3 +72,7 @@ function rand(dist::GBM, n_steps; Δt)
     end
     return prices 
 end
+
+mean(dist::GBM, t) = exp(dist.μ * t)
+var(dist::GBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
+std(dist::GBM, t) = √(var(dist, t))
