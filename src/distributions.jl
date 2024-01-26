@@ -77,3 +77,34 @@ end
 mean(dist::AbstractGBM, t) = exp(dist.μ * t)
 var(dist::AbstractGBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
 std(dist::AbstractGBM, t) = √(var(dist, t))
+
+function fit(dist::Type{<:AbstractGBM}, ts; Δt)
+    ts = log.(ts)
+    _μ = estimate_μ(dist, ts; Δt)
+    σ = estimate_σ(dist, ts; Δt)
+    μ = convert_μ(_μ, σ)
+    return μ, σ
+end
+
+# series = [1,1.2,1.4,1.5]
+# Δt = 1 / 12
+# estimate_μ(dist, series; Δt = 1/12) == 5.44
+function estimate_μ(dist::Type{<:AbstractGBM}, ts; Δt)
+    x = Δt:Δt:length(ts)*Δt 
+    total = sum((1 / Δt) * (x.^2))
+    return sum((1/total) * (1 / Δt) * (x .* ts))
+end
+
+function convert_μ(μ, σ)
+    return μ + .50 * σ^2 
+end
+
+# series = [1,1.2,1.4,1.5]
+# Δt = 1 / 12
+# estimate_σ(gbm, ts; Δt) ≈ 0.5196152422706631
+function estimate_σ(gbm, ts; Δt)
+    n = length(ts)
+    return √(sum(diff(ts).^2) / (n * Δt))
+end
+# 3.5
+# convert_μ(1.5, 2)

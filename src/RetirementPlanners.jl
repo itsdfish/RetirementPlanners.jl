@@ -5,6 +5,7 @@ module RetirementPlanners
     using Distributions: Normal 
     using PrettyTables
     
+    import Distributions: fit
     import Distributions: mean
     import Distributions: rand 
     import Distributions: std
@@ -19,6 +20,7 @@ module RetirementPlanners
     export Logger
     export State 
 
+    export fit
     export get_times
     export grid_search
     export increment!
