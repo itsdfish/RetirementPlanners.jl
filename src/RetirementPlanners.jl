@@ -3,7 +3,10 @@ module RetirementPlanners
     using ConcreteStructs
     using Distributions: ContinuousUnivariateDistribution
     using Distributions: Normal 
+    using NamedTupleTools
     using PrettyTables
+    using ProgressMeter
+    using ThreadsX
     
     import Distributions: fit
     import Distributions: mean
@@ -29,6 +32,7 @@ module RetirementPlanners
     export rand
     export simulate!
     export std 
+    export to_dataframe
     export update!
     export var
 
@@ -48,11 +52,12 @@ module RetirementPlanners
     export variable_interest
     export variable_investment
     export variable_withdraw
-println(pwd())
+
     include("structs.jl")
     include("core.jl")
     include("utilities.jl")
     include("distributions.jl")
+    include("grid_search.jl")
     include("update_functions/income.jl")
     include("update_functions/inflation.jl")
     include("update_functions/interest.jl")
