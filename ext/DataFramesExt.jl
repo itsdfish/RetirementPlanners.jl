@@ -5,9 +5,17 @@ module DataFramesExt
 
     import RetirementPlanners: to_dataframe
 
+    """
+        to_dataframe(model::AbstractModel, data::Tuple)
 
+    Converts output from `grid_search` to a long-form dataframe. 
 
-    function to_dataframe(model, data::Tuple)
+    # Arguments
+
+    - `model::AbstractModel`: a subtype of abstract model for performing Monte Carlo simulations of retirement scenarios 
+    - `data::Tuple`: data output from `grid_search`
+    """
+    function to_dataframe(model::AbstractModel, data::Tuple)
         times = get_times(model)
         fields = fieldnames(typeof(data[2]))
         n_fields = length(fields)

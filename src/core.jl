@@ -1,5 +1,12 @@
 """
-    simulate!(model::AbstractModel, logger::AbstractLogger, n_reps; kwargs...)
+    simulate!(
+        model::AbstractModel,
+        logger::AbstractLogger,
+        n_reps;
+        kwargs...
+    )
+
+Simulate the a retirement scenario a specified number of times. 
 
 # Arguments 
 
@@ -11,7 +18,12 @@
 
 - `kwargs...`: optional keyword arguments passed to `update!`
 """
-function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps; kwargs...)
+function simulate!(
+        model::AbstractModel,
+        logger::AbstractLogger,
+        n_reps;
+        kwargs...
+    )
     for rep ∈ 1:n_reps 
         _simulate!(model, logger, rep; kwargs...)
     end
@@ -28,10 +40,21 @@ function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...
 end 
 
 """
-    update!(model::AbstractModel, logger::AbstractLogger, step, rep, t; 
-            kw_income=(), kw_withdraw=(), kw_invest=(), kw_inflation=(), 
-            kw_interest=(), kw_net_worth=(), kw_log=())
-        
+    update!(
+        model::AbstractModel,
+        logger::AbstractLogger,
+        step,
+        rep,
+        t; 
+        kw_income=(),
+        kw_withdraw=(),
+        kw_invest=(),
+        kw_inflation=(),
+        kw_interest=(),
+        kw_net_worth=(),
+        kw_log=()
+    )
+            
 Performs an update on each time step by calling the following functions defined in `model`:
 
 - `update_income!`: update sources of income, such as social security, pension etc. 
@@ -62,9 +85,21 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
-function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t; 
-        kw_income=(), kw_withdraw=(), kw_invest=(), kw_inflation=(),
-        kw_interest=(), kw_net_worth=(), kw_log=())
+function update!(
+        model::AbstractModel,
+        logger::AbstractLogger,
+        step,
+        rep,
+        t; 
+        kw_income=(),
+        kw_withdraw=(),
+        kw_invest=(),
+        kw_inflation=(),
+        kw_interest=(),
+        kw_net_worth=(),
+        kw_log=()
+    )
+
     model.update_income!(model, t; kw_income...)
     model.invest!(model, t; kw_invest...) 
     model.withdraw!(model, t; kw_withdraw...)

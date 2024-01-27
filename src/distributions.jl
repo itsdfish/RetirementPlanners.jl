@@ -59,6 +59,21 @@ function increment!(dist::AbstractGBM; Δt)
     return nothing
 end
 
+"""
+    rand(dist::AbstractGBM, n_steps, n_reps; Δt)
+
+Simulate a random trajector of a Geometric Brownian motion process. 
+
+# Arguments 
+
+- `dist::GBM`: a distribution object for Geometric Brownian Motion 
+- `n_steps`: the number of discrete time steps in the simulation 
+- `n_reps`: the number of times the simulation is repeated 
+
+# Keywords
+
+- `Δt`: the time step for Geometric Brownian Motion
+"""
 function rand(dist::AbstractGBM, n_steps, n_reps; Δt)
     return [rand(dist, n_steps; Δt) for _ ∈ 1:n_reps]
 end

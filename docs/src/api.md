@@ -11,6 +11,7 @@ AbstractLogger
 ## Concrete Types
 
 ```@docs 
+GBM
 Model
 State
 Logger
@@ -22,6 +23,8 @@ Logger
 
 ```@docs
 get_times
+grid_search
+rand
 simulate!
 update!
 ```
@@ -40,6 +43,7 @@ variable_income
 ```@docs
 fixed_inflation
 variable_inflation
+dynamic_inflation
 ```
 
 ### Update Interest
@@ -47,6 +51,7 @@ variable_inflation
 ```@docs
 fixed_interest
 variable_interest
+dynamic_interest
 ```
 
 ### Update Investments 

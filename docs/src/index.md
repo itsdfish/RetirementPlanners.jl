@@ -1,9 +1,15 @@
+!!! note "Documentation Under Construction"
+    The documentation is a work-in-progress
+!!! warning "Disclaimer"
+    Monte Carlo simulations are useful tools for stress testing financial/retirement plans under a wide range of uncertain conditions. As with any model, the Monte Carlo simulation is only as good as the assumptions one makes. This package is not intended to be financial advice. Instead, it is an open source tool for planning and research. Users must make assumptions in the Monte Carlo simulation at their discretion.  When in doubt, seek the counsel of a professional financial planner. 
+
 ## Overview
 
-`RetirementPlanners.jl` is a framework for performing Monte Carlo simulations of retirement investment performance under various assumptions specifed by the user. The primary goal of the framework is to provide a high degree of flexibility and customization while offering a set of user-friendly options from which users can choose. This goal is achieved as follows:
+`RetirementPlanners.jl` is a framework for performing Monte Carlo simulations of retirement investment performance under various assumptions specifed by the user. The primary goal of the framework is to provide a high degree of flexibility and customization while offering a set of user-friendly options from which users can choose. These goals are achieved as follows:
 
 1. The package allows the user to tweak the investment simulations by selecting from a set of pre-defined update functions which have modifiable parameters.
 2. The package allows the user to define custom update functions which integrate seamlessly with the API. 
+3. The package allows the user to perform a grid search over simulation parameters to systematically explore their effects on outcome variables, such as net worth.
 
 ## How does it work?
 

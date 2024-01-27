@@ -18,7 +18,11 @@ function fixed_interest(model::AbstractModel, t; interest_rate = .07)
 end
 
 """
-    variable_interest(model::AbstractModel, t; distribution = Normal(.07, .05))
+    variable_interest(
+        model::AbstractModel,
+        t;
+        distribution = Normal(.07, .05)
+    )
 
 Returns interest rate sampled from a specified distribution.
 
@@ -31,16 +35,21 @@ Returns interest rate sampled from a specified distribution.
 
 - `distribution = Normal(.07, .05)`: the distribution of interest per year 
 """
-function variable_interest(model::AbstractModel, t; distribution = Normal(.07, .05))
+function variable_interest(
+        model::AbstractModel,
+        t;
+        distribution = Normal(.07, .05)
+    )
     model.state.interest_rate = rand(distribution)
     return nothing
 end
 
 """
-    dynamic_interest(model::AbstractModel, t; 
+    dynamic_interest(
+        model::AbstractModel,
+        t; 
         gbm=GBM(; μ=.07, σ=.05, x0=1)
     )
-
 Models interest in the stock market as a geometric brownian motion processes. 
 
 # Arguments
@@ -54,7 +63,9 @@ Models interest in the stock market as a geometric brownian motion processes.
 `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
 sets an arbitrary scale. 
 """
-function dynamic_interest(model::AbstractModel, t; 
+function dynamic_interest(
+        model::AbstractModel,
+        t; 
         gbm=GBM(; μ=.07, σ=.05, x0=1)
     )
     Δt = model.Δt

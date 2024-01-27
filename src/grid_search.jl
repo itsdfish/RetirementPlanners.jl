@@ -1,102 +1,157 @@
 """
-grid_search(
-    config::NamedTuple,
-    include_constants::Bool = false,
-    parallel::Bool = false,
-    n = 1,
-    showprogress::Bool = false,
-    kwargs...,
-)
+    grid_search(
+        model::AbstractModel,
+        Logger::Type{<:AbstractLogger},
+        n_reps; 
+        config::NamedTuple,
+        threaded::Bool = false,
+        n = 1,
+        show_progress::Bool = false,
+        yoked_values = (),
+        kwargs...,
+    )
 
-# Arguments 
+
+Performs a grid search over vectorized inputs specified in the configuration setup. As an example, consider the following
+configuration setup:
+
+```julia 
+config = (
+    # withdraw parameters 
+    kw_withdraw = (
+        distribution = [
+            Normal(3000, 1000), 
+            Normal(4000, 1000),
+        ],
+        start_age = 65,
+    ),
+    # invest parameters
+    kw_invest = (
+        distribution = [
+            Normal(1000, 100),
+            Normal(1500, 100),
+        ]
+        end_age = 65,
+    ),
+    # interest parameters
+    kw_interest = (
+        gbm = GBM(; μ = .07, σ = .05),
+    ),
+    # inflation parameters
+    kw_inflation = (
+        gbm = GBM(; μ = .035, σ = .005),
+    )
+)
+```
+In the example above, four simulations will be performed: one for each combination of withdraw distribution and investment distribution.
+
+# Arguments
+
+- `model::AbstractModel`: an abstract model type for performing Monte Carlo simulations of investment scenarios
+- `Logger::Type{<:AbstractLogger}`: a type for collecting variables of the simulation. The constructor signature is
+    `Logger(; n_reps, n_steps)`
+- `n_reps`: the number of times the investiment simulation is repeated for each input combination. 
+
+# Keywords 
+
+- `config::NamedTuple`: a nested configuration of the simulation parameters. 
+- `threaded::Bool = false`: runs simulations on separate threads if true 
+- `show_progress::Bool = false`: shows progress bar if true
+- `yoked_values = ()`: fix specified inputs to have the same values, such as: 
+    `[Pair((:kw_withdraw, :start_age), (:kw_invest, :end_age))]`
+
+# Output
+
+Returns a vector of tuples where each tuple corresponds to the result of a single simulation condition. Each 
+tuple consists of input values and output results. The function `to_dataframe` can be used to transform output 
+into a long-form `DataFrame`.
+
+# Notes 
+
+This function was inspired by `parmscan` in Agents.jl.
 """
 function grid_search(
-model::AbstractModel,
-Logger::Type{<:AbstractLogger},
-n_reps; 
-config::NamedTuple,
-include_constants::Bool = false,
-parallel::Bool = false,
-n = 1,
-showprogress::Bool = false,
-yoked_values = (),
-kwargs...,
-)
+        model::AbstractModel,
+        Logger::Type{<:AbstractLogger},
+        n_reps; 
+        config::NamedTuple,
+        threaded::Bool = false,
+        show_progress::Bool = false,
+        yoked_values = (),
+    )
 
-np_combs = make_nps(config, yoked_values)    
-var_parms = get_var_parms(config)
-times = get_times(model)
-n_steps = length(times)
+    np_combs = make_nps(config, yoked_values)    
+    var_parms = get_var_parms(config)
+    times = get_times(model)
+    n_steps = length(times)
 
+    progress = ProgressMeter.Progress(length(np_combs); enabled = show_progress)
+    mapfun = threaded ? ThreadsX.map : map
 
-progress = ProgressMeter.Progress(length(np_combs); enabled = showprogress)
-mapfun = parallel ? ThreadsX.map : map
-all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
-    var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
-    
-    logger = Logger(;n_steps, n_reps)
-    simulate!(model, logger, n_reps; np_combs...);
-    return var_vals, logger
-end
+    all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
+        var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
+        logger = Logger(;n_steps, n_reps)
+        simulate!(model, logger, n_reps; np_combs...);
+        return var_vals, logger
+    end
 end
 
 function make_np(config, config_keys, index)
-x = map(i -> config[i[1]][i[2]], zip(config_keys, index))
-return NamedTuple{config_keys}(x)
+    x = map(i -> config[i[1]][i[2]], zip(config_keys, index))
+    return NamedTuple{config_keys}(x)
 end
 
 function matches(config, match_pairs)
-isempty(match_pairs) ? (return true) : false
-for (k,v) ∈ match_pairs 
-    if get_value(config, k) == get_value(config, v)
-        return true
+    isempty(match_pairs) ? (return true) : false
+    for (k,v) ∈ match_pairs 
+        if get_value(config, k) == get_value(config, v)
+            return true
+        end
     end
-end
-return false 
+    return false 
 end
 
 function get_value(config, k) 
-return config[k[1]][k[2]]
+    return config[k[1]][k[2]]
 end
 
 function make_nps(config, dependent_values)
-_config = map(d -> permute(d), config)
-config_keys = keys(_config)
-ranges = map(k -> 1:length(_config[k]), config_keys)
-indices = Iterators.product(ranges...) |> collect
-nps = map(index -> make_np(_config, config_keys, index), indices[:])
-filter!(x -> matches(x, dependent_values), nps)
-return nps 
+    _config = map(d -> permute(d), config)
+    config_keys = keys(_config)
+    ranges = map(k -> 1:length(_config[k]), config_keys)
+    indices = Iterators.product(ranges...) |> collect
+    nps = map(index -> make_np(_config, config_keys, index), indices[:])
+    filter!(x -> matches(x, dependent_values), nps)
+    return nps 
 end
 
-# This function is taken from DrWatson:
 function permute(c::NamedTuple)
-iterable_fields = filter(k -> typeof(c[k]) <: Vector, keys(c))
-non_iterables = setdiff(keys(c), iterable_fields)
+    iterable_fields = filter(k -> typeof(c[k]) <: Vector, keys(c))
+    non_iterables = setdiff(keys(c), iterable_fields)
 
-iterable_np = NamedTuple{(iterable_fields...,)}(getindex.(Ref(c), iterable_fields))
-non_iterable_np = NamedTuple{(non_iterables...,)}(getindex.(Ref(c), non_iterables))
+    iterable_np = NamedTuple{(iterable_fields...,)}(getindex.(Ref(c), iterable_fields))
+    non_iterable_np = NamedTuple{(non_iterables...,)}(getindex.(Ref(c), non_iterables))
 
-vec(map(Iterators.product(values(iterable_np)...)) do vals
-    dd = NamedTuple{keys(iterable_np)}(vals)
-    if isempty(non_iterable_np)
-        dd
-    elseif isempty(iterable_np)
-        non_iterable_np
-    else
-        merge(non_iterable_np, dd)
-    end
-end)
+    vec(map(Iterators.product(values(iterable_np)...)) do vals
+        dd = NamedTuple{keys(iterable_np)}(vals)
+        if isempty(non_iterable_np)
+            dd
+        elseif isempty(iterable_np)
+            non_iterable_np
+        else
+            merge(non_iterable_np, dd)
+        end
+    end)
 end
 
 function get_var_parms(config)
-output = Vector{Tuple{Symbol, Symbol}}()
-for (k1,v1) ∈ pairs(config)
-    for (k2,v2) ∈ pairs(config[k1])
-        if typeof(v2) <: Vector
-            push!(output, (k1,k2))
+    output = Vector{Tuple{Symbol, Symbol}}()
+    for (k1,v1) ∈ pairs(config)
+        for (k2,v2) ∈ pairs(config[k1])
+            if typeof(v2) <: Vector
+                push!(output, (k1,k2))
+            end
         end
     end
-end
-return output
+    return output
 end

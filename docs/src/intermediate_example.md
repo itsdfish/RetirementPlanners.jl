@@ -75,7 +75,7 @@ config = (
         distribution = Normal(2200, 500),
         start_age = 40,
     )
- )
+)
 ```
 ## Setup Logger
 

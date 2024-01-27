@@ -1,10 +1,10 @@
-
 """
-    fixed_investment(model::AbstractModel, t;
-        income_amount = 3000.0,
-        start_age = 67.0
+    fixed_investment(
+        model::AbstractModel, 
+        t;
+        invest_amount = 1000.0,
+        end_age = 67.0
     )
-
 Contribute a fixed amount into investments per time step.
 
 # Arguments
@@ -17,7 +17,9 @@ Contribute a fixed amount into investments per time step.
 - `invest_amount = 3000.0`: the amount contributed to investments per time step
 - `start_age = 67.0`: the age at which investing stops 
 """
-function fixed_investment(model::AbstractModel, t;
+function fixed_investment(
+        model::AbstractModel, 
+        t;
         invest_amount = 1000.0,
         end_age = 67.0
     )
@@ -26,9 +28,11 @@ function fixed_investment(model::AbstractModel, t;
 end
 
 """
-    variable_investment(model::AbstractModel, t; 
-            end_age = 67.0, 
-            distribution = Normal(1000, 200)
+    variable_investment(
+        model::AbstractModel,
+        t; 
+        end_age = 67.0, 
+        distribution = Normal(1000, 200)
     )
 
 Contribute a variable amount into investments per time step using the specifed distribution.
@@ -43,7 +47,9 @@ Contribute a variable amount into investments per time step using the specifed d
 - `end_age = 67.0`: the age at which investing stops 
 - `distribution = Normal(1000, 200)`: the distribution from which the investment amount is sampled
 """
-function variable_investment(model::AbstractModel, t; 
+function variable_investment(
+        model::AbstractModel,
+        t; 
         end_age = 67.0, 
         distribution = Normal(1000, 200)
     )

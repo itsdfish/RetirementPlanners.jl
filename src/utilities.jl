@@ -14,7 +14,6 @@ function Base.show(io::IO, ::MIME"text/plain", logger::AbstractState)
     return _show(io::IO, logger)
 end
 
-
 function _show(io::IO, model)
     values = [getfield(model, f) for f in fieldnames(typeof(model))]
     values = map(x -> typeof(x) == Bool ? string(x) : x, values)

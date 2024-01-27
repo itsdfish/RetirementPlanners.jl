@@ -5,7 +5,7 @@ makedocs(
     warnonly = true,
     sitename = "RetirementPlanners",
     format = Documenter.HTML(
-        #example_size_threshold = nothing,
+        # example_size_threshold = nothing,
         assets = [
             asset(
                 "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
@@ -26,6 +26,7 @@ makedocs(
             "Intermediate Example" => "intermediate_example.md",
             "Advanced Example" => "advanced_example.md"
         ],
+        "Plotting" => "plotting.md",
         "API" => "api.md"
     ]
 )

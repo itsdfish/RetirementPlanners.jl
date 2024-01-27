@@ -92,7 +92,7 @@ config = (
         withdraw_amount = 2200.0,
         start_age = 40,
     )
- )
+)
 ```
 ## Setup Logger
 

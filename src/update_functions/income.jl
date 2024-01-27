@@ -1,5 +1,7 @@
 """
-    fixed_income(model::AbstractModel, t;
+    fixed_income(
+        model::AbstractModel,
+        t;
         income_amount = 1500.0,
         start_age = 67.0
     )
@@ -16,7 +18,9 @@ Recieve a fixed amount of income (e.g., social security, pension) per time step
 - `income_amount = 1500.0`: the amount contributed to investments per time step
 - `start_age = 67.0`: the age at which investing stops 
 """
-function fixed_income(model::AbstractModel, t;
+function fixed_income(
+        model::AbstractModel,
+        t;
         income_amount = 1500.0,
         start_age = 67.0
     )
@@ -25,7 +29,9 @@ function fixed_income(model::AbstractModel, t;
 end
 
 """
-    variable_income(model::AbstractModel, t; 
+    variable_income(
+        model::AbstractModel, 
+        t; 
         start_age = 67,
         distribution = Normal(1500,300)
     )
@@ -43,7 +49,9 @@ sepcified distribution.
 - `start_age = 67`: the age at which income begins to be recieved
 - `distribution=Normal(1500,300)`: distribution from which income is recieved on each time step
 """
-function variable_income(model::AbstractModel, t; 
+function variable_income(
+        model::AbstractModel, 
+        t; 
         start_age = 67,
         distribution = Normal(1500,300)
     )
