@@ -112,10 +112,9 @@ end
 
 @safetestset "permute" begin
     using RetirementPlanners
+    using RetirementPlanners: permute
     using DataFrames
     using Test
-
-    ext = Base.get_extension(RetirementPlanners, :DataFramesExt)
 
     np = (
         a = [6,5],
@@ -123,7 +122,7 @@ end
         c = [77]
     )
 
-    x = ext.permute(np)
+    x = permute(np)
     
     ground_truth = [(;a,b,c) for a ∈ np.a for b ∈ np.b for c ∈ np.c]
 
@@ -136,10 +135,9 @@ end
 
 @safetestset "make_nps" begin
     using RetirementPlanners
+    using RetirementPlanners: make_nps
     using DataFrames
     using Test
-
-    ext = Base.get_extension(RetirementPlanners, :DataFramesExt)
 
     np = (
         np1 = (
@@ -153,7 +151,7 @@ end
     )
 
     dependent_values = [Pair((:np1,:a), (:np2,:c))]
-    test_vals = ext.make_nps(np, dependent_values)
+    test_vals = make_nps(np, dependent_values)
     
     ground_truth = [
         (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
