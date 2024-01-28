@@ -79,7 +79,7 @@ config = (
 ```
 ## Setup Logger
 
-The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: annualized interest rate, annualized inflation rate, and net worth. The `Logger` object requires two inputs: `n_steps`: the total number of time steps in one simulation, and `n_reps`: the total repetitions of the simulation. The total number of time steps can be found by getting the length of the time steps. In this simple scenario, we will repeat the simulation `10,000` to provide a stable estimate of the variability in the investment and retirement conditions. 
+The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: annualized interest rate, annualized inflation rate, and net worth. The `Logger` object requires two inputs: `n_steps`: the total number of time steps in one simulation, and `n_reps`: the total repetitions of the simulation. The total number of time steps can be found by getting the length of the time steps. In this simple scenario, we will repeat the simulation `10,000` times to provide a stable estimate of the variability in the investment and retirement conditions. 
 
 ```@example intermediate 
 times = get_times(model)

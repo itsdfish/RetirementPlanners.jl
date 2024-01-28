@@ -28,7 +28,7 @@ The code block below shows the minimum setup required to create a model object, 
 - `duration`: the number of years to simulate
 - `start_amount`: the amount of money you have in investments at the beginning of the simulation
 
-In this basic example, we will assume you start saving for retirement at age 25, and begin with a modest amount of `$`10,000. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
+In this basic example, we will assume you start saving for retirement at age 25, and begin with a modest amount of `$10,000`. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
 
 ```@example basic 
 model = Model(;
@@ -74,7 +74,7 @@ The seven update functions described above include default input values for rele
 
 The configuration data structure is a nested `NamedTuple` (i.e., immutable keyword-value pairs), where the keywords in the first level correspond to the keyword inputs of the update functions. For example, the keyword `kw_invest` (short for keyword invest) is a set of keywords passed to the function `fixed_investment`.
 
-In our running scenario, we will assume that you invest `$`2,000 each month until early retirement at age 40. The yearly interest rate on investments is `.08`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 40 years old, we will assume you will draw `$`2,200 per month.  
+In our running scenario, we will assume that you invest `$2,000` each month until early retirement at age 40. The yearly interest rate on investments is `.08`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 40 years old, we will assume you will draw `$2,200` per month.  
 
 ```@example basic 
 config = (
