@@ -1,5 +1,3 @@
-!!! note "Documentation Under Construction"
-    The documentation is a work-in-progress
 !!! warning "Disclaimer"
     Monte Carlo simulations are useful tools for stress testing financial/retirement plans under a wide range of uncertain conditions. As with any model, the Monte Carlo simulation is only as good as the assumptions one makes. This package is not intended to be financial advice. Instead, it is an open source tool for planning and research. Users must make assumptions in the Monte Carlo simulation at their discretion.  When in doubt, seek the counsel of a professional financial planner. 
 
@@ -7,7 +5,7 @@
 
 `RetirementPlanners.jl` is a framework for performing Monte Carlo simulations of retirement investment performance under various assumptions specifed by the user. The primary goal of the framework is to provide a high degree of flexibility and customization while offering a set of user-friendly options from which users can choose. These goals are achieved as follows:
 
-1. The package allows the user to tweak the investment simulations by selecting from a set of pre-defined update functions which have modifiable parameters.
+1. The package allows the user to tweak the investment simulations by selecting from a set of pre-defined update functions which have adjustable parameters.
 2. The package allows the user to define custom update functions which integrate seamlessly with the API. 
 3. The package allows the user to perform a grid search over simulation parameters to systematically explore their effects on outcome variables, such as net worth.
 
@@ -23,15 +21,14 @@
 6. `update_net_worth!`: compute net worth 
 7. `log!`: log desired variables
 
-Each function above is treated as a variable with default value that can be overwritten to suite your needs. There are two ways to overwrite the default functions: First, you can select a pre-defined function from those listed in the [API](api.md). Second, you may define your own update functions as needed. 
+Each function above is treated as a variable with default value that can be overwritten to suit your needs. There are two ways to overwrite the default functions: First, you can select a pre-defined function from those listed in the [API](api.md). Second, you may define your own update functions as needed. 
 
 ### Customization 
 
 There are three ways to customize your retirement investment simulation. From simplest to most complex, they are as follows:
 
 1. You can select any combination of pre-defined update functions and modify their default parameter values.
-2. You can define custom update functions to add new capabilities and have more fine-grained control over
-    the behavior of the simulation.
+2. You can define custom update functions to add new capabilities and have more fine-grained control over the behavior of the simulation.
 3. You can create a new subtype of `AbstractModel`, which will allow you to extend the `update!` function. This will allow you to call a different set of functions than the seven update functions described above. 
 
 Of course, these are not mutually exclusive approaches. You may use any combination of the three approaches to create your desired retirement investment simulation. 

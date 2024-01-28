@@ -42,13 +42,12 @@ The `Model` object defines the parameters and behavior of the retirement investm
 - `duration`: the number of years to simulate
 - `start_amount`: the amount of money in investments at the beginning of the simulation
 
-In this example, we will use the same timing paramers used in the basic example: we will assume you start saving for retirement at age 25 with a modest initial amount of `$`10,000. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
+In this example, we will use the same timing paramers used in the basic example: we will assume you start saving for retirement at age 25 with a modest initial amount of `$10,000`. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
 
 ### Withdraw
 
 The `withdraw` function below extends the `variable_withdraw` function from the [intermediate example](intermediate_example.md) by allowing us to specify the amount and timing of a one-time large expense. The keyword arguments for `custom_withdraw` are defined as follows:
 
-        t;
 - `start_age`: the age in years at which regular monthly withdraws begin 
 - `age_at_expense`: the age in years at which the one-time expense occurs
 - `expense`: the amount of the expense in dollars 
@@ -95,14 +94,18 @@ Following the intermediate example, we will use the `variable_investment` functi
 
 ### Interest
 
-In this example, we will simulate growth the stock market using a stochastic process model called Geometric Brownian Motion (GBM). Brownian motion describes random movement of particles in space when no force is present to move the particles in a specific direction. Although this seems disconnected from stock market behavior, it turns out to be a reasonable model because there is inherent randomness in stock prices as well as a general tendency to grow. If we add a growth rate parameter to Brownian motion and force the price to change proportially to its current value, the result is the GBM. The stochastic differential equation for the GBM is given by:
+In this example, we will simulate growth the stock market using a stochastic process model called Geometric Brownian Motion (GBM). One advantage of GBM is that it provides a more accurate description of the temporal dynamics of stock market growth: the value of the stock market is noisy, but current value depends on the previous value.  Below, we will use the function `dynamic_interest` to simulate stock market growth with the GBM. 
+
+Brownian motion component of GBM is based on random movement of particles in space when no force is present to move the particles in a specific direction. Although particle physics seems disconnected from stock market behavior, it turns out to be a reasonable model because there is inherent randomness in stock prices as well as a general tendency to grow. If we add a growth rate parameter to Brownian motion and force the price to change proportially to its current value, the result is the GBM. The stochastic differential equation for the GBM is given by:
 
 ``X(t) = X(t)[ \mu dt + s \sqrt{dt}],``
 
-where ``X(t)`` is the stock market value at time ``t``, ``dt`` is the infintesimal time step,  ``\mu`` is the average growth rate, and ``s \sim \mathrm{normal}(0,\sigma)`` is normally distributed noise with standard deviation ``\sigma``. The first term ``\mu dt`` represents the average growth rate of the stock market. The second term ``s \sqrt{dt}`` represents the diffusion or *jitter* in the growth rate, which sometimes causes the price to increase or decrease more than the average growth rate. An important implication of multipling the two terms on the right hand side by ``X(t)`` is that growth and volitiliy scale with the current price, and the price cannot be negative.  
+where ``X(t)`` is the stock market value at time ``t``, ``dt`` is the infintesimal time step,  ``\mu`` is the average growth rate, and ``s \sim \mathrm{normal}(0,\sigma)`` is normally distributed noise with standard deviation ``\sigma``. The stochastic differential equation has two terms:
 
+- ``\mu dt``: represents the average growth rate of the stock market. 
+- ``s \sqrt{dt}``: represents the diffusion or *jitter* in the growth rate, which sometimes causes the price to increase or decrease more than the average growth rate. 
 
-The code block below illustrates how to simulate and plot 10 trajectories of the GBM. The growth rate is ``\mu=.07`` with a standard deviation of ``\sigma=.07``, indicating moderately high volitility. In the simulation, the step size is 1 day and the trajectories generated from the model span 10 years.  
+An important implication of multipling the two terms on the right hand side by ``X(t)`` is that growth and volitiliy scale with the current price, and the price cannot be negative. The code block below illustrates how to simulate and plot 10 trajectories of the GBM. The growth rate is ``\mu=.07`` with a standard deviation of ``\sigma=.07``, indicating moderately high volitility. In the simulation, the step size is 1 day and the trajectories generated from the model span 10 years.  
 ```@example advanced 
 gdm = GBM(; μ = .07, σ = .07)
 trajectories = rand(gdm, 365 * 10, 10; Δt = 1 / 365)
@@ -111,9 +114,11 @@ plot(trajectories, leg=false, grid=false)
 
 ### Inflation
 
-In the example below, we will also use the GBM to simulate inflation in the economy. The primary difference will be the values assigned to the parameters ``\mu`` and ``\sigma``. 
+In the example below, we will also use the GBM to simulate inflation in the economy. The primary difference will be the values assigned to the parameters ``\mu`` and ``\sigma``. The function for using the GMB as a model of inflation is `dynamic_inflation`.
 
 ### Model 
+
+All of the assumptions described above are encoded into the model object in the code block below. 
 
 ```julia 
 model = Model(;
@@ -131,9 +136,21 @@ model = Model(;
 
 ## Configure Update Options
 
-As in the [intermediate example](intermediate_example.md), the mean monthly investment follows a normal distribution with a mean of `$2,000` and a standard deviation of `$500` to reflect fluctuations in income and expenses. As before, investments are made until an early retirement at age 40. Upon retirement at age 40, we again assume that you withdraw `$2,200` per month with a standard deviation of `$500` to reflect fluctuation in monthly expenses. However, we assume that there is a large expense of `$15,000` at age 30 in one simulation and at age 60 in the others. To perform a grid search over these values, we wrap them in a vector as follows: ` age_at_expense = [30,60]`. It is worth noting that in principle we can vary additional factors in the simulation, such as the large expense amount, or the investment distribution. For the sake of simplicity, we will only vary *age-at-expense* to observe its impact on the survival probabilities across time. 
+Now that we have defined the basic components of the Monte Carlo simulation model, we will specify the parameters of the update functions. 
 
-Unlike the previous examples, we will use the Geometric Brownian Motion process to simulate growth in the stock market and inflation in the monetary system. We will assume that the yearly growth rate on investments has a mean of `.07` with a standard deviation of `.05` to reflect inherent volitility in the stock market. Additionally, we wil assume yearly inflation rate has a mean of `.035` and a standard deviation of `.005`. All the assumptions specified above are encoded into the `config` object below. 
+## Investment 
+
+As in the [intermediate example](intermediate_example.md), the mean monthly investment follows a normal distribution with a mean of `$2,000` and a standard deviation of `$500` to reflect fluctuations in income and expenses. As before, investments are made until an early retirement at age 40.
+
+## Withdraw 
+
+Upon retirement at age 40, we again assume that you withdraw `$2,200` per month with a standard deviation of `$500` to reflect fluctuation in monthly expenses. However, we assume that there is a large expense of `$15,000` at age 30 in one simulation and at age 60 in the others. To perform a grid search over these values, we wrap them in a vector as follows: ` age_at_expense = [30,60]`. It is worth noting that in principle we can vary additional factors in the simulation, such as the large expense amount, or the investment distribution. For the sake of simplicity, we will only vary *age-at-expense* to observe its impact on the survival probabilities across time. 
+
+## Interest
+Unlike the previous examples, we will use the Geometric Brownian Motion (GBM) process to simulate growth in the stock market and inflation in the monetary system. We will assume that the yearly growth rate on investments has a mean of `.07` with a standard deviation of `.05` to reflect inherent volitility in the stock market. 
+
+## Inflation
+Similarly, we will use GBM to simulate inflation in the economy. In so doing, we will assume a yearly inflation rate has a mean of `.035` and a standard deviation of `.005`. All the assumptions specified above are specified in the `config` object below. 
 
 ```julia 
 config = (
@@ -162,9 +179,7 @@ config = (
 
 ## Run Grid Search
 
-In the code block below, we will perform a grid search over the values for *age-at-expense* to see how it affects the survival probability of the retirement plan across time. As its name implies, this is performed with the function `grid_search` which takes as input the `model` object, the `Logger` object type, `n_reps`, and our simulation configuration object, `config`. Internally, `grid_search` calls `simulate!` for each value of *age-at-expense*. 
-
-The second line in the code block converts the results to a `DataFrame` to make subsequent analysis and plotting easier. 
+In the code block below, we will perform a grid search over the values for *age-at-expense* to see how it affects the survival probability of the retirement plan across time. As its name implies, this is performed with the function `grid_search` which takes as input the `model` object, the `Logger` object type, `n_reps`, and our simulation configuration object, `config`. Internally, `grid_search` calls `simulate!` for each value of *age-at-expense*. The second line in the code block converts the results to a `DataFrame` to make subsequent analysis and plotting easier. 
 
 ```julia
 # perform the grid search for age_at_expense using 10_000 reps per condition
@@ -189,8 +204,9 @@ df = to_dataframe(model, results)
  13200000 │ 80.0     10000      6.36214e5   0.0840805   0.0522622                       60
                                                                       13199991 rows omitted
 ```
+## Survival Analysis 
 
-Next, we will create a new indicator variable in the dataframe called `survived`, which is true if the
+In this section, we will perform a survival analysis to determine the probability that the retirement plan will be successful (i.e., net worth > 0) as a function of time. The first step is to create a new indicator variable in the dataframe called `survived`, which is true if the
 net worth at time $t$ is greater than zero, and is false otherwise. The subsequent line groups the dataframe according to the factors *age-at-expense* and *time* and computes the mean of each combination across all repetitions.  
 
 ```julia 

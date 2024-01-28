@@ -22,7 +22,10 @@ Currently, `RetirementPlanners.jl` only provides one specialized plotting functi
 
 using Distributions
 using Plots
+using Random
 using RetirementPlanners
+
+Random.seed!(535)
 
 # configuration options
 config = (
