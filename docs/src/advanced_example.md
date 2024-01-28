@@ -10,7 +10,7 @@ using StatsPlots
 The goal of the advanced example is to demonstrate how to perform more complex Monte Carlo simulations of your retirement scenario. The advanced example will cover three new techniques:
 
 1. simulating plausible dynamics in the stock market
-2. creating a custom update function for withdrawing money from investments
+2. creating a custom update function to include a large, one-time expense at various time points
 3. performing the simulation across multiple values of a parameter
 
 Adding these techniques to your toolkit will allow you to simulate more plausible retirement simulations, customize the behavior of the simulation to address your own questions and goals, and systematically compare different scenarios conveniently within the same code. 
@@ -46,6 +46,17 @@ In this example, we will use the same timing paramers used in the basic example:
 
 ### Withdraw
 
+The `withdraw` function below extends the `variable_withdraw` function from the [intermediate example](intermediate_example.md) by allowing us to specify the amount and timing of a one-time large expense. The keyword arguments for `custom_withdraw` are defined as follows:
+
+        t;
+- `start_age`: the age in years at which regular monthly withdraws begin 
+- `age_at_expense`: the age in years at which the one-time expense occurs
+- `expense`: the amount of the expense in dollars 
+- `distribution`: the distribution of regular monthly withdraw amounts
+
+
+The function `custom_withdraw` has two basic parts based on the top-level `if` statement. The first part of the `if` statement implements the logic for the large one-time expense. The second part implements the logic for the regular monthly withdraw. Notice that the one-time expense and monthly withdraw are mutually exclusive rather than additive. Changing this logic is possible, but does not have much of an effect on the simulation results. 
+
 ```julia 
 function custom_withdraw(
         model::AbstractModel, 
@@ -56,7 +67,7 @@ function custom_withdraw(
         distribution
     )
     # make withdraw for major expense if possible
-    if age_at_expense == t
+    if age_at_expense ≈ t
         model.state.withdraw_amount = expense
         if model.state.net_worth < expense
             model.state.withdraw_amount = model.state.net_worth
@@ -120,11 +131,9 @@ model = Model(;
 
 ## Configure Update Options
 
-We will specify the parameters of the update function in a nested configuration data structure, which passes keyword arguments to their corresponding update funtions. The configuration data structure is a nested `NamedTuple` (i.e., immutable keyword-value pairs), where the keywords in the first level correspond to the keyword inputs of the update functions. For example, the keyword `kw_invest` (short for keyword invest) is a set of keywords passed to the function `fixed_investment`.
+As in the [intermediate example](intermediate_example.md), the mean monthly investment follows a normal distribution with a mean of `$2,000` and a standard deviation of `$500` to reflect fluctuations in income and expenses. As before, investments are made until an early retirement at age 40. Upon retirement at age 40, we again assume that you withdraw `$2,200` per month with a standard deviation of `$500` to reflect fluctuation in monthly expenses. However, we assume that there is a large expense of `$15,000` at age 30 in one simulation and at age 60 in the others. To perform a grid search over these values, we wrap them in a vector as follows: ` age_at_expense = [30,60]`. It is worth noting that in principle we can vary additional factors in the simulation, such as the large expense amount, or the investment distribution. For the sake of simplicity, we will only vary *age-at-expense* to observe its impact on the survival probabilities across time. 
 
-The configuration data structure below defines distributions over quanties, such as investment and withdraw amount. Aside from drawling random values from probability distributions, the simulation is the same as that described in the [basic example](basic_example.md).
-
- The mean monthly investment follows a normal distribution with a mean of `$2,000` and a standard deviation of `$500` to reflect fluctuations in income and expenses. As before, investments are made until an early retirement at age 40. The yearly interest rate on investments has a mean of `.08` with a large standard deviation of `.08` to reflect inherent volitility in the stock market. The yearly inflation rate has a mean of `.035` and a standard deviation of `.015`. Upon retirement at age 40, we assume that you withdraw `$2,200` per month with a standard deviation of `$500` to reflect fluctuation in monthly expenses. 
+Unlike the previous examples, we will use the Geometric Brownian Motion process to simulate growth in the stock market and inflation in the monetary system. We will assume that the yearly growth rate on investments has a mean of `.07` with a standard deviation of `.05` to reflect inherent volitility in the stock market. Additionally, we wil assume yearly inflation rate has a mean of `.035` and a standard deviation of `.005`. All the assumptions specified above are encoded into the `config` object below. 
 
 ```julia 
 config = (
@@ -135,7 +144,7 @@ config = (
     ),
     # interest parameters
     kw_interest = (
-        gbm = GBM(; μ = .07, σ = .05),
+        gbm = GBM(; μ = .08, σ = .05),
     ),
     # inflation parameters
     kw_inflation = (
@@ -151,16 +160,38 @@ config = (
 )
 ```
 
-## Run Simulation
+## Run Grid Search
 
-Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. The optional configuration object is passed as a variable keyword using `; config...`, which maps the nested keywords in the `NamedTuple` to the corresponding keywords defined in the `simulate!` method signature. 
+In the code block below, we will perform a grid search over the values for *age-at-expense* to see how it affects the survival probability of the retirement plan across time. As its name implies, this is performed with the function `grid_search` which takes as input the `model` object, the `Logger` object type, `n_reps`, and our simulation configuration object, `config`. Internally, `grid_search` calls `simulate!` for each value of *age-at-expense*. 
+
+The second line in the code block converts the results to a `DataFrame` to make subsequent analysis and plotting easier. 
 
 ```julia
-# perform the grid search for age_at_expense using 5000 reps per condition
+# perform the grid search for age_at_expense using 10_000 reps per condition
 results = grid_search(model, Logger, 10_000; config)
 # convert output to data frame
 df = to_dataframe(model, results)
 ```
+```julia 
+13200000×6 DataFrame
+      Row │ time     rep    net_worth      interest     inflation  withdraw_age_at_expense 
+          │ Float64  Int64  Float64        Float64      Float64    Int64                   
+──────────┼────────────────────────────────────────────────────────────────────────────────
+        1 │ 25.0833      1  12839.3         0.168697    0.0256016                       30
+        2 │ 25.1667      1  14376.0        -0.0600889   0.0395033                       30
+        3 │ 25.25        1  16297.6        -0.244519    0.0583386                       30
+        4 │ 25.3333      1  18628.6         0.160349    0.0499842                       30
+        5 │ 25.4167      1  20787.8         0.0607486   0.0499415                       30
+    ⋮     │    ⋮       ⋮          ⋮             ⋮           ⋮                 ⋮
+ 13199997 │ 79.75    10000      6.48052e5  -0.189062    0.0411538                       60
+ 13199998 │ 79.8333  10000      6.43572e5   0.00590992  0.044513                        60
+ 13199999 │ 79.9167  10000      6.36921e5  -0.00792474  0.075874                        60
+ 13200000 │ 80.0     10000      6.36214e5   0.0840805   0.0522622                       60
+                                                                      13199991 rows omitted
+```
+
+Next, we will create a new indicator variable in the dataframe called `survived`, which is true if the
+net worth at time $t$ is greater than zero, and is false otherwise. The subsequent line groups the dataframe according to the factors *age-at-expense* and *time* and computes the mean of each combination across all repetitions.  
 
 ```julia 
 # code surival at each time point as true or false
@@ -168,11 +199,31 @@ df.survived = df.net_worth .> 0
 # compute the surival probability as a function of age at expense and time
 df_survival = combine(groupby(df, [:withdraw_age_at_expense,:time]), :survived => mean => :survival_prob)
 ```
-The code block below plots five simulation runs. As you can see, there is marked variability between the simulation runs, particularly during the retirement phase following peak net worth. 
+
+```julia 
+1320×3 DataFrame
+  Row │ withdraw_age_at_expense  time     survival_prob 
+      │ Int64                    Float64  Float64       
+──────┼─────────────────────────────────────────────────
+    1 │                      30  25.0833         1.0
+    2 │                      30  25.1667         1.0
+    3 │                      30  25.25           1.0
+    4 │                      30  25.3333         1.0
+    5 │                      30  25.4167         1.0
+  ⋮   │            ⋮                ⋮           ⋮
+ 1317 │                      60  79.75           0.5792
+ 1318 │                      60  79.8333         0.577
+ 1319 │                      60  79.9167         0.5754
+ 1320 │                      60  80.0            0.5739
+                                       1311 rows omitted
+```
+
+The code block below generates a plot of the survival probability as a function of time for each level of *age-at-expse*. As the plot shows, incurring the expense at age 30 reduces the surival probability compared to incurring the cost at age 60. As time continues, the difference in survival probability between the two levels increases. The primary reason is because early withdraw incurrs a larger opportunity cost for compounding interest. In this particular case, the impact was small to moderate, but the effect would be larger with a larger expense. 
 
 ```julia 
 @df df_survival plot(:time, :survival_prob, group=:withdraw_age_at_expense,
-    ylims=(0,1), legendtitle="Age at Expense", grid=false, xlabel="Age", ylabel="Survival Probability", legend=:bottomleft)
+    ylims=(0,1), legendtitle="Age at Expense", grid=false, xlabel="Age", 
+    ylabel="Survival Probability", legend=:bottomleft)
 ```
 
 ![](assets/survival_advanced_example.png)

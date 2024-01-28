@@ -139,6 +139,23 @@ The default retirement simulation Model.
 - `update_interest!`: a function called on each time step to compute interest on investments
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
+
+# Constructor
+
+    Model(;
+            Δt,
+            duration,
+            start_age,
+            start_amount,
+            state = State(),
+            withdraw! = variable_withdraw,
+            invest! = variable_invest,
+            update_income! = variable_income,
+            update_inflation! = dynamic_inflation,
+            update_interest! = dynamic_interest,
+            update_net_worth! = default_net_worth,
+            log! = default_log!
+        )
 """
 @concrete mutable struct Model{S,T} <: AbstractModel
     Δt::T
@@ -161,11 +178,11 @@ function Model(;
         start_age,
         start_amount,
         state = State(),
-        withdraw! = fixed_withdraw,
-        invest! = fixed_investment,
-        update_income! = fixed_income,
-        update_inflation! = fixed_inflation,
-        update_interest! = fixed_interest,
+        withdraw! = variable_withdraw,
+        invest! = variable_investment,
+        update_income! = variable_income,
+        update_inflation! = dynamic_inflation,
+        update_interest! = dynamic_interest,
         update_net_worth! = default_net_worth,
         log! = default_log!
     )

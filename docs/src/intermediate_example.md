@@ -44,7 +44,7 @@ model = Model(;
 )
 ```
 
-Unlike the basic example, you can see in the output above that we have overwritten the default update function with pre-defined update functions described in the [API](api.md). The function names are prefixed with `variable` to signify that they allow us to introduce variability in the simulation behavior by sampling relevant quantities from distributions specified by the user. The distribution can be any univariate distribution defined in [Distributions.jl](https://juliastats.org/Distributions.jl/stable/). In cases where the desired distribution is not available in `Distributions.jl`, you may use their API to create custom distribution types. You can find more details on these update functions in the [API](api.md)
+The function names are prefixed with `variable` to signify that they allow us to introduce variability in the simulation behavior by sampling relevant quantities from distributions specified by the user. The distribution can be any univariate distribution defined in [Distributions.jl](https://juliastats.org/Distributions.jl/stable/). In cases where the desired distribution is not available in `Distributions.jl`, you may use their API to create custom distribution types. You can find more details on these update functions in the [API](api.md)
 or by typing `? function_name` in the the REPL. 
 
 ## Configure Update Options
@@ -106,7 +106,7 @@ One way to assess the robustness of a retirement plan is to compute the probabil
 
 ```@example intermediate
 survival_probs = mean(logger.net_worth .> 0, dims=2)
-plot(times, survival_probs,  leg=false, xlabel="Age (years)", 
+plot(times, survival_probs, leg=false, grid=false, xlabel="Age (years)", 
     ylabel="Survival Probability", ylims = (0,1.05))
 ```
 The plot above reveals that the survival probability drops rapidly around age 70, reaching about 25% at age 80. Depending on your life expectancy and risk tolerance, you might want to adjust some parameters of your retirement plan: perhaps working more years and/or investing more money.

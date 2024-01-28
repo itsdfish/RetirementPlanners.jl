@@ -13,7 +13,7 @@
 
 ## How does it work?
 
-`RetirementPlanners.jl` performs a discrete time simulation, meaning the state of the system is updated at fixed time steps—typically, representing years or months. On each time step, the `update!` is called, and updates the system in a manner defined by the user. By default, `update!` calls seven subordinate functions, which must be defined by the user:
+`RetirementPlanners.jl` performs a discrete time simulation, meaning the state of the system is updated at fixed time steps—typically, representing years or months. On each time step, the `update!` is called, and updates the system in a manner defined by the user. By default, `update!` calls seven subordinate functions:
 
 1. `withdraw!`: withdraw money
 2. `invest!`: invest money
@@ -23,7 +23,7 @@
 6. `update_net_worth!`: compute net worth 
 7. `log!`: log desired variables
 
-The [API](api.md) describes pre-defined update functions from which you can choose. In addition, you may define your own update functions as needed. 
+Each function above is treated as a variable with default value that can be overwritten to suite your needs. There are two ways to overwrite the default functions: First, you can select a pre-defined function from those listed in the [API](api.md). Second, you may define your own update functions as needed. 
 
 ### Customization 
 

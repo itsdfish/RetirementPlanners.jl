@@ -43,7 +43,7 @@ module PlotsExt
         for i in 2:n_slices-1
             yᵢ = getindex.(qq, i)
             dy = yᵢ - getindex.(qq, i-1)
-            plot!(x₀, yᵢ - dy/2, lw=0, color=:purple, fillalpha=α[i], ribbon=dy; kwargs...)
+            plot!(x₀, yᵢ - dy/2, lw=0, color=:purple, grid=false, fillalpha=α[i], ribbon=dy; kwargs...)
         end
         plot!(x, y[:,1:n_lines])
         return p1

@@ -3,6 +3,7 @@
 ## Abstact Types
 
 ```@docs 
+AbstractGBM
 AbstractModel
 AbstractState
 AbstractLogger

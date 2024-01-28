@@ -9,6 +9,10 @@ using SafeTestsets
         start_age = 25,
         duration = 35,
         start_amount = 10_000,
+        withdraw! = fixed_withdraw,
+        invest! = fixed_investment,
+        update_inflation! = fixed_inflation,
+        update_interest! = fixed_interest,
     )
 
     times = get_times(model)

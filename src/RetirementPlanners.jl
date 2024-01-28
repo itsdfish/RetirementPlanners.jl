@@ -14,6 +14,7 @@ module RetirementPlanners
     import Distributions: std
     import Distributions: var 
     
+    export AbstractGBM
     export AbstractModel
     export AbstractLogger
     export AbstractState 

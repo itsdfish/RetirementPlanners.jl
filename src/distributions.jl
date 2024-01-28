@@ -1,3 +1,8 @@
+"""
+    AbstractGBM <: ContinuousUnivariateDistribution
+
+Abstract type for simulating investment growth using Geometric Brownian Motion. 
+"""
 abstract type AbstractGBM <: ContinuousUnivariateDistribution end
 """
     GBM{T<:Real} <: AbstractGBM

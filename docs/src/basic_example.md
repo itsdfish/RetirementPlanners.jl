@@ -8,7 +8,7 @@ The purpose of this example is to illustrate how to use `RetirementPlanners.jl` 
 
 # Example 
 
- The example below uses simple default functions for updating quanties such as inflation, interest, and net worth through out the simulation. Each update function has default parameter values which we will change. You can change the default functions either by selecting predefined functions described in the [API](./api.md/#Update-Methods), or by defining your own custom functions. 
+ The example below uses simple functions for updating quanties such as inflation, interest, and net worth through out the simulation. Each update function has default parameter values which we will change. You can change the default functions either by selecting predefined functions described in the [API](./api.md/#Update-Methods), or by defining your own custom functions. 
 
 ## Load Packages
 
@@ -36,6 +36,10 @@ model = Model(;
     start_age = 25,
     duration = 55,
     start_amount = 10_000,
+    withdraw! = fixed_withdraw,
+    invest! = fixed_investment,
+    update_inflation! = fixed_inflation,
+    update_interest! = fixed_interest,
 )
 ```
 
@@ -52,9 +56,9 @@ model.state
 </details>
 ```
 
- The next seven fields in the `Model` object correspond to default update functions called interally by a function called `update!`. The default functions are as follows:
+ The next seven fields in the `Model` object correspond to update functions called interally by a function called `update!`. For simplicity, we will use the following functions:
 
-- `fixed_withdraw`: withdraw a fixed amount from intestments on each time step starting at a specified age
+- `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
 - `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
 - `fixed_income`: recieve a fixed income (e.g., social security, or pension) on each time step starting at a specified age
 - `fixed_inflation`: a fixed yearly inflation rate used to adjust interest (i.e., growth) earned on investments
@@ -127,7 +131,7 @@ simulate!(model, logger, n_reps; config...)
 The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
 
 ```@example basic 
-plot(times, logger.net_worth, xlabel="Age", ylabel="Net Worth")
+plot(times, logger.net_worth, grid=false, xlabel="Age", ylabel="Net Worth")
 ```
 
 Based on the assumptions we have made, you will have `$`263,027 remaining in investments at age 80. Needless to say, this simulation is too simplistic to be of much use. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [intermediate example](intermediate_example.md) and the [advanced example](advanced_example.md) make progress towards overcoming these limitations.
