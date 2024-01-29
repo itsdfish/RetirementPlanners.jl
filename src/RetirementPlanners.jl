@@ -3,6 +3,7 @@ module RetirementPlanners
     using ConcreteStructs
     using Distributions: ContinuousUnivariateDistribution
     using Distributions: Normal 
+    using Distributions: truncated
     using NamedTupleTools
     using PrettyTables
     using ProgressMeter
@@ -23,6 +24,7 @@ module RetirementPlanners
     export Model
     export Logger
     export State 
+    export VarGBM
 
     export fit
     export get_times

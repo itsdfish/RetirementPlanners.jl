@@ -4,6 +4,7 @@
 Abstract type for simulating investment growth using Geometric Brownian Motion. 
 """
 abstract type AbstractGBM <: ContinuousUnivariateDistribution end
+
 """
     GBM{T<:Real} <: AbstractGBM
 
@@ -83,7 +84,7 @@ function rand(dist::AbstractGBM, n_steps, n_reps; Δt)
     return [rand(dist, n_steps; Δt) for _ ∈ 1:n_reps]
 end
 
-function rand(dist::GBM, n_steps; Δt)
+function rand(dist::AbstractGBM, n_steps; Δt)
     prices = fill(0.0, n_steps + 1)
     dist.x = dist.x0 
     prices[1] = dist.x
@@ -92,6 +93,12 @@ function rand(dist::GBM, n_steps; Δt)
         prices[i] = dist.x
     end
     return prices 
+end
+
+function reset!(dist::AbstractGBM)
+    dist.x0 = 1.0
+    dist.x = 1.0
+    return nothing 
 end
 
 mean(dist::AbstractGBM, t) = exp(dist.μ * t)
@@ -128,3 +135,61 @@ function estimate_σ(gbm, ts; Δt)
 end
 # 3.5
 # convert_μ(1.5, 2)
+
+"""
+    VarGBM{T<:Real} <: AbstractGBM
+
+A distribution object for variable Geometric Brownian Motion (vGBM), which is used to model 
+growth of stocks. Unlike GBM, vGBM selects growth rate (`μ`) and volitility (`σ`) parameters from a normal distribution
+on each simulation run to capture uncertainy in these parameters. 
+
+# Fields 
+
+- `μ::T`: growth rate sampled from normal distribution
+- `σ::T`: volitility in growth rate sampled from truncated normal distribution 
+- `αμ::T`: mean of growth rate distribution 
+- `ασ::T`: mean of volitility of growth rate distribution 
+- `ημ::T`: standard deviation of growth rate distribution 
+- `ησ::T`: standard deviation of volitility of growth rate distribution 
+- `x0::T`: initial value of stock 
+- `x::T`: current value
+"""
+mutable struct VarGBM{T<:Real} <: AbstractGBM
+    μ::T
+    σ::T
+    αμ::T 
+    ασ::T
+    ημ::T
+    ησ::T
+    x0::T
+    x::T 
+end
+
+"""
+    VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
+
+A constructor for variable Geometric Brownian Motion (vGBM), which is used to model 
+growth of stocks. Unlike GBM, vGBM selects growth rate (`μ`) and volitility (`σ`) parameters from a normal distribution
+on each simulation run to capture uncertainy in these parameters. 
+
+# Keywords 
+
+- `αμ::T`: mean of growth rate distribution 
+- `ασ::T`: mean of volitility of growth rate distribution 
+- `ημ::T`: standard deviation of growth rate distribution 
+- `ησ::T`: standard deviation of volitility of growth rate distribution 
+- `x0::T`: initial value of stock 
+- `x::T`: current value
+"""
+function VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
+    μ,σ,x0,x = promote(αμ, ασ, ημ, ησ, x0, x)
+    return VarGBM(zero(αμ), zero(αμ), αμ, ασ, ημ, ησ, x0, x)
+end
+
+function reset!(dist::VarGBM)
+    dist.x0 = 1.0
+    dist.x = 1.0
+    dist.μ = rand(Normal(dist.αμ, dist.ημ))
+    dist.σ = rand(truncated(Normal(dist.ασ, dist.ησ), 0.0, Inf))
+    return nothing 
+end

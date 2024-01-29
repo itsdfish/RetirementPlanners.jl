@@ -56,7 +56,7 @@ end
     dynamic_inflation(
         model::AbstractModel, 
         t; 
-        gbm=GBM(; μ=.03, σ=.01, x0=1)
+        gbm = GBM(; μ=.03, σ=.01, x0=1)
     )
 
 Models inflation in the stock market as a geometric brownian motion processes. 
@@ -68,21 +68,19 @@ Models inflation in the stock market as a geometric brownian motion processes.
 
 # Keyword
 
-- `gbm=GBM(; μ=.03, σ=.01, x0=1)`: a geometric brownian motion object with parameters 
+- `gbm = GBM(; μ=.03, σ=.01, x0=1)`: a geometric brownian motion object with parameters 
 `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
 sets an arbitrary scale. 
 """
 function dynamic_inflation(
         model::AbstractModel, 
         t; 
-        gbm=GBM(; μ=.03, σ=.01, x0=1)
+        gbm = GBM(; μ=.03, σ=.01, x0=1)
     )
     Δt = model.Δt
     # reset model at the beginning of each simulation 
-    if t == model.start_age + Δt
-        gbm.x0 = 1.0 
-        gbm.x = 1.0
-    end
+    t ≈ model.start_age + Δt ? reset!(gbm) : nothing
+    # set previous value
     x_prev = gbm.x 
     increment!(gbm; Δt)
     # annualized growth
