@@ -2,6 +2,8 @@ function to_dataframe end
 
 function plot_gradient end
 
+function plot_sensitivity end
+
 function Base.show(io::IO, ::MIME"text/plain", model::AbstractModel)
     return _show(io::IO, model)
 end

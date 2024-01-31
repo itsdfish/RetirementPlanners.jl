@@ -29,8 +29,7 @@ module DataFramesExt
         end
         for k ∈ data[1]
             col_name = make_unique_name(k[1])
-            x = typeof(k[2]) <: Number ? k[2] : Symbol(k[2])
-            df[!,col_name] .= x
+            df[!,col_name] .= k[2]
         end
         return df
     end

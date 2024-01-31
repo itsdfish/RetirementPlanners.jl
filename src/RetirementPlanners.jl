@@ -32,6 +32,7 @@ module RetirementPlanners
     export increment!
     export mean
     export plot_gradient
+    export plot_sensitivity
     export rand
     export simulate!
     export std 

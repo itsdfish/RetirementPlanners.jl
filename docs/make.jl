@@ -17,7 +17,7 @@ makedocs(
     modules = [
         RetirementPlanners, 
         # Base.get_extension(SequentialSamplingModels, :TuringExt),  
-        # Base.get_extension(SequentialSamplingModels, :PlotsExt) 
+        # Base.get_extension(RetirementPlanners, :PlotsExt) 
     ],
     pages = [
         "Home" => "index.md",

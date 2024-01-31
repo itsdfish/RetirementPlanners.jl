@@ -1,14 +1,41 @@
 module PlotsExt
 
+    using DataFrames
     using Distributions
     using Plots
     using RetirementPlanners
     using SmoothingSplines
 
     import RetirementPlanners: plot_gradient
+    import RetirementPlanners: plot_sensitivity
 
+    """
+        plot_gradient(
+            x, 
+            y::Array{<:Number, 2};
+            n_slices = 300,
+            n_divions_x = 100,
+            n_lines = 0,
+            kwargs...
+        )
+
+    Returns a density ribbon for time series data, where darker shading indicates more likely outcomes. 
+
+    # Arguments
     
-    function plot_gradient(x, y::Array{<:Number, 2};
+    - `x`: x-axis variable, typically time  
+    - `y::Array{<:Number, 2}`: a 2D array in which the first dimension is time and the second dimension is repetitions of the simulation
+    
+    # Keywords 
+
+    - `n_slices = 300`: the granularity of the density gradient along the y-axis
+    - `n_divions_x = 100`: the granularity of the density gradient along the x-axis
+    - `n_lines = 0`: the number of trajactories to plot on top of the density gradient 
+    - `kwargs...`: optional keyword arguments for the plot 
+    """
+    function plot_gradient(
+            x, 
+            y::Array{<:Number, 2};
             n_slices = 300,
             n_divions_x = 100,
             n_lines = 0,
@@ -47,5 +74,59 @@ module PlotsExt
         end
         plot!(x, y[:,1:n_lines])
         return p1
+    end
+
+    """
+        plot_sensitivity(
+            df::DataFrame, 
+            factors::Vector{Symbol}, 
+            z::Symbol; 
+            age = nothing, 
+            kwargs...
+        )
+
+    Visualizes a sensitivity analysis of two variables with a contour plot. 
+
+    # Arguments  
+
+    - `df::DataFrame`: long form dataframe containing columns for `factors` and `z`
+    - `factors::Vector{Symbol}`:
+    - `z::Symbol`: 
+
+    # Keywords 
+
+    - `age = nothing`: age on which the sensitivity plot is conditioned. If no value is specified, the maximum
+        the sensitivity analysis is conditioned on the maximum age 
+    - `kwargs...`: optional keyword arguments passed to `contour`
+    """
+    function plot_sensitivity(
+            df::DataFrame, 
+            factors::Vector{Symbol}, 
+            z::Symbol; 
+            age = nothing, 
+            kwargs...
+        )
+
+        _age = isnothing(age) ? maximum(df.time) : age 
+        df_end = filter(x -> x.time == _age, df)
+        df_c = combine(
+            groupby(df_end, factors), 
+            z => mean => z
+        )
+        sort!(df_c, factors)
+
+        x = unique(df_c[!,factors[1]])
+        y = unique(df_c[!,factors[2]])
+
+        return contour(
+            x,
+            y,
+            reshape(df_c[!,z], length(y), length(x)),
+            levels = 10,
+            title = "Age: $_age",
+            titlefontsize = 10,
+            fill = (true, cgrad(:RdYlGn_9, scale = :log10, rev=false));
+            kwargs...
+        )
     end
 end
