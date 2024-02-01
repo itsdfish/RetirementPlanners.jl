@@ -2,8 +2,10 @@
     fixed_income(
         model::AbstractModel,
         t;
-        income_amount = 1500.0,
-        start_age = 67.0
+        social_security_income = 0.0,
+        pension_income = 0.0,
+        social_security_start_age = 67.0,
+        pension_start_age = 67
     )
 
 Recieve a fixed amount of income (e.g., social security, pension) per time step
@@ -15,46 +17,25 @@ Recieve a fixed amount of income (e.g., social security, pension) per time step
 
 # Keywords
 
-- `income_amount = 1500.0`: the amount contributed to investments per time step
-- `start_age = 67.0`: the age at which investing stops 
+- `social_security_income = 0.0`: income from social security on a per period basis
+- `pension_income = 0.0`: income from pensions on a per period basis
+- `social_security_start_age = 67.0`: age at which social security income begins 
+- `pension_start_age = 67`: age at which pension income begins 
 """
 function fixed_income(
         model::AbstractModel,
         t;
-        income_amount = 1500.0,
-        start_age = 67.0
+        social_security_income = 0.0,
+        pension_income = 0.0,
+        social_security_start_age = 67.0,
+        pension_start_age = 67
     )
-    model.state.income_amount = start_age ≤ t ? income_amount : 0.0
-    return nothing
-end
-
-"""
-    variable_income(
-        model::AbstractModel, 
-        t; 
-        start_age = 67,
-        distribution = Normal(1500,300)
-    )
-
-Recieves variable income (e.g., social security, pension) per time step based on the 
-sepcified distribution.
-
-# Arguments
-
-- `model::AbstractModel`: an abstract Model object 
-- `t`: current time of simulation in years 
-
-# Keywords
-
-- `start_age = 67`: the age at which income begins to be recieved
-- `distribution=Normal(1500,300)`: distribution from which income is recieved on each time step
-"""
-function variable_income(
-        model::AbstractModel, 
-        t; 
-        start_age = 67,
-        distribution = Normal(1500,300)
-    )
-    model.state.income_amount = start_age ≤ t ? rand(distribution) : 0.0
+    model.state.income_amount = 0.0
+    if social_security_start_age ≤ t 
+        model.state.income_amount += social_security_income
+    end
+    if pension_start_age ≤ t 
+        model.state.income_amount += pension_income
+    end
     return nothing
 end
