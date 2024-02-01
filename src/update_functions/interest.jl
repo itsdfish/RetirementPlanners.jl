@@ -62,19 +62,26 @@ Models interest in the stock market as a geometric brownian motion processes.
 - `gbm = GBM(; μ=.07, σ=.05, x0=1)`: a geometric brownian motion object with parameters 
 `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
 sets an arbitrary scale. 
+- `rebalance_rate = Inf`: the time elapsed in years between rebalacing the portfolio. Not applicable 
+to `GBM`
 """
 function dynamic_interest(
         model::AbstractModel,
         t; 
+        rebalance_rate = Inf,
         gbm = GBM(; μ=.07, σ=.05, x0=1)
     )
     Δt = model.Δt
     # reset model at the beginning of each simulation 
     t ≈ model.start_age + Δt ? reset!(gbm) : nothing
-    x_prev = gbm.x 
+    # rebalance portfolio after specified time has elapsed
+    is_event_time(model, t, rebalance_rate) ? rebalance!(dist) : nothing
+    x_prev = compute_total(gbm)
     increment!(gbm; Δt)
+    x = compute_total(gbm)
     # annualized growth
-    growth = (gbm.x / x_prev)^(1 / Δt) - 1
+    growth = (x / x_prev)^(1 / Δt) - 1
     model.state.interest_rate = growth 
     return nothing 
 end
+

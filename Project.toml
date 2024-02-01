@@ -12,6 +12,7 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SmoothingSplines = "102930c3-cf33-599f-b3b1-9a29a5acab30"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 ThreadsX = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 
 [weakdeps]
@@ -33,6 +34,7 @@ ProgressMeter = "1.9.0"
 Random = "1"
 SafeTestsets = "0.1.0"
 SmoothingSplines = "0.3.0"
+StatsBase = "0.34.0"
 ThreadsX = "0.1.11"
 julia = "1"
 

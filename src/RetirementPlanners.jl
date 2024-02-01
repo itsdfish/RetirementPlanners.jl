@@ -2,11 +2,13 @@ module RetirementPlanners
 
     using ConcreteStructs
     using Distributions: ContinuousUnivariateDistribution
+    using Distributions: MvNormal 
     using Distributions: Normal 
     using Distributions: truncated
     using NamedTupleTools
     using PrettyTables
     using ProgressMeter
+    using StatsBase: cor2cov
     using ThreadsX
     
     import Distributions: fit
@@ -23,6 +25,7 @@ module RetirementPlanners
     export GBM
     export Model
     export Logger
+    export MvGBM
     export State 
     export VarGBM
 
@@ -30,6 +33,7 @@ module RetirementPlanners
     export get_times
     export grid_search
     export increment!
+    export is_event_time
     export mean
     export plot_gradient
     export plot_sensitivity

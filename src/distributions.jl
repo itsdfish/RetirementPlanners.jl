@@ -101,9 +101,11 @@ function reset!(dist::AbstractGBM)
     return nothing 
 end
 
+compute_total(dist::AbstractGBM) = sum(dist.x)
+
 mean(dist::AbstractGBM, t) = exp(dist.μ * t)
 var(dist::AbstractGBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
-std(dist::AbstractGBM, t) = √(var(dist, t))
+std(dist::AbstractGBM, t) = sqrt(var(dist, t))
 
 function fit(dist::Type{<:AbstractGBM}, ts; Δt)
     ts = log.(ts)
@@ -113,9 +115,6 @@ function fit(dist::Type{<:AbstractGBM}, ts; Δt)
     return μ, σ
 end
 
-# series = [1,1.2,1.4,1.5]
-# Δt = 1 / 12
-# estimate_μ(dist, series; Δt = 1/12) == 5.44
 function estimate_μ(dist::Type{<:AbstractGBM}, ts; Δt)
     x = Δt:Δt:length(ts)*Δt 
     total = sum((1 / Δt) * (x.^2))
@@ -135,6 +134,10 @@ function estimate_σ(gbm, ts; Δt)
 end
 # 3.5
 # convert_μ(1.5, 2)
+
+function rebalance!(dist::AbstractGBM)
+    return nothing 
+end
 
 """
     VarGBM{T<:Real} <: AbstractGBM
@@ -193,3 +196,102 @@ function reset!(dist::VarGBM)
     dist.σ = rand(truncated(Normal(dist.ασ, dist.ησ), 0.0, Inf))
     return nothing 
 end
+
+"""
+    MvGBM{T<:Real} <: AbstractGBM
+
+A distribution object for Multivariate Geometric Brownian Motion (MvGBM), which is used to model 
+growth of multiple stocks and bonds. 
+
+# Fields 
+
+- `μ::Vector{T}`: growth rates
+- `σ::Vector{T}`: volitility in growth rates 
+- `x0::Vector{T}`: initial value of stocks
+- `x::Vector{T}`: value of stocks 
+- `ratios::Vector{T}`: allocation proportion of stocks/bonds
+- `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
+- `Σ::Array{T,2}`: covariance matrix between stocks/bonds 
+"""
+mutable struct MvGBM{T<:Real} <: AbstractGBM
+    μ::Vector{T}
+    σ::Vector{T}
+    x0::Vector{T}
+    x::Vector{T}
+    ratios::Vector{T}
+    ρ::Array{T,2} 
+    Σ::Array{T,2}
+end
+
+"""
+    MvGBM(;μ, σ, x0, x=x0)
+
+A constructor for Multivariate Geometric Brownian Motion (MvGBM), which is used to model 
+growth of multiple stocks and bonds. 
+
+# Keywords 
+
+- `μ::Vector{T}`: growth rates
+- `σ::Vector{T}`: volitility in growth rates 
+- `x0::Vector{T}`: initial value of stocks
+- `x::Vector{T}`: value of stocks 
+- `ratios::Vector{T}`: allocation proportion of stocks/bonds
+- `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
+- `Σ::Array{T,2}`: covariance matrix between stocks/bonds 
+"""
+function MvGBM(; μ, σ, ρ, ratios)
+    x0 = copy(ratios)
+    x = copy(x0)
+    μ, σ, x0, x, ratios = promote(μ, σ, x0, x, ratios)
+    Σ = cor2cov(ρ, σ)
+    return MvGBM(μ, σ, x0, x, ratios, ρ, Σ)
+end
+
+function rand(dist::MvGBM, n_steps; Δt)
+    reset!(dist)
+    n = length(dist.x)
+    prices = fill(0.0, n_steps + 1, n)
+    prices[1,:] = dist.x
+    for i ∈ 2:(n_steps+1)
+        increment!(dist; Δt)
+        prices[i,:] = dist.x
+    end
+    return prices 
+end
+
+"""
+    increment!(dist::MvGBM, Δt)
+
+Increment the stock price over the period `Δt`.
+
+# Arguments 
+
+- `dist::GBM`: a distribution object for Geometric Brownian Motion 
+- `x`: current stock value 
+
+# Keywords
+
+- `Δt`: the time step for Geometric Brownian Motion
+"""
+function increment!(dist::MvGBM; Δt)
+    (;μ,σ,Σ,x) = dist 
+    μn = fill(0.0, length(μ))
+    dist.x .+= x .* (μ .* Δt .+ rand(MvNormal(μn , Σ)) * √(Δt))
+    return nothing
+end
+
+function reset!(dist::MvGBM)
+    dist.x0 = copy(dist.ratios)
+    dist.x = copy(dist.ratios)
+    return nothing 
+end
+
+function rebalance!(dist::MvGBM)
+    total = sum(dist.x)
+    dist.x = total * dist.ratios
+    return nothing 
+end
+
+mean(dist::MvGBM, t) = dist.ratios .* exp.(dist.μ * t)
+var(dist::MvGBM, t) = dist.ratios.^2 .* exp.(2 .* dist.μ .* t) .* (exp.(dist.σ.^2 .* t) .- 1)
+std(dist::MvGBM, t) = sqrt.(var(dist, t))

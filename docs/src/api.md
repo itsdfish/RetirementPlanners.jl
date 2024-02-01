@@ -25,6 +25,7 @@ Logger
 ```@docs
 get_times
 grid_search
+is_event_time
 rand
 simulate!
 update!

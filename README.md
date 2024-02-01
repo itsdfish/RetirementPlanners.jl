@@ -1,3 +1,4 @@
+[![](docs/src/assets/large_logo.svg)](https://itsdfish.github.io/RetirementPlanners.jl/dev/)
 # RetirementPlanner
 
 [![Build Status](https://github.com/itsdfish/RetirementCalculators.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/itsdfish/RetirementCalculators.jl/actions/workflows/CI.yml?query=branch%3Amain)

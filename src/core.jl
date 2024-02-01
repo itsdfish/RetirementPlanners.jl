@@ -138,3 +138,19 @@ function reset!(model::AbstractModel)
     model.state.net_worth = model.start_amount
     return nothing
 end
+
+"""
+    is_event_time(model::AbstractModel, t, rate)
+
+Indicate whether it is time for a periodic event to occur.
+
+# Arguments
+
+- `model::AbstractModel`: an abstract Model object 
+- `t`: current time (or age) in years
+- `rate`: the interval between repeating events measured in years 
+"""
+function is_event_time(model::AbstractModel, t, rate)
+    start_time = model.start_age
+    return mod(t - start_time, rate) ≈ 0
+end
