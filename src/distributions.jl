@@ -72,7 +72,7 @@ Simulate a random trajector of a Geometric Brownian motion process.
 
 # Arguments 
 
-- `dist::GBM`: a distribution object for Geometric Brownian Motion 
+- `dist::AbstractGBM`: a distribution object for Geometric Brownian Motion 
 - `n_steps`: the number of discrete time steps in the simulation 
 - `n_reps`: the number of times the simulation is repeated 
 
@@ -135,6 +135,14 @@ end
 # 3.5
 # convert_μ(1.5, 2)
 
+"""
+    rebalance!(dist::AbstractGBM)
+
+Rebalance portfolio. Not applicable by default. 
+
+# Arguments
+- `dist::AbstractGBM`: a distribution object for Geometric Brownian Motion 
+"""
 function rebalance!(dist::AbstractGBM)
     return nothing 
 end
@@ -233,11 +241,23 @@ growth of multiple stocks and bonds.
 
 - `μ::Vector{T}`: growth rates
 - `σ::Vector{T}`: volitility in growth rates 
-- `x0::Vector{T}`: initial value of stocks
-- `x::Vector{T}`: value of stocks 
 - `ratios::Vector{T}`: allocation proportion of stocks/bonds
 - `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
-- `Σ::Array{T,2}`: covariance matrix between stocks/bonds 
+
+# Example Usage 
+
+The example below shows how to simulate general stock investments and bond investments. 
+The first element corresponds to stocks and second element corresponds to bonds.
+```julia
+dist = MvGBM(;
+    μ = [.10,.03],
+    σ = [.05,.01],
+    ρ = [1.0 .50; .50 1.0],
+    ratios = [.8,.2]
+)
+
+values = rand(dist, 120, 10; Δt = 1/12) 
+```
 """
 function MvGBM(; μ, σ, ρ, ratios)
     x0 = copy(ratios)
@@ -286,6 +306,14 @@ function reset!(dist::MvGBM)
     return nothing 
 end
 
+"""
+    rebalance!(dist::MvGBM)
+
+Rebalance portfolio. 
+
+# Arguments
+- `dist::MvGBM`: a distribution object for Geometric Brownian Motion 
+"""
 function rebalance!(dist::MvGBM)
     total = sum(dist.x)
     dist.x = total * dist.ratios

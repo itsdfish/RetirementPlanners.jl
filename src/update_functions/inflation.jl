@@ -59,7 +59,7 @@ end
         gbm = GBM(; μ=.03, σ=.01, x0=1)
     )
 
-Models inflation in the stock market as a geometric brownian motion processes. 
+Models inflation in the stock market as a geometric brownian motion process. 
 
 # Arguments
 
@@ -70,7 +70,7 @@ Models inflation in the stock market as a geometric brownian motion processes.
 
 - `gbm = GBM(; μ=.03, σ=.01, x0=1)`: a geometric brownian motion object with parameters 
 `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
-sets an arbitrary scale. 
+sets an arbitrary scale. The function also supports `VarGBM`. 
 """
 function dynamic_inflation(
         model::AbstractModel, 
