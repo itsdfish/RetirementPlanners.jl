@@ -143,7 +143,7 @@
         end
     end
 
-    @safetest "update_net_worth!" begin 
+    @safetestset "update_net_worth!" begin 
         using RetirementPlanners
         using Test
 
