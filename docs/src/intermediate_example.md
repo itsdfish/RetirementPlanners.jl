@@ -38,7 +38,7 @@ model = Model(;
     start_amount = 10_000,
     withdraw! = variable_withdraw,
     invest! = variable_investment,
-    update_income! = variable_income,
+    update_income! = fixed_income,
     update_inflation! = variable_inflation,
     update_interest! = variable_interest 
 )

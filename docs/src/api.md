@@ -37,7 +37,6 @@ update!
 
 ```@docs
 fixed_income
-variable_income
 ```
 
 ### Update Inflation
