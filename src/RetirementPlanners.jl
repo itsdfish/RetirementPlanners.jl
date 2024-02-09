@@ -44,6 +44,7 @@ module RetirementPlanners
     export update!
     export var
 
+    export adaptive_withdraw
     export dynamic_inflation
     export dynamic_interest
 

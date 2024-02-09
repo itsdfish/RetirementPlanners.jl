@@ -125,15 +125,10 @@ function convert_μ(μ, σ)
     return μ + .50 * σ^2 
 end
 
-# series = [1,1.2,1.4,1.5]
-# Δt = 1 / 12
-# estimate_σ(gbm, ts; Δt) ≈ 0.5196152422706631
 function estimate_σ(gbm, ts; Δt)
     n = length(ts)
     return √(sum(diff(ts).^2) / (n * Δt))
 end
-# 3.5
-# convert_μ(1.5, 2)
 
 """
     rebalance!(dist::AbstractGBM)
@@ -164,6 +159,10 @@ on each simulation run to capture uncertainy in these parameters.
 - `ησ::T`: standard deviation of volitility of growth rate distribution 
 - `x0::T`: initial value of stock 
 - `x::T`: current value
+
+# Constructor
+
+    VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
 """
 mutable struct VarGBM{T<:Real} <: AbstractGBM
     μ::T
@@ -220,6 +219,10 @@ growth of multiple stocks and bonds.
 - `ratios::Vector{T}`: allocation proportion of stocks/bonds
 - `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
 - `Σ::Array{T,2}`: covariance matrix between stocks/bonds 
+
+# Constructor 
+
+    MvGBM(; μ, σ, ρ, ratios)
 """
 mutable struct MvGBM{T<:Real} <: AbstractGBM
     μ::Vector{T}
@@ -232,7 +235,7 @@ mutable struct MvGBM{T<:Real} <: AbstractGBM
 end
 
 """
-    MvGBM(;μ, σ, x0, x=x0)
+    MvGBM(; μ, σ, ρ, ratios)
 
 A constructor for Multivariate Geometric Brownian Motion (MvGBM), which is used to model 
 growth of multiple stocks and bonds. 
@@ -312,6 +315,7 @@ end
 Rebalance portfolio. 
 
 # Arguments
+
 - `dist::MvGBM`: a distribution object for Geometric Brownian Motion 
 """
 function rebalance!(dist::MvGBM)

@@ -96,12 +96,13 @@ Now that we have specified the parameters of the simulation, we can use the func
 simulate!(model, logger, n_reps; config...)
 ```
 
-The code block below plots five simulation runs. As you can see, there is marked variability between the simulation runs, particularly during the retirement phase following peak net worth. 
+One of the biggest changes from the basic example is the use of random values for withdraw and interest. In the code block below, we will use the function `plot_gradient` to represent variability in networth projections. Darker values correspond to higher density or more likely trajectories.   
 
 ```@example intermediate 
-plot(times, logger.net_worth[:,1:5], xlabel="Age", 
-    leg=false, ylabel="Net Worth")
+plot_gradient(times, logger.net_worth; xlabel="Age", ylabel="Net Worth")
 ```
+Two patterns are appearent. First, the trajectories become more uncertain the further we project into the future, owing to the fact that variance grows according to the [variance sum law](https://web.pdx.edu/~joel8/resources/ConceptualPresentationResources/VarianceSumLaw.pdf). Second, there is a qualitative shift at the onset of retirement in which networth decreases and becomes more uncertain.
+
 One way to assess the robustness of a retirement plan is to compute the probability of *survival* (e.g., having net worth greater than zero) at each time point. The code block below illustrates how to compute and plot the survival probability.
 
 ```@example intermediate

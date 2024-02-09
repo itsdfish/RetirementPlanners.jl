@@ -2,6 +2,8 @@
 
 ## Abstact Types
 
+The abstract types below can be extended to add new functionality.
+
 ```@docs 
 AbstractGBM
 AbstractModel
@@ -13,6 +15,8 @@ AbstractLogger
 
 ```@docs 
 GBM
+VarGBM
+MvGBM
 Model
 State
 Logger

@@ -110,6 +110,7 @@
             fixed_withdraw(model, start_age; withdraw_amount, start_age)
             @test model.state.withdraw_amount == 800
         end
+
         @safetestset "2" begin 
             using RetirementPlanners
             using RetirementPlanners: reset!
@@ -140,6 +141,183 @@
             fixed_income(model, start_age; social_security_income = 1000, social_security_start_age = 65)
             fixed_withdraw(model, start_age; withdraw_amount, start_age, income_adjustment=.5)
             @test model.state.withdraw_amount == 400
+        end
+    end
+
+    @safetestset "adaptive_withdraw" begin 
+        @safetestset "1" begin 
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Test
+    
+            model = Model(;
+                Δt = 1 / 12,
+                start_age = 25,
+                duration = 35,
+                start_amount = 10_000,
+            )
+    
+            start_age = 67
+            min_withdraw = 1000
+            percent_of_real_growth = 1
+            income_adjustment = 0.0
+            volitility = .5
+    
+            reset!(model)
+            model.state.net_worth = 1_000_000
+            model.state.interest_rate = .10
+            model.state.inflation_rate = .03
+
+            adaptive_withdraw(
+                model,
+                1.0;
+                start_age,
+                min_withdraw,
+                percent_of_real_growth,
+                income_adjustment,
+                volitility
+            )
+            @test model.state.withdraw_amount == 0
+        end
+
+        @safetestset "2" begin 
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Test
+    
+            model = Model(;
+                Δt = 1 / 12,
+                start_age = 25,
+                duration = 35,
+                start_amount = 10_000,
+            )
+    
+            start_age = 67
+            min_withdraw = 1000
+            percent_of_real_growth = 1
+            income_adjustment = 0.0
+            volitility = eps()
+    
+            reset!(model)
+            model.state.net_worth = 1_000_000
+            model.state.interest_rate = .10
+            model.state.inflation_rate = .03
+
+            adaptive_withdraw(
+                model,
+                68;
+                start_age,
+                min_withdraw,
+                percent_of_real_growth,
+                income_adjustment,
+                volitility
+            )
+            @test model.state.withdraw_amount ≈ 5494. atol = .5
+        end
+
+        @safetestset "3" begin 
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Test
+    
+            model = Model(;
+                Δt = 1 / 12,
+                start_age = 25,
+                duration = 35,
+                start_amount = 10_000,
+            )
+    
+            start_age = 67
+            min_withdraw = 1000
+            percent_of_real_growth = .5
+            income_adjustment = 0.0
+            volitility = eps()
+    
+            reset!(model)
+            model.state.net_worth = 1_000_000
+            model.state.interest_rate = .10
+            model.state.inflation_rate = .03
+
+            adaptive_withdraw(
+                model,
+                68;
+                start_age,
+                min_withdraw,
+                percent_of_real_growth,
+                income_adjustment,
+                volitility
+            )
+            @test model.state.withdraw_amount ≈ 5494. / 2 atol = .5
+        end
+
+        @safetestset "4" begin 
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Test
+    
+            model = Model(;
+                Δt = 1 / 12,
+                start_age = 25,
+                duration = 35,
+                start_amount = 10_000,
+            )
+    
+            start_age = 67
+            min_withdraw = 1000
+            percent_of_real_growth = 1
+            income_adjustment = 0.0
+            volitility = eps()
+    
+            reset!(model)
+            model.state.net_worth = 100_000
+            model.state.interest_rate = .10
+            model.state.inflation_rate = .03
+
+            adaptive_withdraw(
+                model,
+                68;
+                start_age,
+                min_withdraw,
+                percent_of_real_growth,
+                income_adjustment,
+                volitility
+            )
+            @test model.state.withdraw_amount ≈ min_withdraw
+        end
+
+        @safetestset "4" begin 
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Test
+    
+            model = Model(;
+                Δt = 1 / 12,
+                start_age = 25,
+                duration = 35,
+                start_amount = 10_000,
+            )
+    
+            start_age = 67
+            min_withdraw = 1000
+            percent_of_real_growth = 1
+            income_adjustment = 0.0
+            volitility = eps()
+    
+            reset!(model)
+            model.state.net_worth = 500
+            model.state.interest_rate = .10
+            model.state.inflation_rate = .03
+
+            adaptive_withdraw(
+                model,
+                68;
+                start_age,
+                min_withdraw,
+                percent_of_real_growth,
+                income_adjustment,
+                volitility
+            )
+            @test model.state.withdraw_amount == 500
         end
     end
 

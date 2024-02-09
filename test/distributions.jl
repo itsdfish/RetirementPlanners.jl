@@ -1,4 +1,3 @@
-
 @safetestset "Geometric Brownian Motion" begin
     @safetestset "rand" begin
         using Distributions
