@@ -80,6 +80,7 @@ default_net_worth
 ### Update Withdraw
 
 ```@docs 
+adaptive_withdraw
 fixed_withdraw
 variable_withdraw
 ```
