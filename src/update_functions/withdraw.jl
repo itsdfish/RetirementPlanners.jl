@@ -29,6 +29,7 @@ function fixed_withdraw(
         income_adjustment = 0.0
     )
     model.state.withdraw_amount = 0.0
+    model.state.net_worth == 0.0 ? (return nothing) : nothing 
     withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
     if start_age ≤ t 
         if model.state.net_worth < withdraw_amount
@@ -72,6 +73,7 @@ function variable_withdraw(
         income_adjustment = 0.0
     )
     model.state.withdraw_amount = 0.0
+    model.state.net_worth == 0.0 ? (return nothing) : nothing 
     if start_age ≤ t 
         withdraw_amount = rand(distribution)
         withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
@@ -92,7 +94,7 @@ end
         min_withdraw = 1000,
         percent_of_real_growth = 1,
         income_adjustment = 0.0,
-        volitility = .5,
+        volitility = .1,
     )
 
 An adaptive withdraw scheme based on current real growth rate. As long as there are sufficient funds, a minimum amount 
@@ -113,7 +115,7 @@ amount is tolerated (`volitility`). The withdraw amount may also be decreased ba
     `min_withdraw`. 
 - `income_adjustment = 0.0`: a value between 0 and 1 representing the reduction in `withdraw_amount`
     relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
-- `volitility = .5`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
+- `volitility = .1`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
     is the mean withdraw × volitility
 """
 function adaptive_withdraw(
@@ -126,17 +128,13 @@ function adaptive_withdraw(
         volitility = .5,
     )
     model.state.withdraw_amount = 0.0
+    model.state.net_worth == 0.0 ? (return nothing) : nothing 
     if start_age ≤ t 
         real_growth_rate = (1 + compute_real_growth_rate(model))^model.Δt
         mean_withdraw = model.state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
         mean_withdraw = max(min_withdraw, mean_withdraw)
-        withdraw_amount = rand(
-            truncated(
-                Normal(mean_withdraw, mean_withdraw * volitility),
-                min_withdraw, 
-                Inf
-            )
-        )
+        withdraw_amount = volitility ≈ 0.0 ? mean_withdraw : rand(Normal(mean_withdraw, mean_withdraw * volitility))
+        withdraw_amount = max(withdraw_amount, min_withdraw)
         withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
         if model.state.net_worth < withdraw_amount
             model.state.withdraw_amount = model.state.net_worth
