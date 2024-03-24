@@ -46,7 +46,7 @@ function variable_investment(
     model::AbstractModel,
     t;
     end_age = 67.0,
-    distribution = Normal(1000, 200),
+    distribution = Normal(1000, 200)
 )
     model.state.invest_amount = end_age ≥ t ? rand(distribution) : 0.0
     return nothing

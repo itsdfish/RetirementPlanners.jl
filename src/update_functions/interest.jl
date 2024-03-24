@@ -66,7 +66,7 @@ function dynamic_interest(
     model::AbstractModel,
     t;
     rebalance_rate = Inf,
-    gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1),
+    gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1)
 )
     Δt = model.Δt
     # reset model at the beginning of each simulation 

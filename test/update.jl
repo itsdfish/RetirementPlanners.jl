@@ -9,7 +9,7 @@
             model,
             1.0;
             social_security_income = 1000,
-            social_security_start_age = 65,
+            social_security_start_age = 65
         )
         @test model.state.income_amount == 0
 
@@ -17,7 +17,7 @@
             model,
             65;
             social_security_income = 1000,
-            social_security_start_age = 65,
+            social_security_start_age = 65
         )
         @test model.state.income_amount == 1000
 
@@ -27,7 +27,7 @@
             social_security_income = 1000,
             social_security_start_age = 65,
             pension_income = 1000,
-            pension_start_age = 67,
+            pension_start_age = 67
         )
         @test model.state.income_amount == 1000
 
@@ -37,7 +37,7 @@
             social_security_income = 1000,
             social_security_start_age = 65,
             pension_income = 1000,
-            pension_start_age = 67,
+            pension_start_age = 67
         )
         @test model.state.income_amount == 2000
     end
@@ -108,7 +108,7 @@
                 model,
                 1.0;
                 social_security_income = 1000,
-                social_security_start_age = 65,
+                social_security_start_age = 65
             )
             fixed_withdraw(model, 1.0; withdraw_amount, start_age)
             @test model.state.withdraw_amount == 0
@@ -118,14 +118,14 @@
                 model,
                 start_age;
                 social_security_income = 1000,
-                social_security_start_age = 65,
+                social_security_start_age = 65
             )
             fixed_withdraw(
                 model,
                 start_age;
                 withdraw_amount,
                 start_age,
-                income_adjustment = 0.5,
+                income_adjustment = 0.5
             )
             @test model.state.withdraw_amount == withdraw_amount * 0.50
 
@@ -135,14 +135,14 @@
                 model,
                 start_age;
                 social_security_income = 1000,
-                social_security_start_age = 65,
+                social_security_start_age = 65
             )
             fixed_withdraw(
                 model,
                 start_age;
                 withdraw_amount,
                 start_age,
-                income_adjustment = 0.5,
+                income_adjustment = 0.5
             )
             @test model.state.withdraw_amount == 400
         end
@@ -175,7 +175,7 @@
                 min_withdraw,
                 percent_of_real_growth,
                 income_adjustment,
-                volitility,
+                volitility
             )
             @test model.state.withdraw_amount == 0
         end
@@ -206,7 +206,7 @@
                 min_withdraw,
                 percent_of_real_growth,
                 income_adjustment,
-                volitility,
+                volitility
             )
             @test model.state.withdraw_amount ≈ 5494.0 atol = 0.5
         end
@@ -237,7 +237,7 @@
                 min_withdraw,
                 percent_of_real_growth,
                 income_adjustment,
-                volitility,
+                volitility
             )
             @test model.state.withdraw_amount ≈ 5494.0 / 2 atol = 0.5
         end
@@ -268,7 +268,7 @@
                 min_withdraw,
                 percent_of_real_growth,
                 income_adjustment,
-                volitility,
+                volitility
             )
             @test model.state.withdraw_amount ≈ min_withdraw
         end
@@ -299,7 +299,7 @@
                 min_withdraw,
                 percent_of_real_growth,
                 income_adjustment,
-                volitility,
+                volitility
             )
             @test model.state.withdraw_amount == 500
         end

@@ -21,7 +21,7 @@ plot(
     # ]
     size = (600, 300),
     background_color = :transparent,
-    dpi = 300,
+    dpi = 300
 )
 
 savefig("logo.svg")
@@ -39,7 +39,7 @@ plot(
     # ]
     size = (1200, 300),
     background_color = :transparent,
-    dpi = 300,
+    dpi = 300
 )
 
 savefig("large_logo.svg")

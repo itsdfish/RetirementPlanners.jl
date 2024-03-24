@@ -77,9 +77,8 @@ function grid_search(
     config::NamedTuple,
     threaded::Bool = false,
     show_progress::Bool = false,
-    yoked_values = (),
+    yoked_values = ()
 )
-
     np_combs = make_nps(config, yoked_values)
     var_parms = get_var_parms(config)
     times = get_times(model)
@@ -145,7 +144,7 @@ function permute(c::NamedTuple)
 end
 
 function get_var_parms(config)
-    output = Vector{Tuple{Symbol,Symbol}}()
+    output = Vector{Tuple{Symbol, Symbol}}()
     for (k1, v1) ∈ pairs(config)
         for (k2, v2) ∈ pairs(config[k1])
             if typeof(v2) <: Vector
