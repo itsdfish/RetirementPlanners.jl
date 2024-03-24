@@ -57,16 +57,15 @@ function State(;
     income_amount = 0.0,
     invest_amount = 0.0,
     withdraw_amount = 0.0,
-    net_worth = 0.0,
+    net_worth = 0.0
 )
-
     return State(
         interest_rate,
         inflation_rate,
         income_amount,
         invest_amount,
         withdraw_amount,
-        net_worth,
+        net_worth
     )
 end
 
@@ -90,10 +89,10 @@ An object for storing variables of the simulation.
 
 In each array above, rows are time steps and columns are repetitions of the simulation. 
 """
-mutable struct Logger{T<:Real} <: AbstractLogger
-    net_worth::Array{T,2}
-    interest::Array{T,2}
-    inflation::Array{T,2}
+mutable struct Logger{T <: Real} <: AbstractLogger
+    net_worth::Array{T, 2}
+    interest::Array{T, 2}
+    inflation::Array{T, 2}
 end
 
 """
@@ -157,7 +156,7 @@ The default retirement simulation Model.
             log! = default_log!
         )
 """
-@concrete mutable struct Model{S,T} <: AbstractModel
+@concrete mutable struct Model{S, T} <: AbstractModel
     Δt::T
     duration::T
     start_age::T
@@ -184,7 +183,7 @@ function Model(;
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
     update_net_worth! = default_net_worth,
-    log! = default_log!,
+    log! = default_log!
 )
     Δt, duration, start_age, start_amount = promote(Δt, duration, start_age, start_amount)
     return Model(
@@ -199,6 +198,6 @@ function Model(;
         update_inflation!,
         update_interest!,
         update_net_worth!,
-        log!,
+        log!
     )
 end

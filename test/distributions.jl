@@ -98,7 +98,7 @@ end
 
         prices = rand(dist, n_steps, n_reps; Δt)
 
-        for i ∈ 1:(n_steps+1)
+        for i ∈ 1:(n_steps + 1)
             @test mean(map(p -> p[i, :], prices)) ≈ mean.(dist, times[i]) atol = 0.01
             @test var(map(p -> p[i, :], prices)) ≈ var.(dist, times[i]) atol = 0.01
             @test std(map(p -> p[i, :], prices)) ≈ std.(dist, times[i]) atol = 0.01

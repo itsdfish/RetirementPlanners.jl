@@ -19,12 +19,12 @@ Simulate the a retirement scenario a specified number of times.
 - `kwargs...`: optional keyword arguments passed to `update!`
 """
 function simulate!(
-        model::AbstractModel,
-        logger::AbstractLogger,
-        n_reps;
-        kwargs...
-    )
-    for rep ∈ 1:n_reps 
+    model::AbstractModel,
+    logger::AbstractLogger,
+    n_reps;
+    kwargs...
+)
+    for rep ∈ 1:n_reps
         _simulate!(model, logger, rep; kwargs...)
     end
     return nothing
@@ -97,9 +97,8 @@ function update!(
     kw_inflation = (),
     kw_interest = (),
     kw_net_worth = (),
-    kw_log = (),
+    kw_log = ()
 )
-
     model.update_income!(model, t; kw_income...)
     model.invest!(model, t; kw_invest...)
     model.withdraw!(model, t; kw_withdraw...)
@@ -121,7 +120,7 @@ Returns the time steps used in the simulation.
 """
 function get_times(model::AbstractModel)
     (; start_age, Δt, duration) = model
-    return (start_age+Δt):Δt:(start_age+duration)
+    return (start_age + Δt):Δt:(start_age + duration)
 end
 
 """

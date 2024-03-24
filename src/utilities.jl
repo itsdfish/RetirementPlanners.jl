@@ -31,6 +31,6 @@ function _show(io::IO, model)
         row_label_alignment = :l,
         row_labels = [fieldnames(typeof(model))...],
         formatters = ft_printf("%5.2f"),
-        alignment = :l,
+        alignment = :l
     )
 end

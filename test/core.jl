@@ -11,7 +11,7 @@
         withdraw! = fixed_withdraw,
         invest! = fixed_investment,
         update_inflation! = fixed_inflation,
-        update_interest! = fixed_interest,
+        update_interest! = fixed_interest
     )
 
     times = get_times(model)
@@ -26,7 +26,6 @@
     @test logger.net_worth[end, 1] ≈ 919432 rtol = 0.01
     @test logger.net_worth[end, 1] ≈ 919432 rtol = 0.01
 end
-
 
 @safetestset "permute" begin
     using RetirementPlanners
@@ -62,7 +61,7 @@ end
         (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
         (np1 = (a = 6, b = 3), np2 = (d = 10, c = 6)),
         (np1 = (a = 5, b = 4), np2 = (d = 10, c = 5)),
-        (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5)),
+        (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5))
     ]
 
     for g ∈ ground_truth
@@ -71,7 +70,6 @@ end
 
     @test length(test_vals) == 4
 end
-
 
 @safetestset "is_event_time" begin
     using RetirementPlanners
@@ -83,7 +81,6 @@ end
     @test is_event_time(model, 26.5, rate)
     @test !is_event_time(model, 26.4, rate)
     @test is_event_time(model, 26.5 + eps(), rate)
-
 
     rate = 2
     @test is_event_time(model, 27.5, rate)

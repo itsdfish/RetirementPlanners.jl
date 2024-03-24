@@ -18,7 +18,7 @@ growth of stocks.
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 """
-mutable struct GBM{T<:Real} <: AbstractGBM
+mutable struct GBM{T <: Real} <: AbstractGBM
     μ::T
     σ::T
     x0::T
@@ -88,7 +88,7 @@ function rand(dist::AbstractGBM, n_steps; Δt)
     prices = fill(0.0, n_steps + 1)
     dist.x = dist.x0
     prices[1] = dist.x
-    for i ∈ 2:(n_steps+1)
+    for i ∈ 2:(n_steps + 1)
         increment!(dist; Δt)
         prices[i] = dist.x
     end
@@ -116,7 +116,7 @@ function fit(dist::Type{<:AbstractGBM}, ts; Δt)
 end
 
 function estimate_μ(dist::Type{<:AbstractGBM}, ts; Δt)
-    x = Δt:Δt:length(ts)*Δt
+    x = Δt:Δt:(length(ts) * Δt)
     total = sum((1 / Δt) * (x .^ 2))
     return sum((1 / total) * (1 / Δt) * (x .* ts))
 end
@@ -164,7 +164,7 @@ on each simulation run to capture uncertainy in these parameters.
 
     VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
 """
-mutable struct VarGBM{T<:Real} <: AbstractGBM
+mutable struct VarGBM{T <: Real} <: AbstractGBM
     μ::T
     σ::T
     αμ::T
@@ -224,14 +224,14 @@ growth of multiple stocks and bonds.
 
     MvGBM(; μ, σ, ρ, ratios)
 """
-mutable struct MvGBM{T<:Real} <: AbstractGBM
+mutable struct MvGBM{T <: Real} <: AbstractGBM
     μ::Vector{T}
     σ::Vector{T}
     x0::Vector{T}
     x::Vector{T}
     ratios::Vector{T}
-    ρ::Array{T,2}
-    Σ::Array{T,2}
+    ρ::Array{T, 2}
+    Σ::Array{T, 2}
 end
 
 """
@@ -275,7 +275,7 @@ function rand(dist::MvGBM, n_steps; Δt)
     n = length(dist.x)
     prices = fill(0.0, n_steps + 1, n)
     prices[1, :] = dist.x
-    for i ∈ 2:(n_steps+1)
+    for i ∈ 2:(n_steps + 1)
         increment!(dist; Δt)
         prices[i, :] = dist.x
     end

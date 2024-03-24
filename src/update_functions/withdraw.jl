@@ -26,7 +26,7 @@ function fixed_withdraw(
     t;
     withdraw_amount = 3000.0,
     start_age = 67.0,
-    income_adjustment = 0.0,
+    income_adjustment = 0.0
 )
     model.state.withdraw_amount = 0.0
     model.state.net_worth == 0.0 ? (return nothing) : nothing
@@ -71,7 +71,7 @@ function variable_withdraw(
     t;
     start_age = 67,
     distribution = Normal(2500, 500),
-    income_adjustment = 0.0,
+    income_adjustment = 0.0
 )
     model.state.withdraw_amount = 0.0
     model.state.net_worth == 0.0 ? (return nothing) : nothing
@@ -127,7 +127,7 @@ function adaptive_withdraw(
     min_withdraw = 1000,
     percent_of_real_growth = 1,
     income_adjustment = 0.0,
-    volitility = 0.5,
+    volitility = 0.5
 )
     model.state.withdraw_amount = 0.0
     model.state.net_worth == 0.0 ? (return nothing) : nothing

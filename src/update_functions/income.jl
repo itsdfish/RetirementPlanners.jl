@@ -28,7 +28,7 @@ function fixed_income(
     social_security_income = 0.0,
     pension_income = 0.0,
     social_security_start_age = 67.0,
-    pension_start_age = 67,
+    pension_start_age = 67
 )
     model.state.income_amount = 0.0
     if social_security_start_age ≤ t
