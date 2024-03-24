@@ -16,11 +16,7 @@ Returns a fixed inflation rate of a specified value.
 
 - `inflation_rate = .03`: a constant rate of inflation per year
 """
-function fixed_inflation(
-        model::AbstractModel, 
-        t;
-        inflation_rate = .03
-    )
+function fixed_inflation(model::AbstractModel, t; inflation_rate = 0.03)
     model.state.inflation_rate = inflation_rate
     return nothing
 end
@@ -43,11 +39,7 @@ Returns an interest rate sampled from a specified distribution.
 
 - `distribution = Normal(.03, .01)`: the distribution of inflation per year 
 """
-function variable_inflation(
-        model::AbstractModel,
-        t;
-        distribution = Normal(.03, .01)
-    )
+function variable_inflation(model::AbstractModel, t; distribution = Normal(0.03, 0.01))
     model.state.inflation_rate = rand(distribution)
     return nothing
 end
@@ -72,19 +64,15 @@ Models inflation in the stock market as a geometric brownian motion process.
 `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
 sets an arbitrary scale. The function also supports `VarGBM`. 
 """
-function dynamic_inflation(
-        model::AbstractModel, 
-        t; 
-        gbm = GBM(; μ=.03, σ=.01, x0=1)
-    )
+function dynamic_inflation(model::AbstractModel, t; gbm = GBM(; μ = 0.03, σ = 0.01, x0 = 1))
     Δt = model.Δt
     # reset model at the beginning of each simulation 
     t ≈ model.start_age + Δt ? reset!(gbm) : nothing
     # set previous value
-    x_prev = gbm.x 
+    x_prev = gbm.x
     increment!(gbm; Δt)
     # annualized growth
     growth = (gbm.x / x_prev)^(1 / Δt) - 1
-    model.state.inflation_rate = growth 
-    return nothing 
+    model.state.inflation_rate = growth
+    return nothing
 end

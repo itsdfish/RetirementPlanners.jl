@@ -9,13 +9,13 @@ makedocs(
         assets = [
             asset(
                 "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
-                class=:css,
+                class = :css,
             ),
         ],
-        collapselevel=1,
+        collapselevel = 1,
     ),
     modules = [
-        RetirementPlanners, 
+        RetirementPlanners,
         # Base.get_extension(SequentialSamplingModels, :TuringExt),  
         # Base.get_extension(RetirementPlanners, :PlotsExt) 
     ],
@@ -24,13 +24,11 @@ makedocs(
         "Examples" => [
             "Basic Example" => "basic_example.md",
             "Intermediate Example" => "intermediate_example.md",
-            "Advanced Example" => "advanced_example.md"
+            "Advanced Example" => "advanced_example.md",
         ],
         "Plotting" => "plotting.md",
-        "API" => "api.md"
-    ]
+        "API" => "api.md",
+    ],
 )
 
-deploydocs(
-    repo = "github.com/itsdfish/RetirementPlanners.jl.git",
-)
+deploydocs(repo = "github.com/itsdfish/RetirementPlanners.jl.git")

@@ -22,16 +22,17 @@ Withdraw a fixed amount from investments per time step once retirement starts.
     relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
 """
 function fixed_withdraw(
-        model::AbstractModel,
-        t;
-        withdraw_amount = 3000.0,
-        start_age = 67.0,
-        income_adjustment = 0.0
-    )
+    model::AbstractModel,
+    t;
+    withdraw_amount = 3000.0,
+    start_age = 67.0,
+    income_adjustment = 0.0,
+)
     model.state.withdraw_amount = 0.0
-    model.state.net_worth == 0.0 ? (return nothing) : nothing 
-    withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
-    if start_age ≤ t 
+    model.state.net_worth == 0.0 ? (return nothing) : nothing
+    withdraw_amount =
+        max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
+    if start_age ≤ t
         if model.state.net_worth < withdraw_amount
             model.state.withdraw_amount = model.state.net_worth
         else
@@ -66,17 +67,18 @@ distribution.
     relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
 """
 function variable_withdraw(
-        model::AbstractModel,
-        t;
-        start_age = 67, 
-        distribution = Normal(2500, 500),
-        income_adjustment = 0.0
-    )
+    model::AbstractModel,
+    t;
+    start_age = 67,
+    distribution = Normal(2500, 500),
+    income_adjustment = 0.0,
+)
     model.state.withdraw_amount = 0.0
-    model.state.net_worth == 0.0 ? (return nothing) : nothing 
-    if start_age ≤ t 
+    model.state.net_worth == 0.0 ? (return nothing) : nothing
+    if start_age ≤ t
         withdraw_amount = rand(distribution)
-        withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
+        withdraw_amount =
+            max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
         if model.state.net_worth < withdraw_amount
             model.state.withdraw_amount = model.state.net_worth
         else
@@ -119,23 +121,27 @@ amount is tolerated (`volitility`). The withdraw amount may also be decreased ba
     is the mean withdraw × volitility
 """
 function adaptive_withdraw(
-        model::AbstractModel,
-        t;
-        start_age = 67, 
-        min_withdraw = 1000,
-        percent_of_real_growth = 1,
-        income_adjustment = 0.0,
-        volitility = .5,
-    )
+    model::AbstractModel,
+    t;
+    start_age = 67,
+    min_withdraw = 1000,
+    percent_of_real_growth = 1,
+    income_adjustment = 0.0,
+    volitility = 0.5,
+)
     model.state.withdraw_amount = 0.0
-    model.state.net_worth == 0.0 ? (return nothing) : nothing 
-    if start_age ≤ t 
+    model.state.net_worth == 0.0 ? (return nothing) : nothing
+    if start_age ≤ t
         real_growth_rate = (1 + compute_real_growth_rate(model))^model.Δt
-        mean_withdraw = model.state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
+        mean_withdraw =
+            model.state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
         mean_withdraw = max(min_withdraw, mean_withdraw)
-        withdraw_amount = volitility ≈ 0.0 ? mean_withdraw : rand(Normal(mean_withdraw, mean_withdraw * volitility))
+        withdraw_amount =
+            volitility ≈ 0.0 ? mean_withdraw :
+            rand(Normal(mean_withdraw, mean_withdraw * volitility))
         withdraw_amount = max(withdraw_amount, min_withdraw)
-        withdraw_amount = max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
+        withdraw_amount =
+            max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
         if model.state.net_worth < withdraw_amount
             model.state.withdraw_amount = model.state.net_worth
         else

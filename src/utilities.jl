@@ -1,4 +1,4 @@
-function to_dataframe end 
+function to_dataframe end
 
 function plot_gradient end
 
@@ -21,15 +21,16 @@ function _show(io::IO, model)
     values = map(x -> typeof(x) == Bool ? string(x) : x, values)
     T = typeof(model)
     model_name = string(T.name.name)
-    return pretty_table(io,
+    return pretty_table(
+        io,
         values;
-        title=model_name,
-        row_label_column_title="Field",
-        compact_printing=false,
-        header=["Value"],
-        row_label_alignment=:l,
-        row_labels=[fieldnames(typeof(model))...],
-        formatters=ft_printf("%5.2f"),
-        alignment=:l,
+        title = model_name,
+        row_label_column_title = "Field",
+        compact_printing = false,
+        header = ["Value"],
+        row_label_alignment = :l,
+        row_labels = [fieldnames(typeof(model))...],
+        formatters = ft_printf("%5.2f"),
+        alignment = :l,
     )
 end

@@ -31,13 +31,13 @@ function simulate!(
 end
 
 function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...)
-    (;Δt,) = model
+    (; Δt,) = model
     reset!(model)
-    for (s,t) ∈ enumerate(get_times(model))
+    for (s, t) ∈ enumerate(get_times(model))
         update!(model, logger, s, rep, t; kwargs...)
     end
-    return nothing 
-end 
+    return nothing
+end
 
 """
     update!(
@@ -86,29 +86,29 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
 function update!(
-        model::AbstractModel,
-        logger::AbstractLogger,
-        step,
-        rep,
-        t; 
-        kw_income=(),
-        kw_withdraw=(),
-        kw_invest=(),
-        kw_inflation=(),
-        kw_interest=(),
-        kw_net_worth=(),
-        kw_log=()
-    )
+    model::AbstractModel,
+    logger::AbstractLogger,
+    step,
+    rep,
+    t;
+    kw_income = (),
+    kw_withdraw = (),
+    kw_invest = (),
+    kw_inflation = (),
+    kw_interest = (),
+    kw_net_worth = (),
+    kw_log = (),
+)
 
     model.update_income!(model, t; kw_income...)
-    model.invest!(model, t; kw_invest...) 
+    model.invest!(model, t; kw_invest...)
     model.withdraw!(model, t; kw_withdraw...)
-    model.update_inflation!(model, t; kw_inflation...) 
-    model.update_interest!(model, t; kw_interest...) 
+    model.update_inflation!(model, t; kw_inflation...)
+    model.update_interest!(model, t; kw_interest...)
     model.update_net_worth!(model, t; kw_net_worth...)
     model.log!(model, logger, step, rep; kw_log...)
-    return nothing 
-end 
+    return nothing
+end
 
 """
     get_times(model::AbstractModel)
@@ -120,7 +120,7 @@ Returns the time steps used in the simulation.
 - `model::AbstractModel`: an abstract Model object 
 """
 function get_times(model::AbstractModel)
-    (;start_age,Δt,duration) = model 
+    (; start_age, Δt, duration) = model
     return (start_age+Δt):Δt:(start_age+duration)
 end
 

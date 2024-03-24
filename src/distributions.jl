@@ -22,7 +22,7 @@ mutable struct GBM{T<:Real} <: AbstractGBM
     μ::T
     σ::T
     x0::T
-    x::T 
+    x::T
 end
 
 Base.broadcastable(dist::AbstractGBM) = Ref(dist)
@@ -40,8 +40,8 @@ growth of stocks.
 - `x0::T=1.0`: initial value of stock 
 - `x::T=x0`: current value
 """
-function GBM(;μ, σ, x0=1.0, x=x0)
-    μ,σ,x0,x = promote(μ, σ, x0, x)
+function GBM(; μ, σ, x0 = 1.0, x = x0)
+    μ, σ, x0, x = promote(μ, σ, x0, x)
     return GBM(μ, σ, x0, x)
 end
 
@@ -60,7 +60,7 @@ Increment the stock price over the period `Δt`.
 - `Δt`: the time step for Geometric Brownian Motion
 """
 function increment!(dist::AbstractGBM; Δt)
-    (;μ,σ,x) = dist 
+    (; μ, σ, x) = dist
     dist.x += x * (μ * Δt + σ * randn() * √(Δt))
     return nothing
 end
@@ -86,19 +86,19 @@ end
 
 function rand(dist::AbstractGBM, n_steps; Δt)
     prices = fill(0.0, n_steps + 1)
-    dist.x = dist.x0 
+    dist.x = dist.x0
     prices[1] = dist.x
     for i ∈ 2:(n_steps+1)
         increment!(dist; Δt)
         prices[i] = dist.x
     end
-    return prices 
+    return prices
 end
 
 function reset!(dist::AbstractGBM)
     dist.x0 = 1.0
     dist.x = 1.0
-    return nothing 
+    return nothing
 end
 
 compute_total(dist::AbstractGBM) = sum(dist.x)
@@ -116,18 +116,18 @@ function fit(dist::Type{<:AbstractGBM}, ts; Δt)
 end
 
 function estimate_μ(dist::Type{<:AbstractGBM}, ts; Δt)
-    x = Δt:Δt:length(ts)*Δt 
-    total = sum((1 / Δt) * (x.^2))
-    return sum((1/total) * (1 / Δt) * (x .* ts))
+    x = Δt:Δt:length(ts)*Δt
+    total = sum((1 / Δt) * (x .^ 2))
+    return sum((1 / total) * (1 / Δt) * (x .* ts))
 end
 
 function convert_μ(μ, σ)
-    return μ + .50 * σ^2 
+    return μ + 0.50 * σ^2
 end
 
 function estimate_σ(gbm, ts; Δt)
     n = length(ts)
-    return √(sum(diff(ts).^2) / (n * Δt))
+    return √(sum(diff(ts) .^ 2) / (n * Δt))
 end
 
 """
@@ -139,7 +139,7 @@ Rebalance portfolio. Not applicable by default.
 - `dist::AbstractGBM`: a distribution object for Geometric Brownian Motion 
 """
 function rebalance!(dist::AbstractGBM)
-    return nothing 
+    return nothing
 end
 
 """
@@ -167,12 +167,12 @@ on each simulation run to capture uncertainy in these parameters.
 mutable struct VarGBM{T<:Real} <: AbstractGBM
     μ::T
     σ::T
-    αμ::T 
+    αμ::T
     ασ::T
     ημ::T
     ησ::T
     x0::T
-    x::T 
+    x::T
 end
 
 """
@@ -191,8 +191,8 @@ on each simulation run to capture uncertainy in these parameters.
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 """
-function VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
-    μ,σ,x0,x = promote(αμ, ασ, ημ, ησ, x0, x)
+function VarGBM(; αμ, ασ, ημ, ησ, x0 = 1.0, x = x0)
+    μ, σ, x0, x = promote(αμ, ασ, ημ, ησ, x0, x)
     return VarGBM(zero(αμ), zero(αμ), αμ, ασ, ημ, ησ, x0, x)
 end
 
@@ -201,7 +201,7 @@ function reset!(dist::VarGBM)
     dist.x = 1.0
     dist.μ = rand(Normal(dist.αμ, dist.ημ))
     dist.σ = rand(truncated(Normal(dist.ασ, dist.ησ), 0.0, Inf))
-    return nothing 
+    return nothing
 end
 
 """
@@ -230,7 +230,7 @@ mutable struct MvGBM{T<:Real} <: AbstractGBM
     x0::Vector{T}
     x::Vector{T}
     ratios::Vector{T}
-    ρ::Array{T,2} 
+    ρ::Array{T,2}
     Σ::Array{T,2}
 end
 
@@ -274,12 +274,12 @@ function rand(dist::MvGBM, n_steps; Δt)
     reset!(dist)
     n = length(dist.x)
     prices = fill(0.0, n_steps + 1, n)
-    prices[1,:] = dist.x
+    prices[1, :] = dist.x
     for i ∈ 2:(n_steps+1)
         increment!(dist; Δt)
-        prices[i,:] = dist.x
+        prices[i, :] = dist.x
     end
-    return prices 
+    return prices
 end
 
 """
@@ -297,16 +297,16 @@ Increment the stock price over the period `Δt`.
 - `Δt`: the time step for Geometric Brownian Motion
 """
 function increment!(dist::MvGBM; Δt)
-    (;μ,σ,Σ,x) = dist 
+    (; μ, σ, Σ, x) = dist
     μn = fill(0.0, length(μ))
-    dist.x .+= x .* (μ .* Δt .+ rand(MvNormal(μn , Σ)) * √(Δt))
+    dist.x .+= x .* (μ .* Δt .+ rand(MvNormal(μn, Σ)) * √(Δt))
     return nothing
 end
 
 function reset!(dist::MvGBM)
     dist.x0 = copy(dist.ratios)
     dist.x = copy(dist.ratios)
-    return nothing 
+    return nothing
 end
 
 """
@@ -321,9 +321,10 @@ Rebalance portfolio.
 function rebalance!(dist::MvGBM)
     total = sum(dist.x)
     dist.x = total * dist.ratios
-    return nothing 
+    return nothing
 end
 
 mean(dist::MvGBM, t) = dist.ratios .* exp.(dist.μ * t)
-var(dist::MvGBM, t) = dist.ratios.^2 .* exp.(2 .* dist.μ .* t) .* (exp.(dist.σ.^2 .* t) .- 1)
+var(dist::MvGBM, t) =
+    dist.ratios .^ 2 .* exp.(2 .* dist.μ .* t) .* (exp.(dist.σ .^ 2 .* t) .- 1)
 std(dist::MvGBM, t) = sqrt.(var(dist, t))

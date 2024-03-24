@@ -71,16 +71,16 @@ into a long-form `DataFrame`.
 This function was inspired by `parmscan` in Agents.jl.
 """
 function grid_search(
-        model::AbstractModel,
-        Logger::Type{<:AbstractLogger},
-        n_reps; 
-        config::NamedTuple,
-        threaded::Bool = false,
-        show_progress::Bool = false,
-        yoked_values = (),
-    )
+    model::AbstractModel,
+    Logger::Type{<:AbstractLogger},
+    n_reps;
+    config::NamedTuple,
+    threaded::Bool = false,
+    show_progress::Bool = false,
+    yoked_values = (),
+)
 
-    np_combs = make_nps(config, yoked_values)    
+    np_combs = make_nps(config, yoked_values)
     var_parms = get_var_parms(config)
     times = get_times(model)
     n_steps = length(times)
@@ -90,8 +90,8 @@ function grid_search(
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
-        logger = Logger(;n_steps, n_reps)
-        simulate!(model, logger, n_reps; np_combs...);
+        logger = Logger(; n_steps, n_reps)
+        simulate!(model, logger, n_reps; np_combs...)
         return var_vals, logger
     end
 end
@@ -103,15 +103,15 @@ end
 
 function matches(config, match_pairs)
     isempty(match_pairs) ? (return true) : false
-    for (k,v) ∈ match_pairs 
+    for (k, v) ∈ match_pairs
         if get_value(config, k) == get_value(config, v)
             return true
         end
     end
-    return false 
+    return false
 end
 
-function get_value(config, k) 
+function get_value(config, k)
     return config[k[1]][k[2]]
 end
 
@@ -122,7 +122,7 @@ function make_nps(config, dependent_values)
     indices = Iterators.product(ranges...) |> collect
     nps = map(index -> make_np(_config, config_keys, index), indices[:])
     filter!(x -> matches(x, dependent_values), nps)
-    return nps 
+    return nps
 end
 
 function permute(c::NamedTuple)
@@ -145,11 +145,11 @@ function permute(c::NamedTuple)
 end
 
 function get_var_parms(config)
-    output = Vector{Tuple{Symbol, Symbol}}()
-    for (k1,v1) ∈ pairs(config)
-        for (k2,v2) ∈ pairs(config[k1])
+    output = Vector{Tuple{Symbol,Symbol}}()
+    for (k1, v1) ∈ pairs(config)
+        for (k2, v2) ∈ pairs(config[k1])
             if typeof(v2) <: Vector
-                push!(output, (k1,k2))
+                push!(output, (k1, k2))
             end
         end
     end
