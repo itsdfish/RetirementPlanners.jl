@@ -8,16 +8,16 @@ makedocs(
         # example_size_threshold = nothing,
         assets = [
             asset(
-                "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
-                class = :css
-            )
+            "https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&display=swap",
+            class = :css
+        )
         ],
         collapselevel = 1
     ),
     modules = [
         RetirementPlanners
-        # Base.get_extension(SequentialSamplingModels, :TuringExt),  
-        # Base.get_extension(RetirementPlanners, :PlotsExt) 
+    # Base.get_extension(SequentialSamplingModels, :TuringExt),  
+    # Base.get_extension(RetirementPlanners, :PlotsExt) 
     ],
     pages = [
         "Home" => "index.md",
