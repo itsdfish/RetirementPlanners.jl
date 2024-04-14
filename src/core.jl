@@ -31,7 +31,6 @@ function simulate!(
 end
 
 function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...)
-    (; Δt,) = model
     reset!(model)
     for (s, t) ∈ enumerate(get_times(model))
         update!(model, logger, s, rep, t; kwargs...)
