@@ -6,7 +6,7 @@ Abstract type for simulating investment growth using Geometric Brownian Motion.
 abstract type AbstractGBM <: ContinuousUnivariateDistribution end
 
 """
-    GBM{T<:Real} <: AbstractGBM
+    GBM{T <: Real} <: AbstractGBM
 
 A distribution object for Geometric Brownian Motion (GBM), which is used to model 
 growth of stocks. 
@@ -28,7 +28,7 @@ end
 Base.broadcastable(dist::AbstractGBM) = Ref(dist)
 
 """
-    GBM(;μ, σ, x0, x=x0)
+    GBM(; μ, σ, x0, x=x0)
 
 A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
 growth of stocks. 
@@ -143,7 +143,7 @@ function rebalance!(dist::AbstractGBM)
 end
 
 """
-    VarGBM{T<:Real} <: AbstractGBM
+    VarGBM{T <: Real} <: AbstractGBM
 
 A distribution object for variable Geometric Brownian Motion (vGBM), which is used to model 
 growth of stocks. Unlike GBM, vGBM selects growth rate (`μ`) and volitility (`σ`) parameters from a normal distribution
@@ -205,7 +205,7 @@ function reset!(dist::VarGBM)
 end
 
 """
-    MvGBM{T<:Real} <: AbstractGBM
+    MvGBM{T <: Real} <: AbstractGBM
 
 A distribution object for Multivariate Geometric Brownian Motion (MvGBM), which is used to model 
 growth of multiple stocks and bonds. 
@@ -217,8 +217,8 @@ growth of multiple stocks and bonds.
 - `x0::Vector{T}`: initial value of stocks
 - `x::Vector{T}`: value of stocks 
 - `ratios::Vector{T}`: allocation proportion of stocks/bonds
-- `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
-- `Σ::Array{T,2}`: covariance matrix between stocks/bonds 
+- `ρ::Array{T, 2}`: correlation matrix between stocks/bonds 
+- `Σ::Array{T, 2}`: covariance matrix between stocks/bonds 
 
 # Constructor 
 
@@ -245,7 +245,7 @@ growth of multiple stocks and bonds.
 - `μ::Vector{T}`: growth rates
 - `σ::Vector{T}`: volitility in growth rates 
 - `ratios::Vector{T}`: allocation proportion of stocks/bonds
-- `ρ::Array{T,2}`: correlation matrix between stocks/bonds 
+- `ρ::Array{T, 2}`: correlation matrix between stocks/bonds 
 
 # Example Usage 
 
