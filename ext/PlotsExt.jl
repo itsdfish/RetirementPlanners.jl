@@ -47,7 +47,7 @@ function plot_gradient(
     X = repeat(x, n_reps)
     Y = y[:]
 
-    # FIT NORMAL DISTRIBUTIONS WITH PARAMETERS: μ(x) and σ(x)
+    # fit normal distributions
     xx = range(extrema(X)..., length = n_divions_x)
     xᵢ = [(xx[i], xx[i + 1]) for i = 1:(length(xx) - 1)]
     x₀ = mean.(xᵢ)
@@ -60,14 +60,15 @@ function plot_gradient(
         σ[i] = h.σ
     end
 
-    # FIT SMOOTHING SPLINES TO ABOVE
+    # fit plines
     splμ = fit(SmoothingSpline, x₀, μ, 0.05)      # λ=0.05
     splσ = fit(SmoothingSpline, x₀, σ, 0.02)      # λ=0.02
     μp = SmoothingSplines.predict(splμ, x₀)
     σp = SmoothingSplines.predict(splσ, x₀)
+    σp = max.(σp, eps())
 
     # PLOT RIBBONS WITH ALPHA TRANSPARENCY SCALED:
-    qq = @. quantile(truncated(Normal(μp, σp), 0, Inf), LinRange(0.01, 0.99, n_slices))
+    qq = @. quantile(truncated(Normal(μp, σp), 0, Inf), LinRange(0.025, 0.975, n_slices))
     α = [LinRange(0.15, 0.5, n_slices ÷ 2); LinRange(0.5, 0.15, n_slices ÷ 2)]
     p1 = plot(legend = false, grid = false)
     for i = 2:(n_slices - 1)

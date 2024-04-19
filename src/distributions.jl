@@ -39,6 +39,20 @@ growth of stocks.
 - `σ::T`: volitility in growth rate 
 - `x0::T=1.0`: initial value of stock 
 - `x::T=x0`: current value
+
+# Example 
+
+```julia 
+using RetirementPlanners
+
+Δt = 1 / 100
+n_years = 30
+n_steps = Int(n_years / Δt)
+n_reps = 5
+times = range(0, n_years, length = n_steps + 1)
+dist = GBM(; μ=.10, σ=.05, x0 = 1)
+prices = rand(dist, n_steps, n_reps; Δt)
+```
 """
 function GBM(; μ, σ, x0 = 1.0, x = x0)
     μ, σ, x0, x = promote(μ, σ, x0, x)

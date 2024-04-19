@@ -113,6 +113,7 @@ mutable struct Logger{T <: Real} <: AbstractLogger
     net_worth::Array{T, 2}
     interest::Array{T, 2}
     inflation::Array{T, 2}
+    total_income::Array{T, 2}
 end
 
 """
@@ -129,7 +130,12 @@ An object for storing variables of the simulation.
 In each array above, rows are time steps and columns are repetitions of the simulation. 
 """
 function Logger(; n_steps, n_reps)
-    return Logger(zeros(n_steps, n_reps), zeros(n_steps, n_reps), zeros(n_steps, n_reps))
+    return Logger(
+        zeros(n_steps, n_reps),
+        zeros(n_steps, n_reps),
+        zeros(n_steps, n_reps),
+        zeros(n_steps, n_reps)
+    )
 end
 
 """

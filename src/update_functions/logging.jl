@@ -1,4 +1,3 @@
-
 """
     default_log!(
         model::AbstractModel,
@@ -13,6 +12,7 @@ Logs the following information on each time step of each simulation repetition:
 - `net worth`
 - `interest rate`
 - `inflation rate`
+- `total_income`
 
 # Arguments
 
@@ -20,8 +20,10 @@ Logs the following information on each time step of each simulation repetition:
 - `logger`: a logger object
 """
 function default_log!(model::AbstractModel, logger, step, rep; _...)
-    logger.net_worth[step, rep] = model.state.net_worth
-    logger.interest[step, rep] = model.state.interest_rate
-    logger.inflation[step, rep] = model.state.inflation_rate
+    state = model.state
+    logger.net_worth[step, rep] = state.net_worth
+    logger.interest[step, rep] = state.interest_rate
+    logger.inflation[step, rep] = state.inflation_rate
+    logger.total_income[step, rep] = state.withdraw_amount + state.income_amount
     return nothing
 end
