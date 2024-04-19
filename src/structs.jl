@@ -195,6 +195,7 @@ The default retirement simulation Model.
     update_interest!
     update_net_worth!
     log!
+    config
 end
 
 function Model(;
@@ -209,7 +210,8 @@ function Model(;
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
     update_net_worth! = default_net_worth,
-    log! = default_log!
+    log! = default_log!,
+    config...
 )
     Δt, duration, start_age, start_amount = promote(Δt, duration, start_age, start_amount)
     return Model(
@@ -224,6 +226,7 @@ function Model(;
         update_inflation!,
         update_interest!,
         update_net_worth!,
-        log!
+        log!,
+        config
     )
 end
