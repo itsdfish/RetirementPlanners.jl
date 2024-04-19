@@ -227,6 +227,6 @@ function Model(;
         update_interest!,
         update_net_worth!,
         log!,
-        config
+        NamedTuple(config)
     )
 end

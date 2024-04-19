@@ -119,6 +119,8 @@ amount is tolerated (`volitility`). The withdraw amount may also be decreased ba
     relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
 - `volitility = .1`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
     is the mean withdraw × volitility
+- `one_time_withdraws = Dict()`: single withdraws to occur at a specified age. Values in the dictionary are
+    `Dict(age => amount)`. 
 """
 function adaptive_withdraw(
     model::AbstractModel,
@@ -127,12 +129,15 @@ function adaptive_withdraw(
     min_withdraw = 1000,
     percent_of_real_growth = 1,
     income_adjustment = 0.0,
-    volitility = 0.5
+    volitility = 0.5,
+    one_time_withdraws = Dict(),
 )
     model.state.withdraw_amount = 0.0
     model.state.net_worth == 0.0 ? (return nothing) : nothing
+    Δt = model.Δt
+     
     if start_age ≤ t
-        real_growth_rate = (1 + compute_real_growth_rate(model))^model.Δt
+        real_growth_rate = (1 + compute_real_growth_rate(model))^Δt
         mean_withdraw =
             model.state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
         mean_withdraw = max(min_withdraw, mean_withdraw)
@@ -146,6 +151,17 @@ function adaptive_withdraw(
             model.state.withdraw_amount = model.state.net_worth
         else
             model.state.withdraw_amount = withdraw_amount
+        end
+    end
+
+    for k ∈ keys(one_time_withdraws)
+        if (k > (t - Δt)) && (k < (t + Δt)) 
+            withdraw_amount = one_time_withdraws[k]
+            if model.state.net_worth < withdraw_amount
+                model.state.withdraw_amount = model.state.net_worth
+            else
+                model.state.withdraw_amount += withdraw_amount
+            end
         end
     end
     return nothing

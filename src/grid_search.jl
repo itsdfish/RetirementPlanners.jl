@@ -54,7 +54,6 @@ In the example above, four simulations will be performed: one for each combinati
 
 # Keywords 
 
-- `config::NamedTuple`: a nested configuration of the simulation parameters. 
 - `threaded::Bool = false`: runs simulations on separate threads if true 
 - `show_progress::Bool = false`: shows progress bar if true
 - `yoked_values = ()`: fix specified inputs to have the same values, such as: 
@@ -74,11 +73,11 @@ function grid_search(
     model::AbstractModel,
     Logger::Type{<:AbstractLogger},
     n_reps;
-    config::NamedTuple,
     threaded::Bool = false,
     show_progress::Bool = false,
     yoked_values = ()
 )
+    config = model.config
     np_combs = make_nps(config, yoked_values)
     var_parms = get_var_parms(config)
     times = get_times(model)

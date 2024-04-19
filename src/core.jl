@@ -1,10 +1,5 @@
 """
-    simulate!(
-        model::AbstractModel,
-        logger::AbstractLogger,
-        n_reps;
-        kwargs...
-    )
+    simulate!(model::AbstractModel, logger::AbstractLogger, n_reps)
 
 Simulate the a retirement scenario a specified number of times. 
 
@@ -13,33 +8,52 @@ Simulate the a retirement scenario a specified number of times.
 - `model::AbstractModel`: an abstract Model object 
 - `logger::AbstractLogger`: an object for storing variables of the simulation
 - `n_reps`: the number of times to repeat the Monte Carlo simulation
-
-# Keywords 
-
-- `kwargs...`: optional keyword arguments passed to `update!`
 """
-function simulate!(
-    model::AbstractModel,
-    logger::AbstractLogger,
-    n_reps;
-    kwargs...
-)
+function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps)
     for rep ∈ 1:n_reps
-        _simulate!(model, logger, rep; kwargs...)
+        _simulate!(model, logger, rep)
     end
     return nothing
 end
 
-function _simulate!(model::AbstractModel, logger::AbstractLogger, rep; kwargs...)
+function _simulate!(model::AbstractModel, logger::AbstractLogger, rep)
     reset!(model)
     for (s, t) ∈ enumerate(get_times(model))
-        update!(model, logger, s, rep, t; kwargs...)
+        update!(model, logger, s, rep, t)
     end
     return nothing
 end
 
 """
-    update!(
+    update!(model::AbstractModel, logger::AbstractLogger, step, rep, t)
+
+Performs an update on each time step by calling the following functions defined in `model`:
+
+- `update_income!`: update sources of income, such as social security, pension etc. 
+- `withdraw!`: withdraw money
+- `invest!`: invest money
+- `update_inflation!`: compute inflation
+- `update_interest!`: compute interest 
+- `update_net_worth!`: compute net worth for the time step 
+- `log!`: log desired variables 
+
+Each function except `log!` has the signature `my_func(model, t; kwargs...)`. The function `log!` has the signature 
+`log!(model, logger, step, rep; kwargs...)`. 
+
+# Arguments 
+
+- `model::AbstractModel`: an abstract Model object 
+- `rep::Int`: repetition count of simulation 
+- `time_step::Int`: time step count of simulation 
+- `t`: time in years 
+"""
+function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t)
+    _update!(model, logger, step, rep, t; model.config...)
+    return nothing
+end
+
+"""
+    _update!(
         model::AbstractModel,
         logger::AbstractLogger,
         step,
@@ -84,7 +98,7 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
-function update!(
+function _update!(
     model::AbstractModel,
     logger::AbstractLogger,
     step,

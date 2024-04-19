@@ -19,19 +19,61 @@ using Plots
 using RetirementPlanners
 ```
 
-## Create Model
+## Configure Model Options
 
-The code block below shows the minimum setup required to create a model object, which maintains various parameters of the simulation, including timing variables and update functions. You must enter a value for the following keyword parameters:
+In the code block below, we will specify various parameters of the model in the data structure named `config`. The configuration includes the following information three basic types of information. We will go through each in turn. 
+
+### Required Parameters
+
+The model requires numerous parameters to control the timing of events and the initial investment value. Here is a list of the required parameters:
 
 - `Δt`: the time step in years 
 - `start_age`: your age in years at the beginning of the simulation
 - `duration`: the number of years to simulate
 - `start_amount`: the amount of money you have in investments at the beginning of the simulation
 
-In this basic example, we will assume you start saving for retirement at age 25, and begin with a modest amount of `$10,000`. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
+### Optional Functions
+
+The descrete time simulation is governed by seven update functions. Each function is assigned a default method with default arguments. The update functions are as follows:
+
+- `withdraw!`: a function called on each time step to withdraw from investments 
+- `invest!`: a function called on each time step to invest money into investments 
+- `update_income!`: a function called on each time step to update income sources 
+- `update_inflation!`: a function called on each time step to compute inflation 
+- `update_interest!`: a function called on each time step to compute interest on investments
+- `update_net_worth!`: a function called on each time step to compute net worth 
+- `log!`: a function called on each time step to log data
+
+### Update Parameters
+
+Each update function described in the previous section has default parameter values which can be overwritten. For example, we could specify a set of parameters `kw_income = (X₁ = x₁, X₂ = x₂, ..., Xₙ = xₙ)` to pass parameters to the function `update_income!`. The keyword for each update function is given below: 
+
+- `kw_income`: optional keyword arguments passed to `update_income!`
+- `kw_withdraw`: optional keyword arguments passed to `withdraw!`
+- `kw_invest`: optional keyword arguments passed to `invest!`
+- `kw_inflation`: optional keyword arguments passed to `update_inflation!`
+- `kw_interest`: optional keyword arguments passed to `update_interest!` 
+- `kw_net_worth`: optional keyword arguments passed to `update_net_worth!`
+- `kw_log`: optional keyword arguments passed to `log!`
+
+## Construct Model 
+
+We will illustrate how to setup and run a simulation with a simple example. Let's assume that you are 25 years old with an initial investment `of $10,000`, and you invest `$2,000` each month until early retirement at age 40. Assume further that the yearly interest rate on investments is `.08`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 40 years old, we will assume you will draw `$2,200` per month.  The simulation will update on a monthy basis and continue for 55 years until you reach age 80. For this simple example, we will use the following functions:
+
+- `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
+- `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
+- `fixed_income`: recieve a fixed income (e.g., social security, or pension) on each time step starting at a specified age
+- `fixed_inflation`: a fixed yearly inflation rate used to adjust interest (i.e., growth) earned on investments
+- `fixed_interest`: a fixed yearly interest rate earned on intestments 
+- `default_net_worth`: computes net worth on each time step based on inflation, interest, investments, and withdraws. 
+- `log!`: records interest rate, inflation rate, and net worth on each time step
+
+You can view additional documentation for the update functions above via `? function_name` in the REPL, or referencing the [API](./api.md/#Update-Methods).
+
+Putting all of this information together, we get the following configuration:
 
 ```@example basic 
-model = Model(;
+config = (
     Δt = 1 / 12,
     start_age = 25,
     duration = 55,
@@ -39,8 +81,14 @@ model = Model(;
     withdraw! = fixed_withdraw,
     invest! = fixed_investment,
     update_inflation! = fixed_inflation,
-    update_interest! = fixed_interest,
+    update_interest! = fixed_interest
 )
+```
+
+Now that the model settings have been configured, we can create the model. To do so, we will pass the configuration settings to the model constructor. 
+
+```@example basic 
+model = Model(; config...)
 ```
 
 The output above summarizes the configuration of the `Model` object. First, we can see the provided inputs at the top of the table. The field called `state` stores current values of the system for each time step, including investment amount, and net worth. You can see the details of the `State` object by expanding the menu below.
@@ -56,55 +104,14 @@ model.state
 </details>
 ```
 
- The next seven fields in the `Model` object correspond to update functions called interally by a function called `update!`. For simplicity, we will use the following functions:
-
-- `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
-- `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
-- `fixed_income`: recieve a fixed income (e.g., social security, or pension) on each time step starting at a specified age
-- `fixed_inflation`: a fixed yearly inflation rate used to adjust interest (i.e., growth) earned on investments
-- `fixed_interest`: a fixed yearly interest rate earned on intestments 
-- `default_net_worth`: computes net worth on each time step based on inflation, interest, investments, and withdraws. 
-- `log!`: records interest rate, inflation rate, and net worth on each time step
-
-You can view additional documentation for the update functions above via `? function_name` in the REPL, or referencing the [API](./api.md/#Update-Methods).
-
-## Configure Update Options
-
-The seven update functions described above include default input values for relevant quantities, such as interest rate on investments. However, you can optionally overwrite the default values by passing a configuration data structure to the function `simulate!`, as described below. 
-
-The configuration data structure is a nested `NamedTuple` (i.e., immutable keyword-value pairs), where the keywords in the first level correspond to the keyword inputs of the update functions. For example, the keyword `kw_invest` (short for keyword invest) is a set of keywords passed to the function `fixed_investment`.
-
-In our running scenario, we will assume that you invest `$2,000` each month until early retirement at age 40. The yearly interest rate on investments is `.08`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 40 years old, we will assume you will draw `$2,200` per month.  
-
-```@example basic 
-config = (
-    # invest parameters
-    kw_invest = (
-        invest_amount = 2000.0,
-        end_age = 40,
-    ),
-    # interest parameters
-    kw_interest = (
-        interest_rate = .08,
-    ),
-    # inflation parameters
-    kw_inflation = (
-        inflation_rate = .035,
-    ),
-    # withdraw parameters 
-    kw_withdraw = (
-        withdraw_amount = 2200.0,
-        start_age = 40,
-    )
-)
-```
 ## Setup Logger
 
 The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: 
 
 - annualized interest rate
 - annualized inflation rate
-- net worth. 
+- net worth
+- income summed across all sources
 
 The `Logger` object requires two inputs: 
 
@@ -122,10 +129,10 @@ logger = Logger(;n_reps, n_steps)
 
 ## Run Simulation
 
-Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our `Model` object, `Logger` object, and the number of repetitions. The optional configuration object is passed as a variable keyword using `; config...`, which maps the nested keywords in the `NamedTuple` to the corresponding keywords defined in the `simulate!` method signature. Those `NamedTuples` are then passed to the appropriate update functions. 
+Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our `Model` object, `Logger` object, and the number of repetitions. 
 
 ```@example basic
-simulate!(model, logger, n_reps; config...)
+simulate!(model, logger, n_reps)
 ```
 
 The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
