@@ -171,18 +171,18 @@ function separate_np_non_np_inputs(;
     log! = default_log!,
     config...)
 
-    non_np = (
+    non_np = (;
         Δt,
         duration,
         start_age,
         start_amount,
-        withdraw! = variable_withdraw,
-        invest! = variable_investment,
-        update_income! = fixed_income,
-        update_inflation! = dynamic_inflation,
-        update_interest! = dynamic_interest,
-        update_net_worth! = default_net_worth,
-        log! = default_log!
+        withdraw!,
+        invest!,
+        update_income!,
+        update_inflation!,
+        update_interest!,
+        update_net_worth!,
+        log!
     )
 
     return non_np, NamedTuple(config)
