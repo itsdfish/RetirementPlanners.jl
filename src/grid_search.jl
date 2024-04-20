@@ -70,26 +70,29 @@ into a long-form `DataFrame`.
 This function was inspired by `parmscan` in Agents.jl.
 """
 function grid_search(
-    model::AbstractModel,
+    model_type::Type{<:AbstractModel},
     Logger::Type{<:AbstractLogger},
-    n_reps;
+    n_reps,
+    all_args;
     threaded::Bool = false,
     show_progress::Bool = false,
     yoked_values = ()
 )
-    config = model.config
+    
+    fixed_inputs, config = separate_np_non_np_inputs(; all_args...)
     np_combs = make_nps(config, yoked_values)
     var_parms = get_var_parms(config)
-    times = get_times(model)
-    n_steps = length(times)
 
     progress = ProgressMeter.Progress(length(np_combs); enabled = show_progress)
     mapfun = threaded ? ThreadsX.map : map
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
+        model = model_type(; fixed_inputs..., np_combs...)
+        times = get_times(model)
+        n_steps = length(times)    
         logger = Logger(; n_steps, n_reps)
-        simulate!(model, logger, n_reps; np_combs...)
+        simulate!(model, logger, n_reps)
         return var_vals, logger
     end
 end
@@ -152,4 +155,35 @@ function get_var_parms(config)
         end
     end
     return output
+end
+
+function separate_np_non_np_inputs(;    
+    Δt,
+    duration,
+    start_age,
+    start_amount,
+    withdraw! = variable_withdraw,
+    invest! = variable_investment,
+    update_income! = fixed_income,
+    update_inflation! = dynamic_inflation,
+    update_interest! = dynamic_interest,
+    update_net_worth! = default_net_worth,
+    log! = default_log!,
+    config...)
+
+    non_np = (
+        Δt,
+        duration,
+        start_age,
+        start_amount,
+        withdraw! = variable_withdraw,
+        invest! = variable_investment,
+        update_income! = fixed_income,
+        update_inflation! = dynamic_inflation,
+        update_interest! = dynamic_interest,
+        update_net_worth! = default_net_worth,
+        log! = default_log!
+    )
+
+    return non_np, NamedTuple(config)
 end
