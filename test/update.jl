@@ -317,7 +317,7 @@
             percent_of_real_growth = 1
             income_adjustment = 0.0
             volitility = 0.5
-            one_time_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
+            lump_sum_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
 
             reset!(model)
             model.state.net_worth = 1_000_000
@@ -332,7 +332,7 @@
                 percent_of_real_growth,
                 income_adjustment,
                 volitility,
-                one_time_withdraws
+                lump_sum_withdraws
             )
             @test model.state.withdraw_amount == 0
         end
@@ -350,7 +350,7 @@
             percent_of_real_growth = 1
             income_adjustment = 0.0
             volitility = 0.5
-            one_time_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
+            lump_sum_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
 
             reset!(model)
             model.state.net_worth = 1_000_000
@@ -365,7 +365,7 @@
                 percent_of_real_growth,
                 income_adjustment,
                 volitility,
-                one_time_withdraws
+                lump_sum_withdraws
             )
             @test model.state.withdraw_amount == 100
         end
@@ -383,7 +383,7 @@
             percent_of_real_growth = 1
             income_adjustment = 0.0
             volitility = 0.5
-            one_time_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
+            lump_sum_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
 
             reset!(model)
             model.state.net_worth = 50
@@ -398,7 +398,7 @@
                 percent_of_real_growth,
                 income_adjustment,
                 volitility,
-                one_time_withdraws
+                lump_sum_withdraws
             )
             @test model.state.withdraw_amount == 50
         end
@@ -418,5 +418,139 @@
         true_value = 10_000 * (1.1 / 1.03)^(1 / 12)
 
         @test true_value ≈ model.state.net_worth
+    end
+
+    @safetestset "variable_invest" begin
+        @safetestset "1" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                66;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                lump_sum_investments = Dict()
+            )
+
+            @test model.state.invest_amount ≈ mean_investment atol = 1e-10
+        end
+
+        @safetestset "2" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                68;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                lump_sum_investments = Dict()
+            )
+
+            @test model.state.invest_amount ≈ 0 atol = 1e-10
+        end
+
+        @safetestset "3" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                68;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                lump_sum_investments = Dict(68 => mean_investment)
+            )
+
+            @test model.state.invest_amount ≈ mean_investment atol = 1e-10
+        end
+
+        @safetestset "4" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            lump_sum = 500
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                45;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                lump_sum_investments = Dict(45 => lump_sum)
+            )
+
+            @test model.state.invest_amount ≈ lump_sum + mean_investment atol = 1e-10
+        end
+
+        @safetestset "5" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            lump_sum = 500
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                46;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                lump_sum_investments = Dict(45 => lump_sum)
+            )
+
+            @test model.state.invest_amount ≈ mean_investment atol = 1e-10
+        end
     end
 end

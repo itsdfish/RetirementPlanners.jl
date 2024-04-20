@@ -1,22 +1,23 @@
 """
     grid_search(
-        model::AbstractModel,
+        model_type::Type{<:AbstractModel},
         Logger::Type{<:AbstractLogger},
-        n_reps; 
-        config::NamedTuple,
+        n_reps,
+        all_args;
         threaded::Bool = false,
-        n = 1,
         show_progress::Bool = false,
-        yoked_values = (),
-        kwargs...,
+        yoked_values = ()
     )
-
 
 Performs a grid search over vectorized inputs specified in the configuration setup. As an example, consider the following
 configuration setup:
 
 ```julia 
 config = (
+    Δt = 1 / 12,
+    start_age = 30.,
+    duration = 55.0,
+    start_amount = 10_000.0,
     # withdraw parameters 
     kw_withdraw = (
         distribution = [
@@ -47,10 +48,11 @@ In the example above, four simulations will be performed: one for each combinati
 
 # Arguments
 
-- `model::AbstractModel`: an abstract model type for performing Monte Carlo simulations of investment scenarios
+- `model_type::Type{<:AbstractModel}`: an abstract model type for performing Monte Carlo simulations of investment scenarios
 - `Logger::Type{<:AbstractLogger}`: a type for collecting variables of the simulation. The constructor signature is
     `Logger(; n_reps, n_steps)`
 - `n_reps`: the number of times the investiment simulation is repeated for each input combination. 
+- `all_args`: a NamedTuple of configuration settings
 
 # Keywords 
 
@@ -78,8 +80,7 @@ function grid_search(
     show_progress::Bool = false,
     yoked_values = ()
 )
-    
-    fixed_inputs, config = separate_np_non_np_inputs(; all_args...)
+    fixed_inputs, config = separate_np_non_np_inputs(model_type; all_args...)
     np_combs = make_nps(config, yoked_values)
     var_parms = get_var_parms(config)
 
@@ -90,7 +91,7 @@ function grid_search(
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
         model = model_type(; fixed_inputs..., np_combs...)
         times = get_times(model)
-        n_steps = length(times)    
+        n_steps = length(times)
         logger = Logger(; n_steps, n_reps)
         simulate!(model, logger, n_reps)
         return var_vals, logger
@@ -157,20 +158,20 @@ function get_var_parms(config)
     return output
 end
 
-function separate_np_non_np_inputs(;    
+function separate_np_non_np_inputs(
+    model_type::Type{<:AbstractModel};
     Δt,
     duration,
     start_age,
     start_amount,
     withdraw! = variable_withdraw,
-    invest! = variable_investment,
+    invest! = variable_invest,
     update_income! = fixed_income,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
     update_net_worth! = default_net_worth,
     log! = default_log!,
     config...)
-
     non_np = (;
         Δt,
         duration,

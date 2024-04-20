@@ -119,7 +119,7 @@ amount is tolerated (`volitility`). The withdraw amount may also be decreased ba
     relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
 - `volitility = .1`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
     is the mean withdraw × volitility
-- `one_time_withdraws = Dict()`: single withdraws to occur at a specified age. Values in the dictionary are
+- `lump_sum_withdraws = Dict()`: single withdraws to occur at a specified age. Values in the dictionary are
     `Dict(age => amount)`. 
 """
 function adaptive_withdraw(
@@ -130,37 +130,38 @@ function adaptive_withdraw(
     percent_of_real_growth = 1,
     income_adjustment = 0.0,
     volitility = 0.5,
-    one_time_withdraws = Dict(),
+    lump_sum_withdraws = nothing
 )
-    model.state.withdraw_amount = 0.0
-    model.state.net_worth == 0.0 ? (return nothing) : nothing
+    state = model.state
+    state.withdraw_amount = 0.0
+    state.net_worth == 0.0 ? (return nothing) : nothing
     Δt = model.Δt
-     
+
     if start_age ≤ t
         real_growth_rate = (1 + compute_real_growth_rate(model))^Δt
         mean_withdraw =
-            model.state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
+            state.net_worth * (real_growth_rate - 1) * percent_of_real_growth
         mean_withdraw = max(min_withdraw, mean_withdraw)
         withdraw_amount =
             volitility ≈ 0.0 ? mean_withdraw :
             rand(Normal(mean_withdraw, mean_withdraw * volitility))
         withdraw_amount = max(withdraw_amount, min_withdraw)
         withdraw_amount =
-            max(withdraw_amount - model.state.income_amount * income_adjustment, 0)
-        if model.state.net_worth < withdraw_amount
-            model.state.withdraw_amount = model.state.net_worth
+            max(withdraw_amount - state.income_amount * income_adjustment, 0)
+        if state.net_worth < withdraw_amount
+            state.withdraw_amount = state.net_worth
         else
-            model.state.withdraw_amount = withdraw_amount
+            state.withdraw_amount = withdraw_amount
         end
     end
-
-    for k ∈ keys(one_time_withdraws)
-        if (k > (t - Δt)) && (k < (t + Δt)) 
-            withdraw_amount = one_time_withdraws[k]
-            if model.state.net_worth < withdraw_amount
-                model.state.withdraw_amount = model.state.net_worth
+    isnothing(lump_sum_withdraws) ? (return nothing) : nothing
+    for k ∈ keys(lump_sum_withdraws)
+        if (k > (t - Δt)) && (k < (t + Δt))
+            withdraw_amount = lump_sum_withdraws[k]
+            if state.net_worth < withdraw_amount
+                state.withdraw_amount += state.net_worth
             else
-                model.state.withdraw_amount += withdraw_amount
+                state.withdraw_amount += withdraw_amount
             end
         end
     end

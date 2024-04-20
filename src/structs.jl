@@ -205,7 +205,7 @@ function Model(;
     start_amount,
     state = State(),
     withdraw! = variable_withdraw,
-    invest! = variable_investment,
+    invest! = variable_invest,
     update_income! = fixed_income,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,

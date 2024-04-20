@@ -9,7 +9,7 @@
         duration = 35,
         start_amount = 10_000,
         withdraw! = fixed_withdraw,
-        invest! = fixed_investment,
+        invest! = fixed_invest,
         update_inflation! = fixed_inflation,
         update_interest! = fixed_interest
     )
