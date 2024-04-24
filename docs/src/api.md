@@ -62,8 +62,8 @@ dynamic_interest
 ### Update Investments 
 
 ```@docs 
-fixed_investment
-variable_investment
+fixed_invest
+variable_invest
 ```
 
 ### Log

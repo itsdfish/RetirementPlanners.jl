@@ -56,7 +56,7 @@ model = Model(;
     duration = 55.0,
     start_amount = 10_000.0,
     withdraw! = variable_withdraw,
-    invest! = variable_investment,
+    invest! = variable_invest,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
 )
@@ -121,7 +121,7 @@ model = Model(;
     duration = 55.0,
     start_amount = 10_000.0,
     withdraw! = fixed_withdraw,
-    invest! = fixed_investment,
+    invest! = fixed_invest,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
 )

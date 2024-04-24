@@ -4,37 +4,24 @@ using RetirementPlanners
 ```
 # Overview
 
-The purpose of this example is to illustrate how to use `RetirementPlanners.jl` in a simple scenario. As such, the goal is to understand the API rather than create the most realistic simulation of investment performance. For more realistic examples, please read the documentation for [intermediate example](intermediate_example.md) and [advanced example](advanced_example.md). 
+The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple investment simulation. Our focus on a simple simulation will have the benfit of making the API clear, but will not result in in the most useful stress test of your retirement plan. For more realistic examples, please read the documentation for [intermediate example](intermediate_example.md) and [advanced example](advanced_example.md). 
 
-# Example 
+# API
 
- The example below uses simple functions for updating quanties such as inflation, interest, and net worth through out the simulation. Each update function has default parameter values which we will change. You can change the default functions either by selecting predefined functions described in the [API](./api.md/#Update-Methods), or by defining your own custom functions. 
+In this section, we will provide an overview of the API for configuring a retirement planning simulation. As detailed below, some parameters require input, whereas other have default values which can optionally be overwritten with your desired values. 
 
-## Load Packages
+## Required Parameters
 
-The first step is to load the packages required for simulating a retirement scenario and analyzing the results. With the keyword `using`, the code block below loads `RetirementPlanners` to run the simulation, and `Plots` to plot the results of the simulation. 
-
-```@example basic 
-using Plots
-using RetirementPlanners
-```
-
-## Configure Model Options
-
-In the code block below, we will specify various parameters of the model in the data structure named `config`. The configuration includes the following information three basic types of information. We will go through each in turn. 
-
-### Required Parameters
-
-The model requires numerous parameters to control the timing of events and the initial investment value. Here is a list of the required parameters:
+The model requires numerous parameters to control the timing of events and the initial value of the investment. The required parameters are as follows:
 
 - `Δt`: the time step in years 
 - `start_age`: your age in years at the beginning of the simulation
 - `duration`: the number of years to simulate
 - `start_amount`: the amount of money you have in investments at the beginning of the simulation
 
-### Optional Functions
+## Optional Update Functions
 
-The descrete time simulation is governed by seven update functions. Each function is assigned a default method with default arguments. The update functions are as follows:
+The discrete time simulation is governed by seven update functions, which are executing on each time step:
 
 - `withdraw!`: a function called on each time step to withdraw from investments 
 - `invest!`: a function called on each time step to invest money into investments 
@@ -44,7 +31,11 @@ The descrete time simulation is governed by seven update functions. Each functio
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 
-### Update Parameters
+Each function is assigned a default method with default arguments.
+
+Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
+
+## Optional Update Function Parameters
 
 Each update function described in the previous section has default parameter values which can be overwritten. For example, we could specify a set of parameters `kw_income = (X₁ = x₁, X₂ = x₂, ..., Xₙ = xₙ)` to pass parameters to the function `update_income!`. The keyword for each update function is given below: 
 
@@ -56,9 +47,37 @@ Each update function described in the previous section has default parameter val
 - `kw_net_worth`: optional keyword arguments passed to `update_net_worth!`
 - `kw_log`: optional keyword arguments passed to `log!`
 
-## Construct Model 
+# Example 
 
-We will illustrate how to setup and run a simulation with a simple example. Let's assume that you are 25 years old with an initial investment `of $10,000`, and you invest `$2,000` each month until early retirement at age 40. Assume further that the yearly interest rate on investments is `.08`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 40 years old, we will assume you will draw `$2,200` per month.  The simulation will update on a monthy basis and continue for 55 years until you reach age 80. For this simple example, we will use the following functions:
+Now that we have explained the API for configuring simulations, we are now in the position to develop a simple simulation. The simulation will be based on the following scenario:
+
+*Let's assume that you are 27 years old with an initial investment of `$`10,000, and you invest `$`625 each month until early retirement at age 60. Assume further that the yearly interest rate on investments is .07, and inflation is .035. Upon reaching 60 years old, we will assume you will withdraw `$`2,200 per month until reaching age 85.*
+
+## Load Packages
+
+The first step is to load the packages required for simulating a retirement scenario and analyzing the results. The code block below loads the package `RetirementPlanners` to configure and run the simulation, and the package `Plots` to visualize the results. 
+
+```@example basic 
+using Plots
+using RetirementPlanners
+```
+
+## Configure Simulation
+
+In this section, we will configure the simulation based on the scenario described above. As shown below, all of the configuration details will be defined in a data structure called `config`.
+
+### Required Parameters
+
+Based on the scenario above, we will use the following required parameters: 
+
+- `Δt`: 1 / 12 (monthly update)
+- `start_age`: 27
+- `duration`: 58
+- `start_amount`: `$`10,000
+
+### Optional Update Functions
+
+In this simple simulation, we use several, simple update functions pre-fixed with the word `fixed`. These simplified functions use fixed quantities in the simulation. For `update_net_worth!` and `log!`, we will use the default update functions. Each update function is described below:
 
 - `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
 - `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
@@ -68,22 +87,51 @@ We will illustrate how to setup and run a simulation with a simple example. Let'
 - `default_net_worth`: computes net worth on each time step based on inflation, interest, investments, and withdraws. 
 - `log!`: records interest rate, inflation rate, and net worth on each time step
 
-You can view additional documentation for the update functions above via `? function_name` in the REPL, or referencing the [API](./api.md/#Update-Methods).
+Note: you can view additional documentation for the update functions above via `? function_name` in the REPL, or by referencing the [API](./api.md/#Update-Methods).
+
+### Optional Update Function Parameters 
 
 Putting all of this information together, we get the following configuration:
 
 ```@example basic 
 config = (
+    # time step in years
     Δt = 1 / 12,
+    # starting age of simulation
     start_age = 25,
-    duration = 55,
+    # duration of simulation
+    duration = 58,
+    # initial investment amount 
     start_amount = 10_000,
+    # withdraw function
     withdraw! = fixed_withdraw,
-    invest! = fixed_investment,
+    # invest function
+    invest! = fixed_invest,
+    # function for updating inflation
     update_inflation! = fixed_inflation,
-    update_interest! = fixed_interest
+    # function for updating interest (growth)
+    update_interest! = fixed_interest,
+    # invest parameters
+    kw_invest = (
+        invest_amount = 625.0,
+        end_age = 60,
+    ),
+    # interest parameters
+    kw_interest = (
+        interest_rate = .07,
+    ),
+    # inflation parameters
+    kw_inflation = (
+        inflation_rate = .035,
+    ),
+    # withdraw parameters
+    kw_withdraw = (
+        withdraw_amount = 2200.0,
+        start_age = 60,
+    )
 )
 ```
+## Construct Model 
 
 Now that the model settings have been configured, we can create the model. To do so, we will pass the configuration settings to the model constructor. 
 
@@ -124,7 +172,7 @@ The total number of time steps can be found by getting the length of the time st
 times = get_times(model)
 n_steps = length(times)
 n_reps = 1
-logger = Logger(;n_reps, n_steps)
+logger = Logger(; n_reps, n_steps)
 ```
 
 ## Run Simulation
@@ -135,10 +183,12 @@ Now that we have specified the parameters of the simulation, we can use the func
 simulate!(model, logger, n_reps)
 ```
 
+## Visualize the Results
+
 The code block below plots net worth as a function of age. The time steps are contained in `times` and net worth is contained within the `Logger` object. 
 
 ```@example basic 
-plot(times, logger.net_worth, grid=false, xlabel="Age", ylabel="Net Worth")
+plot(times, logger.net_worth, grid=false, label=false, xlabel="Age", ylabel="Net Worth")
 ```
 
-Based on the assumptions we have made, you will have `$`263,027 remaining in investments at age 80. Needless to say, this simulation is too simplistic to be of much use. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [intermediate example](intermediate_example.md) and the [advanced example](advanced_example.md) make progress towards overcoming these limitations.
+Based on the assumptions we have made, you will have `$`219,771 remaining in investments at age 85. Needless to say, this simulation is too simplistic to be of much use. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [intermediate example](intermediate_example.md) and the [advanced example](advanced_example.md) make progress towards overcoming these limitations.

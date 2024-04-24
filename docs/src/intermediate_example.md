@@ -5,7 +5,13 @@ using RetirementPlanners
 ```
 # Overview
 
-This example builds upon the [basic example](basic_example.md) and attempts to overcome some of its limitations. The primary limitation with the basic example is that it lacked the means to capture uncertainy in future events, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as *what is the chance of running out of money after 20 years?*
+The goal of this example is to illustrate how to setup a realistic simulation to stress test your retirement plan. This example builds upon the [basic example](basic_example.md) and attempts to overcome some of its limitations. The primary limitation with the basic example is that it lacked the means to capture uncertainy in future events, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as *what is the chance of running out of money after 20 years?*
+
+## Scenario
+
+In this example, we will assume that you have completed the [basic example](basic_example.md) and have a rudimentary understanding of the API. If that is not the case, please review the basic example before proceeding. We will use the same scenario described in the basic example, which is reproduced below for your convienence: 
+
+*Let's assume that you are 27 years old with an initial investment `of $10,000`, and you invest `$625` each month until early retirement at age 60. Assume further that the yearly interest rate on investments is `.07`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 60 years old, we will assume you will draw `$2,200` per month.  The simulation will update on a monthy basis and continue for 58 years until you reach age 85.*
 
 # Example 
 
@@ -19,95 +25,197 @@ using Plots
 using RetirementPlanners
 ```
 
-## Create Model
-
-The `Model` object defines the parameters and behavior of the retirement investment simulation. As in the basic example, you must enter a value for the following keyword parameters:
-
-- `Δt`: the time step in years 
-- `start_age`: the age of the person at the beginning of the simulation
-- `duration`: the number of years to simulate
-- `start_amount`: the amount of money in investments at the beginning of the simulation
-
-In this example, we will use the same timing paramers used in the basic example: we will assume you start saving for retirement at age 25 with a modest initial amount of `$`10,000. The simulation will update on a monthy basis and continue for 55 years until you reach age 80. 
-
-```@example intermediate 
-model = Model(;
-    Δt = 1 / 12,
-    start_age = 25,
-    duration = 55,
-    start_amount = 10_000,
-    withdraw! = variable_withdraw,
-    invest! = variable_investment,
-    update_income! = fixed_income,
-    update_inflation! = variable_inflation,
-    update_interest! = variable_interest 
-)
-```
-
-The function names are prefixed with `variable` to signify that they allow us to introduce variability in the simulation behavior by sampling relevant quantities from distributions specified by the user. The distribution can be any univariate distribution defined in [Distributions.jl](https://juliastats.org/Distributions.jl/stable/). In cases where the desired distribution is not available in `Distributions.jl`, you may use their API to create custom distribution types. You can find more details on these update functions in the [API](api.md)
-or by typing `? function_name` in the the REPL. 
 
 ## Configure Update Options
 
-We will specify the parameters of the update function in a nested configuration data structure, which passes keyword arguments to their corresponding update funtions. The configuration data structure is a nested `NamedTuple` (i.e., immutable keyword-value pairs), where the keywords in the first level correspond to the keyword inputs of the update functions. For example, the keyword `kw_invest` (short for keyword invest) is a set of keywords passed to the function `fixed_investment`.
-
-The configuration data structure below defines distributions over quanties, such as investment and withdraw amount. Aside from drawling random values from probability distributions, the simulation is the same as that described in the [basic example](basic_example.md).
-
- The mean monthly investment follows a normal distribution with a mean of `$2,000` and a standard deviation of `$500` to reflect fluctuations in income and expenses. As before, investments are made until an early retirement at age 40. The yearly interest rate on investments has a mean of `.08` with a large standard deviation of `.08` to reflect inherent volitility in the stock market. The yearly inflation rate has a mean of `.035` and a standard deviation of `.015`. Upon retirement at age 40, we assume that you withdraw `$2,200` per month with a standard deviation of `$500` to reflect fluctuation in monthly expenses. 
+The configuration for the simulation is presented below. 
 
 ```@example intermediate 
 config = (
-    # invest parameters
-    kw_invest = (
-        distribution = Normal(2000, 500),
-        end_age = 40,
-    ),
-    # interest parameters
-    kw_interest = (
-        distribution = Normal(.08, .08),
-    ),
-    # inflation parameters
-    kw_inflation = (
-        distribution = Normal(.035, .015),
-    ),
+    # time step in years 
+    Δt = 1 / 12,
+    # start age of simulation 
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # function for adaptive withdraw
+    withdraw! = adaptive_withdraw,
     # withdraw parameters 
     kw_withdraw = (
-        distribution = Normal(2200, 500),
-        start_age = 40,
-    )
+        start_age = 60.0,
+        income_adjustment = 0,
+        min_withdraw = 2200,
+        percent_of_real_growth = 0.15,
+        volitility = 0.05,
+    ),
+    # invest parameters
+    kw_invest = (distribution = Normal(625, 100), end_age = 60),
+    # interest parameters
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (social_security_income = 1300, social_security_start_age = 67)
 )
 ```
+
+Notice that many parameters are the same as those from the basic example. However, there are importance differences, which we will examine below. 
+
+### Adaptive Withdraw
+
+In this simulation, we will use the function `adaptive_withdraw` to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, `adaptive_withdraw` will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.
+
+`adaptive_withdraw` has the following parameters:
+
+
+- `start_age`: specifies age at which funds are withdrawn from the investments.
+- `income_adjustment`: allows you to subtract a portion of the your income (e.g., social security or pension) from the investment amount. Doing so, would provide the opportunity for the investments to grow. 
+- `percent_of_real_growth`: specifies the percent of real growth withdrawn. If real growth in one month was `$`6,000, and `percent_of_real_growth = .5`, the withdraw amount would be `$`3,000. However, the withdraw amount cannot be less than the amount specified by the parameter `min_withdraw` (unless the total investments are less than `min_withdraw`). 
+- `volitility` controls the variability of the withdraw amount. The variance is proportional to the mean withdraw amount. 
+
+### Investment
+
+In the intermediate example, we will use the default function `variable_invest` to specify an investment schedule. One benefit of using `variable_invest` it can model fluctuations in investment amounts due to factors such as, unexpected expenses and bonuses. `variable_invest` has the following parameters:
+
+- `end_age`: the age at which one stops contributing to investments
+- `distribution`: a distribution object from which investment amounts are sampled 
+- `lump_sum_investments`: an optional dictionary of lump sums (e.g., inheritance) to be invested at specified times
+
+### Interest
+
+In this example, we will simulate growth the stock market using a stochastic process model called Geometric Brownian Motion (GBM). One advantage of GBM is that it provides a more accurate description of the temporal dynamics of stock market growth: the value of the stock market is noisy, but current value depends on the previous value.  Below, we will use the function `dynamic_interest` to simulate stock market growth with the GBM. A standard GBM has two parameters:
+
+- `μ`: growth rate
+- `σ`: volitility in growth rate
+
+More information can be found by expanding the details option below.
+```@raw html
+<details>
+<summary><b>Show Details</b></summary>
+```
+Brownian motion component of GBM is based on random movement of particles in space when no force is present to move the particles in a specific direction. Although particle physics seems disconnected from stock market behavior, it turns out to be a reasonable model because there is inherent randomness in stock prices as well as a general tendency to grow. If we add a growth rate parameter to Brownian motion and force the price to change proportially to its current value, the result is the GBM. The stochastic differential equation for the GBM is given by:
+
+``X(t) = X(t)[ \mu dt + s \sqrt{dt}],``
+
+where ``X(t)`` is the stock market value at time ``t``, ``dt`` is the infintesimal time step,  ``\mu`` is the average growth rate, and ``s \sim \mathrm{normal}(0,\sigma)`` is normally distributed noise with standard deviation ``\sigma``. The stochastic differential equation has two terms:
+
+- ``\mu dt``: represents the average growth rate of the stock market. 
+- ``s \sqrt{dt}``: represents the diffusion or *jitter* in the growth rate, which sometimes causes the price to increase or decrease more than the average growth rate. 
+
+An important implication of multipling the two terms on the right hand side by ``X(t)`` is that growth and volitiliy scale with the current price, and the price cannot be negative. The code block below illustrates how to simulate and plot 10 trajectories of the GBM. The growth rate is ``\mu=.07`` with a standard deviation of ``\sigma=.07``, indicating moderately high volitility. 
+```@raw html
+</details>
+```
+
+The figure below shows 10 example trajectories of GBM over a 10 year period. The average growth rate is 7% with moderate volitility of 3%. 
+```@example intermediate 
+gdm = GBM(; μ = .07, σ = .03)
+trajectories = rand(gdm, 365 * 10, 10; Δt = 1 / 365)
+plot(trajectories, leg=false, grid=false)
+```
+
+In reality, we have ucertainty about the parameters `μ` and `σ`. Setting `μ` to .07 is reasonable (albiet somewhat pessimistic), but setting `μ` to .08 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation in which are sampled from a distribution for each simulation of a 58 year period. `VarGBM` has four parameters:
+
+- `αμ`: mean of growth rate distribution
+- `ασ`: mean of volitility of growth rate distribution
+- `ημ`: standard deviation of growth rate distribution
+- `ησ`: standard deviation of volitility of growth rate distribution
+
+## Create Model Object 
+Now that we have configured the parameters of the simulation, we are now in the position to create the model object:
+
+```@example intermediate 
+model = Model(; config...)
+```
+
 ## Setup Logger
 
 The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: annualized interest rate, annualized inflation rate, and net worth. The `Logger` object requires two inputs: `n_steps`: the total number of time steps in one simulation, and `n_reps`: the total repetitions of the simulation. The total number of time steps can be found by getting the length of the time steps. In this simple scenario, we will repeat the simulation `10,000` times to provide a stable estimate of the variability in the investment and retirement conditions. 
 
 ```@example intermediate 
 times = get_times(model)
+n_reps = 1000
 n_steps = length(times)
-n_reps = 10_000
-logger = Logger(;n_reps, n_steps)
+logger = Logger(; n_steps, n_reps)
 ```
 
 ## Run Simulation
 
-Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. The optional configuration object is passed as a variable keyword using `; config...`, which maps the nested keywords in the `NamedTuple` to the corresponding keywords defined in the `simulate!` method signature. 
+Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. 
 
 ```@example intermediate
-simulate!(model, logger, n_reps; config...)
+simulate!(model, logger, n_reps)
 ```
 
 One of the biggest changes from the basic example is the use of random values for withdraw and interest. In the code block below, we will use the function `plot_gradient` to represent variability in networth projections. Darker values correspond to higher density or more likely trajectories.   
 
+
+```@raw html
+<details>
+<summary><b>Show Details</b></summary>
+```
 ```@example intermediate 
-plot_gradient(times, logger.net_worth; xlabel="Age", ylabel="Net Worth")
-```
-Two patterns are appearent. First, the trajectories become more uncertain the further we project into the future, owing to the fact that variance grows according to the [variance sum law](https://web.pdx.edu/~joel8/resources/ConceptualPresentationResources/VarianceSumLaw.pdf). Second, there is a qualitative shift at the onset of retirement in which networth decreases and becomes more uncertain.
+# plot of survival probability as a function of time
+survival_probs = mean(logger.net_worth .> 0, dims = 2)
+survival_plot = plot(
+    times,
+    survival_probs,
+    leg = false,
+    xlabel = "Age",
+    grid = false,
+    ylabel = "Survival Probability",
+    xlims = (config.kw_withdraw.start_age, times[end]),
+    ylims = (0.5, 1.05),
+    color = :black
+)
 
-One way to assess the robustness of a retirement plan is to compute the probability of *survival* (e.g., having net worth greater than zero) at each time point. The code block below illustrates how to compute and plot the survival probability.
+# networth as a function of time. Darker shading indicates more likely values
+net_worth_plot = plot_gradient(
+    times,
+    logger.net_worth;
+    xlabel = "Age",
+    ylabel = "Net Worth",
+    n_lines = 0,
+)
 
-```@example intermediate
-survival_probs = mean(logger.net_worth .> 0, dims=2)
-plot(times, survival_probs, leg=false, grid=false, xlabel="Age (years)", 
-    ylabel="Survival Probability", ylims = (0,1.05))
+# growth rate distribution across repetitions of the simulation 
+growth = logger.interest[:]
+interest_plot = histogram(
+    growth,
+    norm = true,
+    xlabel = "Market Growth",
+    ylabel = "Density",
+    color = RGB(148 / 255, 173 / 255, 144 / 255),
+    bins = 100,
+    label = false,
+    grid = false,
+    xlims = (-0.7, 0.7)
+)
+vline!(
+    interest_plot,
+    [0.0],
+    color = :black,
+    linewidth = 1.5,
+    linestyle = :dash,
+    label = false
+)
+
+# income as a function of time. 
+income_plot = plot_gradient(
+    times,
+    logger.total_income;
+    xlabel = "Age",
+    ylabel = "Total Income",
+    xlims = (config.kw_withdraw.start_age, times[end]),
+    n_lines = 0,
+    color = :blue
+)
 ```
-The plot above reveals that the survival probability drops rapidly around age 70, reaching about 25% at age 80. Depending on your life expectancy and risk tolerance, you might want to adjust some parameters of your retirement plan: perhaps working more years and/or investing more money.
+```@raw html
+</details>
+```
+```@example intermediate 
+plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))
+```
