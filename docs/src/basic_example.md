@@ -4,11 +4,11 @@ using RetirementPlanners
 ```
 # Overview
 
-The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple investment simulation. Our focus on a simple simulation will have the benfit of making the API clear, but will not result in in the most useful stress test of your retirement plan. For more realistic examples, please read the documentation for [intermediate example](intermediate_example.md) and [advanced example](advanced_example.md). 
+The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benfit of making the API clear, but will not result in in a valid stress test of your retirement plan. For more realistic examples, please read the documentation for the [advanced example](advanced_example.md). 
 
 # API
 
-In this section, we will provide an overview of the API for configuring a retirement planning simulation. As detailed below, some parameters require input, whereas other have default values which can optionally be overwritten with your desired values. 
+In this section, we will provide an overview of the API for configuring a retirement simulation. As detailed below, some parameters require user input, whereas other parameters have default values which can optionally be overwritten with your desired values. 
 
 ## Required Parameters
 
@@ -21,7 +21,7 @@ The model requires numerous parameters to control the timing of events and the i
 
 ## Optional Update Functions
 
-The discrete time simulation is governed by seven update functions, which are executing on each time step:
+The discrete time simulation is governed by seven update functions, which are executed on each time step:
 
 - `withdraw!`: a function called on each time step to withdraw from investments 
 - `invest!`: a function called on each time step to invest money into investments 
@@ -31,13 +31,11 @@ The discrete time simulation is governed by seven update functions, which are ex
 - `update_net_worth!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 
-Each function is assigned a default method with default arguments.
-
-Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
+Each function is assigned a default method with default arguments. Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
 
 ## Optional Update Function Parameters
 
-Each update function described in the previous section has default parameter values which can be overwritten. For example, we could specify a set of parameters `kw_income = (X₁ = x₁, X₂ = x₂, ..., Xₙ = xₙ)` to pass parameters to the function `update_income!`. The keyword for each update function is given below: 
+Each update function described in the previous section has default parameter values which can be overwritten. For example, we could specify a set of parameters `kw_income = (X₁ = x₁, X₂ = x₂, ..., Xₙ = xₙ)` to pass the function `update_income!`. The keyword for each update function is given below: 
 
 - `kw_income`: optional keyword arguments passed to `update_income!`
 - `kw_withdraw`: optional keyword arguments passed to `withdraw!`
@@ -49,35 +47,35 @@ Each update function described in the previous section has default parameter val
 
 # Example 
 
-Now that we have explained the API for configuring simulations, we are now in the position to develop a simple simulation. The simulation will be based on the following scenario:
+Now that we have explained the API for configuring simulations, we are now in the position to develop a simple, retirement simulation based on the following scenario:
 
 *Let's assume that you are 27 years old with an initial investment of `$`10,000, and you invest `$`625 each month until early retirement at age 60. Assume further that the yearly interest rate on investments is .07, and inflation is .035. Upon reaching 60 years old, we will assume you will withdraw `$`2,200 per month until reaching age 85.*
 
 ## Load Packages
 
-The first step is to load the packages required for simulating a retirement scenario and analyzing the results. The code block below loads the package `RetirementPlanners` to configure and run the simulation, and the package `Plots` to visualize the results. 
+The first step is to load the required packages. The code block below loads the package `RetirementPlanners` to configure and run the retirement simulation, and the package `Plots` to visualize the results. 
 
 ```@example basic 
-using Plots
 using RetirementPlanners
+using Plots
 ```
 
 ## Configure Simulation
 
-In this section, we will configure the simulation based on the scenario described above. As shown below, all of the configuration details will be defined in a data structure called `config`.
+In this section, we will configure the simulation based on the scenario described above. As shown below, all of the configuration details will be defined in a data structure named `config`.
 
 ### Required Parameters
 
 Based on the scenario above, we will use the following required parameters: 
 
-- `Δt`: 1 / 12 (monthly update)
-- `start_age`: 27
-- `duration`: 58
-- `start_amount`: `$`10,000
+- `Δt`: $\frac{1}{12}$
+- `start_age`: $27$
+- `duration`: $58$
+- `start_amount`: $\$10,000$
 
 ### Optional Update Functions
 
-In this simple simulation, we use several, simple update functions pre-fixed with the word `fixed`. These simplified functions use fixed quantities in the simulation. For `update_net_worth!` and `log!`, we will use the default update functions. Each update function is described below:
+In this simple simulation, we use several, simple update functions pre-fixed with the word `fixed`. As the names suggest, these simplified functions use fixed quantities in the simulation. However, for `update_net_worth!` and `log!`, we will use the default update functions. Each update function is described below:
 
 - `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
 - `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
@@ -177,7 +175,7 @@ logger = Logger(; n_reps, n_steps)
 
 ## Run Simulation
 
-Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our `Model` object, `Logger` object, and the number of repetitions. 
+Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate quantities of interest and save them to the `Logger` object. As shown below, `simulate!` requires our `Model` object, `Logger` object, and the number of repetitions, `n_reps`. 
 
 ```@example basic
 simulate!(model, logger, n_reps)
@@ -191,4 +189,4 @@ The code block below plots net worth as a function of age. The time steps are co
 plot(times, logger.net_worth, grid=false, label=false, xlabel="Age", ylabel="Net Worth")
 ```
 
-Based on the assumptions we have made, you will have `$`219,771 remaining in investments at age 85. Needless to say, this simulation is too simplistic to be of much use. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [intermediate example](intermediate_example.md) and the [advanced example](advanced_example.md) make progress towards overcoming these limitations.
+Based on the assumptions we have made, you will have `$`219,771 remaining in investments at age 85. Needless to say, this simulation is too simplistic stress test your financial situation. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [advanced example](advanced_example.md) will show you how to introduce random variables into the simulation to account for various sources of uncertainty.

@@ -5,26 +5,27 @@ using RetirementPlanners
 ```
 # Overview
 
-The goal of this example is to illustrate how to setup a realistic simulation to stress test your retirement plan. This example builds upon the [basic example](basic_example.md) and attempts to overcome some of its limitations. The primary limitation with the basic example is that it lacked the means to capture uncertainy in future events, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as *what is the chance of running out of money after 20 years?*
+The goal of this example is to illustrate how to setup a realistic simulation to stress test your retirement plan. This example builds upon the [basic example](basic_example.md) and attempts to overcome some of its limitations. The primary limitation with the basic example is its failure to capture uncertainty in various quantaties, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as *what is the chance of running out of money after 20 years?*
+
+
+
+# Example 
 
 ## Scenario
 
 In this example, we will assume that you have completed the [basic example](basic_example.md) and have a rudimentary understanding of the API. If that is not the case, please review the basic example before proceeding. We will use the same scenario described in the basic example, which is reproduced below for your convienence: 
 
-*Let's assume that you are 27 years old with an initial investment `of $10,000`, and you invest `$625` each month until early retirement at age 60. Assume further that the yearly interest rate on investments is `.07`, which is inflation adjusted by a yearly rate of `.035`. Upon reaching 60 years old, we will assume you will draw `$2,200` per month.  The simulation will update on a monthy basis and continue for 58 years until you reach age 85.*
-
-# Example 
+*Let's assume that you are 27 years old with an initial investment of `$`10,000, and you invest `$`625 each month until early retirement at age 60. Assume further that the yearly interest rate on investments is .07, and inflation is .035. Upon reaching 60 years old, we will assume you will withdraw `$`2,200 per month until reaching age 85.*
 
 ## Load Packages
 
-The first step is to load the packages required for simulating a retirement scenario and analyzing the results. In the code block below, we will load `RetirementPlanners` to run the simulation, `Distributions` to make the simulation stochastic, and `Plots` to plot the results of the simulation. 
+The first step is to load the required packages. In the code block below, we will load `RetirementPlanners` to run the retirement simulation, `Distributions` to make the simulation stochastic, and `Plots` to plot the results of the simulation. 
 
 ```@example intermediate
 using Distributions 
 using Plots
 using RetirementPlanners
 ```
-
 
 ## Configure Update Options
 
@@ -68,8 +69,6 @@ Notice that many parameters are the same as those from the basic example. Howeve
 In this simulation, we will use the function `adaptive_withdraw` to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, `adaptive_withdraw` will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.
 
 `adaptive_withdraw` has the following parameters:
-
-
 - `start_age`: specifies age at which funds are withdrawn from the investments.
 - `income_adjustment`: allows you to subtract a portion of the your income (e.g., social security or pension) from the investment amount. Doing so, would provide the opportunity for the investments to grow. 
 - `percent_of_real_growth`: specifies the percent of real growth withdrawn. If real growth in one month was `$`6,000, and `percent_of_real_growth = .5`, the withdraw amount would be `$`3,000. However, the withdraw amount cannot be less than the amount specified by the parameter `min_withdraw` (unless the total investments are less than `min_withdraw`). 
@@ -116,7 +115,7 @@ trajectories = rand(gdm, 365 * 10, 10; Δt = 1 / 365)
 plot(trajectories, leg=false, grid=false)
 ```
 
-In reality, we have ucertainty about the parameters `μ` and `σ`. Setting `μ` to .07 is reasonable (albiet somewhat pessimistic), but setting `μ` to .08 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation in which are sampled from a distribution for each simulation of a 58 year period. `VarGBM` has four parameters:
+In reality, however, we are uncertain about the values of parameters `μ` and `σ`. Setting `μ` to 07 is reasonable (albiet somewhat pessimistic), but setting `μ` to .08 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation of GBM in which `μ` and `σ` are sampled from a distribution for each simulation of a 58 year period. `VarGBM` has four parameters:
 
 - `αμ`: mean of growth rate distribution
 - `ασ`: mean of volitility of growth rate distribution
@@ -218,4 +217,130 @@ income_plot = plot_gradient(
 ```
 ```@example intermediate 
 plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))
+```
+
+
+```@raw html
+<details>
+<summary><b>All Code</b></summary>
+```
+```julia
+###############################################################################################################
+#                                           load dependencies
+###############################################################################################################
+cd(@__DIR__)
+using Pkg
+Pkg.activate("..")
+using Distributions
+using Plots
+using RetirementPlanners
+###############################################################################################################
+#                                           setup simulation
+###############################################################################################################
+# montly contribution 
+contribution = (50_000 / 12) * 0.15
+# configuration options
+config = (
+    # time step in years 
+    Δt = 1 / 12,
+    # start age of simulation 
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # function for adaptive withdraw
+    withdraw! = adaptive_withdraw,
+    # withdraw parameters 
+    kw_withdraw = (
+        start_age = 60.0,
+        income_adjustment = 0,
+        min_withdraw = 2000,
+        percent_of_real_growth = 0.15,
+        volitility = 0.05,
+        lump_sum_withdraws = Dict(0 => 0)
+    ),
+    # invest parameters
+    kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
+    # interest parameters
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (social_security_income = 2000, social_security_start_age = 67)
+)
+# setup retirement model
+model = Model(; config...)
+###############################################################################################################
+#                                           run simulation
+###############################################################################################################
+times = get_times(model)
+n_reps = 1000
+n_steps = length(times)
+logger = Logger(; n_steps, n_reps)
+simulate!(model, logger, n_reps)
+###############################################################################################################
+#                                            plot results 
+###############################################################################################################
+# plot of survival probability as a function of time
+survival_probs = mean(logger.net_worth .> 0, dims = 2)
+survival_plot = plot(
+    times,
+    survival_probs,
+    leg = false,
+    xlabel = "Age",
+    grid = false,
+    ylabel = "Survival Probability",
+    xlims = (config.kw_withdraw.start_age, times[end]),
+    ylims = (0.5, 1.05),
+    color = :black
+)
+
+# networth as a function of time. Darker shading indicates more likely values
+net_worth_plot = plot_gradient(
+    times,
+    logger.net_worth;
+    xlabel = "Age",
+    ylabel = "Net Worth",
+    n_lines = 0
+)
+
+# growth rate distribution across repetitions of the simulation 
+growth = logger.interest[:]
+interest_plot = histogram(
+    growth,
+    norm = true,
+    xlabel = "Market Growth",
+    ylabel = "Density",
+    color = RGB(148 / 255, 173 / 255, 144 / 255),
+    bins = 100,
+    label = false,
+    grid = false,
+    xlims = (-0.7, 0.7)
+)
+vline!(
+    interest_plot,
+    [0.0],
+    color = :black,
+    linewidth = 1.5,
+    linestyle = :dash,
+    label = false
+)
+# laplace_dist = fit(Laplace, growth)
+# plot!(interest_plot, -.50:.01:.50, pdf.(laplace_dist, -.50:.01:.50), color=:black, leg=false)
+
+# income as a function of time. 
+income_plot = plot_gradient(
+    times,
+    logger.total_income;
+    xlabel = "Age",
+    ylabel = "Total Income",
+    xlims = (config.kw_withdraw.start_age, times[end]),
+    n_lines = 0,
+    color = :blue
+)
+plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))
+```
+```@raw html
+</details>
 ```
