@@ -1,113 +1,290 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Plotting · RetirementPlanners</title><meta name="title" content="Plotting · RetirementPlanners"/><meta property="og:title" content="Plotting · RetirementPlanners"/><meta property="twitter:title" content="Plotting · RetirementPlanners"/><meta name="description" content="Documentation for RetirementPlanners."/><meta property="og:description" content="Documentation for RetirementPlanners."/><meta property="twitter:description" content="Documentation for RetirementPlanners."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="RetirementPlanners logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">RetirementPlanners</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../basic_example/">Basic Example</a></li><li><a class="tocitem" href="../intermediate_example/">Intermediate Example</a></li><li><a class="tocitem" href="../advanced_example/">Advanced Example</a></li></ul></li><li class="is-active"><a class="tocitem" href>Plotting</a><ul class="internal"><li><a class="tocitem" href="#gradient_plot"><span>gradient_plot</span></a></li><li><a class="tocitem" href="#Sensitivity-Plot"><span>Sensitivity Plot</span></a></li></ul></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Plotting</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Plotting</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl/blob/main/docs/src/plotting.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Plotting-Support"><a class="docs-heading-anchor" href="#Plotting-Support">Plotting Support</a><a id="Plotting-Support-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Support" title="Permalink"></a></h1><p>Currently, <code>RetirementPlanners.jl</code> only provides one specialized plotting function. More plotting functionality might be included in the future. </p><h2 id="gradient_plot"><a class="docs-heading-anchor" href="#gradient_plot">gradient_plot</a><a id="gradient_plot-1"></a><a class="docs-heading-anchor-permalink" href="#gradient_plot" title="Permalink"></a></h2><p>In simulations involving hundreds or thousands of repetitions, it is not feasible to plot all trajectories of net worth due to overplotting. The function <code>gradient_plot</code> overcomes this challenge by representing variability as a density gradient, where darker regions correspond to more likely trajectories. <code>gradient_plot</code> is conditionally loaded into your active session when <code>RetirementPlanners</code> and <code>Plots</code> are loaded. The example below shows a gradient density plot for 1000 simulations with 10 individual trajectories optionally added through the keyword <code>n_lines</code>. The full set of code can be seen by expanding the hidden code under <em>Show Code</em>.</p><details>
-<summary><b>Show Code</b></summary><pre><code class="language-julia hljs">using Distributions
-using Plots
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Plotting · RetirementPlanners</title><meta name="title" content="Plotting · RetirementPlanners"/><meta property="og:title" content="Plotting · RetirementPlanners"/><meta property="twitter:title" content="Plotting · RetirementPlanners"/><meta name="description" content="Documentation for RetirementPlanners."/><meta property="og:description" content="Documentation for RetirementPlanners."/><meta property="twitter:description" content="Documentation for RetirementPlanners."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="RetirementPlanners logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">RetirementPlanners</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../basic_example/">Basic Example</a></li><li><a class="tocitem" href="../advanced_example/">Advanced Example</a></li></ul></li><li class="is-active"><a class="tocitem" href>Plotting</a><ul class="internal"><li><a class="tocitem" href="#Gradient-Plot"><span>Gradient Plot</span></a></li><li><a class="tocitem" href="#Sensitivity-Plot"><span>Sensitivity Plot</span></a></li></ul></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Plotting</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Plotting</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl/blob/main/docs/src/plotting.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Plotting-Support"><a class="docs-heading-anchor" href="#Plotting-Support">Plotting Support</a><a id="Plotting-Support-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Support" title="Permalink"></a></h1><p>Currently, <code>RetirementPlanners.jl</code> provides two specialized plotting functions: <code>plot_gradient</code> and <code>plot_sensitivity</code>. Each plotting function is illustrated below using the code detailed in the <a href="../basic_example/">basic example</a> and the <a href="../advanced_example/">advanced example</a>. For ease of presentation, only key elements of the code are visible by default. The code to setup the simulation can be revealed by clicking on the arrow button. </p><h2 id="Gradient-Plot"><a class="docs-heading-anchor" href="#Gradient-Plot">Gradient Plot</a><a id="Gradient-Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Gradient-Plot" title="Permalink"></a></h2><p>The function <code>plot_gradient</code> is used to plot the distribution of a quantity across time. Some examples include, net worth and total income. This functionality is useful in cases involving thousands of simulations, which would lead to overplotting. <code>plot_gradient</code> overcomes this challenge by representing variability as a density gradient, where darker regions correspond to more likely trajectories. <code>plot_gradient</code> is conditionally loaded into your active session when <code>RetirementPlanners</code> and <code>Plots</code> are loaded. The example below shows a gradient density plot for 1000 simulations. The full set of code can be seen by expanding the hidden code under <em>Show Code</em>.</p><details>
+<summary><b>Show Code</b></summary><pre><code class="language-julia hljs">using DataFrames
+using Distributions
 using Random
 using RetirementPlanners
+using StatsPlots
 
 Random.seed!(535)
 
+# montly contribution
+contribution = (50_000 / 12) * 0.15
 # configuration options
 config = (
+    # time step in years
+    Δt = 1 / 12,
+    # start age of simulation
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount
+    start_amount = 10_000,
+    # function for adaptive withdraw
+    withdraw! = adaptive_withdraw,
     # withdraw parameters
     kw_withdraw = (
-        distribution = Normal(4000, 1000),
-        start_age = 65,
+        start_age = 60.0,
+        income_adjustment = 0,
+        min_withdraw = 2000,
+        percent_of_real_growth = 0.15,
+        volitility = 0.05,
+        lump_sum_withdraws = Dict(0 =&gt; 0)
     ),
     # invest parameters
-    kw_invest = (
-        distribution = Normal(1200, 300),
-        end_age = 65,
-    ),
+    kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
     # interest parameters
-    kw_interest = (
-        gbm = GBM(; μ = .07, σ = .05),
-    ),
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
     # inflation parameters
-    kw_inflation = (
-        gbm = GBM(; μ = .035, σ = .005),
-    )
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters
+    kw_income = (social_security_income = 2000, social_security_start_age = 67)
 )
-
 # setup retirement model
-model = Model(;
-    Δt = 1 / 12,
-    start_age = 32.0,
-    duration = 55.0,
-    start_amount = 10_000.0,
-    withdraw! = variable_withdraw,
-    invest! = variable_investment,
-    update_inflation! = dynamic_inflation,
-    update_interest! = dynamic_interest,
-)
+model = Model(; config...)
 
 times = get_times(model)
 n_reps = 1000
 n_steps = length(times)
-logger = Logger(;n_steps, n_reps)
-simulate!(model, logger, n_reps; config...);</code></pre></details><pre><code class="language-julia hljs">plot_gradient(times, logger.net_worth; xlabel=&quot;Age&quot;, ylabel=&quot;Net Worth&quot;, n_lines = 10)</code></pre><img src="04ba7d79.svg" alt="Example block output"/><h2 id="Sensitivity-Plot"><a class="docs-heading-anchor" href="#Sensitivity-Plot">Sensitivity Plot</a><a id="Sensitivity-Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Sensitivity-Plot" title="Permalink"></a></h2><p>In many cases, it is informative to perform a sensitivity analysis of your retirement strategy. For example, you might want to know to what extent your net worth varies according to changes in investment amount and duration. The function <code>plot_sensitivity</code> uses a contour plot visualize the effect of two variables on another variable. In the code block below, withdraw amount and invest amount are varied independently across a range of values and the survival probability at the end of the simulation is color coded from low in red to high in green. As you might expect, you are more likely run out of money by withdrawing more and investing less. The benefit of a sensitivity analysis is that it provides details about the magnitude of these changes. </p><details>
-<summary><b>Show Code</b></summary><pre><code class="language-julia hljs">using Distributions
-using Plots
-using Random
-using RetirementPlanners
+logger = Logger(; n_steps, n_reps)
+simulate!(model, logger, n_reps)
 
-Random.seed!(6522)
-
+# plot of survival probability as a function of time
+survival_probs = mean(logger.net_worth .&gt; 0, dims = 2);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">696×1 Matrix{Float64}:
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ 1.0
+ ⋮
+ 0.771
+ 0.767
+ 0.767
+ 0.765
+ 0.759
+ 0.758
+ 0.754
+ 0.753
+ 0.751</code></pre></details><pre><code class="language-julia hljs">survival_plot = plot(
+    times,
+    survival_probs,
+    leg = false,
+    xlabel = &quot;Age&quot;,
+    grid = false,
+    ylabel = &quot;Survival Probability&quot;,
+    xlims = (config.kw_withdraw.start_age, times[end]),
+    ylims = (0.5, 1.05),
+    color = :black
+)</code></pre><img src="24d36346.svg" alt="Example block output"/><h2 id="Sensitivity-Plot"><a class="docs-heading-anchor" href="#Sensitivity-Plot">Sensitivity Plot</a><a id="Sensitivity-Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Sensitivity-Plot" title="Permalink"></a></h2><p>In many cases, it is informative to perform a sensitivity analysis of your retirement strategy. For example, you might want to know to what extent your net worth varies according to changes in investment amount and number of years investing. The function <code>plot_sensitivity</code> uses a contour plot visualize the effect of two variables on another variable.</p><p>In the code block below, invest amount and number of years investing are varied independently across a range of values and the survival probability at the end of the simulation is color coded from low in red to high in green. As you might expect, you are more likely run out of money by withdrawing more and investing less. The benefit of a sensitivity analysis is that it provides details about the magnitude of these changes. </p><p>As shown in the configuration below, we specificy a vector of values for the variables we wish to vary. The configuration is passed to a function called <code>grid_search</code>, which runs the simulation for all combinations of the two variables. Click the arrow to reveal the details. </p><pre><code class="language-julia hljs"># montly contribution 
+contribute(x, r) = (x / 12) * r
+salary = 50_000
 # configuration options
 config = (
-    # withdraw parameters
+    # time step in years 
+    Δt = 1 / 12,
+    # start age of simulation 
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # withdraw parameters 
     kw_withdraw = (
-        withdraw_amount = [2000,2500,3000],
-        start_age = 65,
+        distribution = Normal(2000, 100),
+        start_age = [55:2:65;],
+        income_adjustment = 0.5
     ),
     # invest parameters
     kw_invest = (
-        invest_amount = [1000,1500,2000,2500],
-        end_age = 65,
+        distribution = [
+            Normal(contribute(salary, 0.10), 100),
+            Normal(contribute(salary, 0.15), 100),
+            Normal(contribute(salary, 0.20), 100),
+            Normal(contribute(salary, 0.25), 100)
+        ],
+        end_age = [55:2:65;]
     ),
     # interest parameters
-    kw_interest = (
-        gbm = GBM(; μ = .07, σ = .05),
-    ),
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
     # inflation parameters
-    kw_inflation = (
-        gbm = GBM(; μ = .035, σ = .005),
-    )
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (social_security_income = 1300, social_security_start_age = 67)
+)</code></pre><details>
+<summary><b>Show Code</b></summary><pre><code class="language-julia hljs">using DataFrames
+using Distributions
+using Random
+using RetirementPlanners
+using StatsPlots
+
+Random.seed!(6522)
+
+# montly contribution
+contribute(x, r) = (x / 12) * r
+salary = 50_000
+# configuration options
+config = (
+    # time step in years
+    Δt = 1 / 12,
+    # start age of simulation
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount
+    start_amount = 10_000,
+    # withdraw parameters
+    kw_withdraw = (
+        distribution = Normal(2000, 100),
+        start_age = [55:2:65;],
+        income_adjustment = 0.5
+    ),
+    # invest parameters
+    kw_invest = (
+        distribution = [
+            Normal(contribute(salary, 0.10), 100),
+            Normal(contribute(salary, 0.15), 100),
+            Normal(contribute(salary, 0.20), 100),
+            Normal(contribute(salary, 0.25), 100)
+        ],
+        end_age = [55:2:65;]
+    ),
+    # interest parameters
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters
+    kw_income = (social_security_income = 1300, social_security_start_age = 67)
 )
 
-# setup retirement model
-model = Model(;
+yoked_values = [Pair((:kw_withdraw, :start_age), (:kw_invest, :end_age))]
+results = grid_search(Model, Logger, 2000, config; yoked_values);
+df = to_dataframe(Model(; config...), results)
+df.survived = df.net_worth .&gt; 0
+df.mean_invest = map(x -&gt; x.μ, df.invest_distribution)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">33408000-element Vector{Float64}:
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+  416.66666666666674
+    ⋮
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667
+ 1041.6666666666667</code></pre></details><pre><code class="language-julia hljs">plot_sensitivity(
+    df,
+    [:invest_end_age, :mean_invest],
+    :survived,
+    xlabel = &quot;Age&quot;,
+    ylabel = &quot;Invest Amount&quot;,
+    colorbar_title = &quot;Surival Probability&quot;
+)</code></pre><img src="e27e692a.svg" alt="Example block output"/><details>
+<summary><b>All Code</b></summary><pre><code class="language-julia hljs">###############################################################################################################
+#                                           load dependencies
+###############################################################################################################
+cd(@__DIR__)
+using Pkg
+Pkg.activate(&quot;..&quot;)
+using Distributions
+using DataFrames
+using Plots
+using RetirementPlanners
+using StatsPlots
+###############################################################################################################
+#                                           setup simulation
+###############################################################################################################
+# montly contribution 
+contribute(x, r) = (x / 12) * r
+salary = 50_000
+# configuration options
+config = (
+    # time step in years 
     Δt = 1 / 12,
-    start_age = 32.0,
-    duration = 55.0,
-    start_amount = 10_000.0,
-    withdraw! = fixed_withdraw,
-    invest! = fixed_investment,
-    update_inflation! = dynamic_inflation,
-    update_interest! = dynamic_interest,
+    # start age of simulation 
+    start_age = 27,
+    # duration of simulation in years
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # withdraw parameters 
+    kw_withdraw = (
+        distribution = Normal(2000, 100),
+        start_age = [55:2:65;],
+        income_adjustment = 0.5
+    ),
+    # invest parameters
+    kw_invest = (
+        distribution = [
+            Normal(contribute(salary, 0.10), 100),
+            Normal(contribute(salary, 0.15), 100),
+            Normal(contribute(salary, 0.20), 100),
+            Normal(contribute(salary, 0.25), 100)
+        ],
+        end_age = [55:2:65;]
+    ),
+    # interest parameters
+    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (social_security_income = 1300, social_security_start_age = 67)
 )
-n_reps = 1000
-results = grid_search(model, Logger, n_reps; config)
-df = to_dataframe(model, results)
-df.survived = df.net_worth .&gt; 0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">7920000-element BitVector:
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- ⋮
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- 1
- 1</code></pre></details><pre><code class="language-julia hljs">plot_sensitivity(df, [:withdraw_withdraw_amount,:invest_invest_amount], :survived,
-    xlabel = &quot;Withdrawn Amount&quot;, ylabel = &quot;Invest Amount&quot;, colorbar_title = &quot;Surival Probability&quot;)</code></pre><img src="35d0f362.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Friday 19 April 2024 14:42">Friday 19 April 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+###############################################################################################################
+#                                           run simulation
+###############################################################################################################
+yoked_values = [Pair((:kw_withdraw, :start_age), (:kw_invest, :end_age))]
+results = grid_search(Model, Logger, 2000, config; yoked_values);
+df = to_dataframe(Model(; config...), results)
+df.survived = df.net_worth .&gt; 0
+df.mean_invest = map(x -&gt; x.μ, df.invest_distribution)
+df1 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :net_worth =&gt; mean)
+df2 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :survived =&gt; mean)
+###############################################################################################################
+#                                            plot results 
+###############################################################################################################
+@df df1 plot(
+    :time,
+    :net_worth_mean,
+    group = (:invest_end_age, :mean_invest),
+    ylims = (0, 2e6),
+    legend = false,
+    legendtitle = &quot;withdraw age&quot;,
+    grid = false,
+    xlabel = &quot;Age&quot;,
+    ylabel = &quot;Mean Net Worth&quot;
+)
+
+@df df2 plot(
+    :time,
+    :survived_mean,
+    group = (:invest_end_age, :mean_invest),
+    ylims = (0, 1),
+    grid = false,
+    xlabel = &quot;Age&quot;,
+    layout = (4, 1),
+    legend = :bottomleft,
+    ylabel = &quot;Survival Probability&quot;
+)
+
+plot_sensitivity(
+    df,
+    [:invest_end_age, :mean_invest],
+    :survived,
+    xlabel = &quot;Age&quot;,
+    ylabel = &quot;Invest Amount&quot;,
+    colorbar_title = &quot;Surival Probability&quot;
+)</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Thursday 25 April 2024 13:21">Thursday 25 April 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
