@@ -76,16 +76,12 @@ survival_probs = mean(logger.net_worth .> 0, dims = 2);
 ```
 
 ```@example plotting 
-survival_plot = plot(
+plot_gradient(
     times,
-    survival_probs,
-    leg = false,
+    logger.net_worth;
     xlabel = "Age",
-    grid = false,
-    ylabel = "Survival Probability",
-    xlims = (config.kw_withdraw.start_age, times[end]),
-    ylims = (0.5, 1.05),
-    color = :black
+    ylabel = "Net Worth",
+    n_lines = 0
 )
 ```
 
