@@ -552,5 +552,86 @@
 
             @test model.state.invest_amount ≈ mean_investment atol = 1e-10
         end
+
+        @safetestset "6" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                25;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                peak_age = 45,
+                real_growth = .02
+            )
+
+            @test model.state.invest_amount ≈ mean_investment * 1.02^0 atol = 1e-10
+        end
+
+        @safetestset "7" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                30;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                peak_age = 45,
+                real_growth = .02
+            )
+
+            @test model.state.invest_amount ≈ mean_investment * 1.02^5 atol = 1e-10
+        end
+
+        @safetestset "8" begin
+            using RetirementPlanners
+            using RetirementPlanners: reset!
+            using Distributions
+            using Test
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
+            mean_investment = 1000
+            reset!(model)
+            model.state.net_worth = 0.0
+            model.state.interest_rate = 0.10
+            model.state.inflation_rate = 0.03
+
+            variable_invest(
+                model,
+                50;
+                end_age = 67.0,
+                distribution = Normal(mean_investment, 0),
+                peak_age = 45,
+                real_growth = .02
+            )
+
+            @test model.state.invest_amount ≈ mean_investment * 1.02^20 atol = 1e-10
+        end
     end
 end
