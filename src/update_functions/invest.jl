@@ -58,12 +58,12 @@ function variable_invest(
     peak_age = 45,
     lump_sum_investments = nothing
 )
-    (;start_age, state, Δt) = model
-    if end_age ≥ t 
-        n_years =  t ≥ peak_age ? (peak_age - start_age) : (t - model.start_age)
+    (; start_age, state, Δt) = model
+    if end_age ≥ t
+        n_years = t ≥ peak_age ? (peak_age - start_age) : (t - model.start_age)
         growth_factor = (1 + real_growth)^floor(n_years)
         state.invest_amount = rand(distribution) * growth_factor
-    else 
+    else
         state.invest_amount = 0.0
     end
     isnothing(lump_sum_investments) ? (return nothing) : nothing
