@@ -574,7 +574,7 @@
                 end_age = 67.0,
                 distribution = Normal(mean_investment, 0),
                 peak_age = 45,
-                real_growth = .02
+                real_growth = 0.02
             )
 
             @test model.state.invest_amount ≈ mean_investment * 1.02^0 atol = 1e-10
@@ -601,7 +601,7 @@
                 end_age = 67.0,
                 distribution = Normal(mean_investment, 0),
                 peak_age = 45,
-                real_growth = .02
+                real_growth = 0.02
             )
 
             @test model.state.invest_amount ≈ mean_investment * 1.02^5 atol = 1e-10
@@ -628,7 +628,7 @@
                 end_age = 67.0,
                 distribution = Normal(mean_investment, 0),
                 peak_age = 45,
-                real_growth = .02
+                real_growth = 0.02
             )
 
             @test model.state.invest_amount ≈ mean_investment * 1.02^20 atol = 1e-10
