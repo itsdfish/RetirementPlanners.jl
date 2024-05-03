@@ -65,7 +65,12 @@ Models inflation in the stock market as a geometric brownian motion process.
 sets an arbitrary scale. The function also supports `VarGBM`. 
 - `kwargs...`: optional keyword arguments passed to `increment!`
 """
-function dynamic_inflation(model::AbstractModel, t; gbm = GBM(; μ = 0.03, σ = 0.01, x0 = 1), kwargs...)
+function dynamic_inflation(
+    model::AbstractModel,
+    t;
+    gbm = GBM(; μ = 0.03, σ = 0.01, x0 = 1),
+    kwargs...
+)
     Δt = model.Δt
     # reset model at the beginning of each simulation 
     t ≈ model.start_age + Δt ? reset!(gbm) : nothing

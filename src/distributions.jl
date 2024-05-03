@@ -94,7 +94,7 @@ end
 function modify(dist::AbstractGBM, t; recessions = nothing)
     (; μ, μᵣ, σ, σᵣ) = dist
     isnothing(recessions) ? (return μ, σ) : nothing
-    for (start_time,duration) ∈ recessions 
+    for (start_time, duration) ∈ recessions
         if (t ≥ start_time) && (t < (start_time + duration))
             return μᵣ, σᵣ
         end
