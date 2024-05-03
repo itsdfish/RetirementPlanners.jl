@@ -9,6 +9,8 @@ using NamedTupleTools
 using PrettyTables
 using ProgressMeter
 using StatsBase: cor2cov
+using StatsBase: sample
+using StatsBase: Weights
 using ThreadsX
 
 import Distributions: fit
@@ -23,6 +25,7 @@ export AbstractLogger
 export AbstractState
 
 export GBM
+export MGBM
 export Model
 export Logger
 export MvGBM

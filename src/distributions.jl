@@ -14,13 +14,17 @@ growth of stocks.
 # Fields 
 
 - `μ::T`: growth rate
-- `σ::T`: volitility in growth rate 
+- `σ::T`: volitility in growth rate
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 """
 mutable struct GBM{T <: Real} <: AbstractGBM
     μ::T
     σ::T
+    μᵣ::T
+    σᵣ::T
     x0::T
     x::T
 end
@@ -28,7 +32,7 @@ end
 Base.broadcastable(dist::AbstractGBM) = Ref(dist)
 
 """
-    GBM(; μ, σ, x0, x=x0)
+    GBM(; μ, σ, μᵣ = μ, σᵣ = σ, x0 = 1.0, x = x0)
 
 A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
 growth of stocks. 
@@ -36,7 +40,9 @@ growth of stocks.
 # Keywords 
 
 - `μ::T`: growth rate
-- `σ::T`: volitility in growth rate 
+- `σ::T`: volitility in growth rate
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
 - `x0::T=1.0`: initial value of stock 
 - `x::T=x0`: current value
 
@@ -54,9 +60,8 @@ dist = GBM(; μ=.10, σ=.05, x0 = 1)
 prices = rand(dist, n_steps, n_reps; Δt)
 ```
 """
-function GBM(; μ, σ, x0 = 1.0, x = x0)
-    μ, σ, x0, x = promote(μ, σ, x0, x)
-    return GBM(μ, σ, x0, x)
+function GBM(; μ, σ, μᵣ = μ, σᵣ = σ, x0 = 1.0, x = x0)
+    return GBM(promote(μ, σ, μᵣ, σᵣ, x0, x)...)
 end
 
 """
@@ -73,10 +78,26 @@ Increment the stock price over the period `Δt`.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function increment!(dist::AbstractGBM; Δt)
-    (; μ, σ, x) = dist
-    dist.x += x * (μ * Δt + σ * randn() * √(Δt))
+function increment!(
+    dist::AbstractGBM;
+    Δt,
+    t = 0,
+    recession_onset = -1,
+    recession_duration = 0,
+    _...
+)
+    (; x) = dist
+    μ′, σ′ = modify(dist, t, recession_onset, recession_duration)
+    dist.x += x * (μ′ * Δt + σ′ * randn() * √(Δt))
     return nothing
+end
+
+function modify(dist::AbstractGBM, t, recession_onset, recession_duration)
+    (; μ, μᵣ, σ, σᵣ) = dist
+    if (t ≥ recession_onset) && (t < (recession_onset + recession_duration))
+        return μᵣ, σᵣ
+    end
+    return return μ, σ
 end
 
 """
@@ -94,24 +115,23 @@ Simulate a random trajector of a Geometric Brownian motion process.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function rand(dist::AbstractGBM, n_steps, n_reps; Δt)
-    return [rand(dist, n_steps; Δt) for _ ∈ 1:n_reps]
+function rand(dist::AbstractGBM, n_steps, n_reps; Δt, kwargs...)
+    return [rand(dist, n_steps; Δt, kwargs...) for _ ∈ 1:n_reps]
 end
 
-function rand(dist::AbstractGBM, n_steps; Δt)
+function rand(dist::AbstractGBM, n_steps; Δt, kwargs...)
+    reset!(dist)
     prices = fill(0.0, n_steps + 1)
-    dist.x = dist.x0
     prices[1] = dist.x
     for i ∈ 2:(n_steps + 1)
-        increment!(dist; Δt)
+        increment!(dist; Δt, kwargs...)
         prices[i] = dist.x
     end
     return prices
 end
 
 function reset!(dist::AbstractGBM)
-    dist.x0 = 1.0
-    dist.x = 1.0
+    dist.x = dist.x0
     return nothing
 end
 
@@ -166,11 +186,17 @@ on each simulation run to capture uncertainy in these parameters.
 # Fields 
 
 - `μ::T`: growth rate sampled from normal distribution
-- `σ::T`: volitility in growth rate sampled from truncated normal distribution 
+- `σ::T`: volitility in growth rate during, sampled from truncated normal distribution
+- `μᵣ::T`: growth rate during a recession sampled from normal distribution
+- `σᵣ::T`: volitility in growth rate during a recession, sampled from truncated normal distribution
 - `αμ::T`: mean of growth rate distribution 
 - `ασ::T`: mean of volitility of growth rate distribution 
 - `ημ::T`: standard deviation of growth rate distribution 
 - `ησ::T`: standard deviation of volitility of growth rate distribution 
+- `αμ::T`: mean of growth rate distribution during a recession
+- `ασ::T`: mean of volitility of growth rate distribution during a recession
+- `ημ::T`: standard deviation of growth rate distribution during a recession
+- `ησ::T`: standard deviation of volitility of growth rate distribution during a recession 
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 
@@ -181,16 +207,22 @@ on each simulation run to capture uncertainy in these parameters.
 mutable struct VarGBM{T <: Real} <: AbstractGBM
     μ::T
     σ::T
+    μᵣ::T
+    σᵣ::T
     αμ::T
     ασ::T
     ημ::T
     ησ::T
+    αμᵣ::T
+    ασᵣ::T
+    ημᵣ::T
+    ησᵣ::T
     x0::T
     x::T
 end
 
 """
-    VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
+    VarGBM(; αμ, ασ, ημ, ησ, αμᵣ = αμ, ασᵣ = ασ, ημᵣ = 0, ησᵣ = 0, x0 = 1.0, x = x0)
 
 A constructor for variable Geometric Brownian Motion (vGBM), which is used to model 
 growth of stocks. Unlike GBM, vGBM selects growth rate (`μ`) and volitility (`σ`) parameters from a normal distribution
@@ -202,12 +234,17 @@ on each simulation run to capture uncertainy in these parameters.
 - `ασ::T`: mean of volitility of growth rate distribution 
 - `ημ::T`: standard deviation of growth rate distribution 
 - `ησ::T`: standard deviation of volitility of growth rate distribution 
+- `αμ::T`: mean of growth rate distribution during a recession
+- `ασ::T`: mean of volitility of growth rate distribution during a recession
+- `ημ::T`: standard deviation of growth rate distribution during a recession
+- `ησ::T`: standard deviation of volitility of growth rate distribution during a recession 
 - `x0::T`: initial value of stock 
 - `x::T`: current value
 """
-function VarGBM(; αμ, ασ, ημ, ησ, x0 = 1.0, x = x0)
-    μ, σ, x0, x = promote(αμ, ασ, ημ, ησ, x0, x)
-    return VarGBM(zero(αμ), zero(αμ), αμ, ασ, ημ, ησ, x0, x)
+function VarGBM(; αμ, ασ, ημ, ησ, αμᵣ = αμ, ασᵣ = ασ, ημᵣ = 0, ησᵣ = 0, x0 = 1.0, x = x0)
+    αμ, ασ, ημ, ησ, αμᵣ, ασᵣ, ημᵣ, ησᵣ, x0, x =
+        promote(αμ, ασ, ημ, ησ, αμᵣ, ασᵣ, ημᵣ, ησᵣ, x0, x)
+    return VarGBM(zeros(typeof(αμ), 4)..., αμ, ασ, ημ, ησ, αμᵣ, ασᵣ, ημᵣ, ησᵣ, x0, x)
 end
 
 function reset!(dist::VarGBM)
@@ -215,6 +252,8 @@ function reset!(dist::VarGBM)
     dist.x = 1.0
     dist.μ = rand(Normal(dist.αμ, dist.ημ))
     dist.σ = rand(truncated(Normal(dist.ασ, dist.ησ), 0.0, Inf))
+    dist.μᵣ = rand(Normal(dist.αμᵣ, dist.ημᵣ))
+    dist.σᵣ = rand(truncated(Normal(dist.ασᵣ, dist.ησᵣ), 0.0, Inf))
     return nothing
 end
 
@@ -310,7 +349,7 @@ Increment the stock price over the period `Δt`.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function increment!(dist::MvGBM; Δt)
+function increment!(dist::MvGBM; Δt, kwargs...)
     (; μ, σ, Σ, x) = dist
     μn = fill(0.0, length(μ))
     dist.x .+= x .* (μ .* Δt .+ rand(MvNormal(μn, Σ)) * √(Δt))
@@ -335,6 +374,106 @@ Rebalance portfolio.
 function rebalance!(dist::MvGBM)
     total = sum(dist.x)
     dist.x = total * dist.ratios
+    return nothing
+end
+
+"""
+    MGBM{T <: Real} <: AbstractGBM
+
+A distribution object for modified Geometric Brownian Motion (MGBM), which is used to model 
+growth of stocks. 
+
+# Fields 
+
+- `μₙ::T`: growth rate during non-recession
+- `σₙ::T`: volitility in growth rate during non-recession
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
+- `t_mat::Array{T,2}`: transition matrix for moving between recession and non-recession states
+- `state::Int`: 1 if non-recession state, 2 if recession state 
+- `x0::T`: initial value of stock 
+- `x::T`: current value
+"""
+mutable struct MGBM{T <: Real} <: AbstractGBM
+    μₙ::T
+    σₙ::T
+    μᵣ::T
+    σᵣ::T
+    t_mat::Array{T, 2}
+    state::Int
+    x0::T
+    x::T
+end
+
+"""
+    MGBM(;
+        μₙ,
+        σₙ,
+        μᵣ,
+        σᵣ,
+        pₙᵣ,
+        pᵣₙ,
+        state = sample(1:2, Weights([1 - pₙᵣ, pₙᵣ])),
+        x0 = 1.0,
+        x = x0,
+        t = 0
+    )
+
+A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
+growth of stocks. 
+
+# Keywords 
+
+- `μₙ::T`: growth rate during non-recession
+- `σₙ::T`: volitility in growth rate during non-recession
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
+- `t_mat::Array{T,2}`: transition matrix for moving between recession and non-recession states
+- `state::Int`: 1 if non-recession state, 2 if recession state 
+- `x0::T`: initial value of stock 
+- `x::T`: current value
+
+# Example 
+
+```julia 
+using RetirementPlanners
+
+Δt = 1 / 12
+n_years = 10
+n_steps = Int(n_years / Δt)
+n_reps = 10
+times = range(0, n_years, length = n_steps + 1)
+dist = MGBM(; μₙ =.15, μᵣ = -.05,  σₙ = .05, σᵣ = .05, pₙᵣ = .05, pᵣₙ = .15, x0 = 1)
+prices = rand(dist, n_steps, n_reps; Δt)
+plot(times, prices, leg = false)
+```
+"""
+function MGBM(;
+    μₙ,
+    σₙ,
+    μᵣ,
+    σᵣ,
+    pₙᵣ,
+    pᵣₙ,
+    state = sample(1:2, Weights([1 - pₙᵣ, pₙᵣ])),
+    x0 = 1.0,
+    x = x0,
+    t = 0
+)
+    μₙ, σₙ, μᵣ, σᵣ, pₙᵣ, pᵣₙ, x0, x = promote(μₙ, σₙ, μᵣ, σᵣ, pₙᵣ, pᵣₙ, x0, x)
+    t_mat = [(1-pₙᵣ) pₙᵣ; pᵣₙ (1-pᵣₙ)]
+
+    return MGBM(μₙ, σₙ, μᵣ, σᵣ, t_mat, state, x0, x)
+end
+
+function increment!(dist::MGBM; Δt)
+    (; μₙ, σₙ, μᵣ, σᵣ, t_mat, state, x) = dist
+    w = @view t_mat[state, :]
+    next_state = sample(1:2, Weights(w))
+    μ = next_state == 1 ? μₙ : μᵣ
+    σ = next_state == 1 ? σₙ : σᵣ
+    dist.state = next_state
+    dist.x += x * (μ * Δt + σ * randn() * √(Δt))
     return nothing
 end
 

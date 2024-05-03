@@ -24,6 +24,44 @@
         @test std(prices) ≈ std.(dist, times) rtol = 0.01
     end
 
+    @safetestset "increment" begin
+        @safetestset "1" begin
+            using Random
+            using RetirementPlanners
+            using Test
+
+            Random.seed!(63)
+
+            Δt = 1
+            μ = 0.10
+            σ = 0.01
+            μᵣ = -0.10
+            σᵣ = 0.01
+            dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
+
+            increment!(dist; t = 1, Δt, recession_onset = 1, recession_duration = 1)
+            @test dist.x ≈ 0.90 atol = 1e-2
+        end
+
+        @safetestset "2" begin
+            using Random
+            using RetirementPlanners
+            using Test
+
+            Random.seed!(41)
+
+            Δt = 1
+            μ = 0.10
+            σ = 0.001
+            μᵣ = -0.10
+            σᵣ = 0.001
+            dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
+
+            increment!(dist; t = 2, Δt, recession_onset = 1, recession_duration = 1)
+            @test dist.x ≈ 1.1 atol = 1e-2
+        end
+    end
+
     @safetestset "fit" begin
         using Random
         using RetirementPlanners

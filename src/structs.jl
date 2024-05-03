@@ -106,6 +106,7 @@ An object for storing variables of the simulation.
 - `net_worth::Array{T, 2}`: total value of investments
 - `interest::Array{T, 2}`: growth rate of investment 
 - `inflation::Array{T, 2}`: inflation rate 
+- `total_income::Array{T, 2}`: income from investment withdraws, social security etc.
 
 In each array above, rows are time steps and columns are repetitions of the simulation. 
 """
@@ -126,6 +127,7 @@ An object for storing variables of the simulation.
 - `net_worth::Array{T, 2}`: total value of investments
 - `interest::Array{T, 2}`: growth rate of investment 
 - `inflation::Array{T, 2}`: inflation rate 
+- `total_income::Array{T, 2}`: income from investment withdraws, social security etc.
 
 In each array above, rows are time steps and columns are repetitions of the simulation. 
 """

@@ -61,12 +61,14 @@ sets an arbitrary scale. Other variations of geometric Brownian motion can be us
     `MvGBM`
 - `rebalance_rate = Inf`: the time elapsed in years between rebalacing the portfolio. Not applicable 
 to `GBM`
+- `kwargs...`: optional keyword arguments passed to `increment!`
 """
 function dynamic_interest(
     model::AbstractModel,
     t;
     rebalance_rate = Inf,
-    gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1)
+    gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1),
+    kwargs...
 )
     Δt = model.Δt
     # reset model at the beginning of each simulation 
@@ -74,7 +76,7 @@ function dynamic_interest(
     # rebalance portfolio after specified time has elapsed
     is_event_time(model, t, rebalance_rate) ? rebalance!(dist) : nothing
     x_prev = compute_total(gbm)
-    increment!(gbm; Δt)
+    increment!(gbm; Δt, t, kwargs...)
     x = compute_total(gbm)
     # annualized growth
     growth = (x / x_prev)^(1 / Δt) - 1
