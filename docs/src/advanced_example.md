@@ -7,8 +7,6 @@ using RetirementPlanners
 
 The goal of this example is to illustrate how to setup a realistic simulation to stress test your retirement plan. This example builds upon the [basic example](basic_example.md) and attempts to overcome some of its limitations. The primary limitation with the basic example is its failure to capture uncertainty in various quantaties, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as *what is the chance of running out of money after 20 years?*
 
-
-
 # Example 
 
 ## Scenario
@@ -52,9 +50,20 @@ config = (
         volitility = 0.05,
     ),
     # invest parameters
-    kw_invest = (distribution = Normal(625, 100), end_age = 60),
-    # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -263,7 +272,20 @@ config = (
     # invest parameters
     kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
     # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 

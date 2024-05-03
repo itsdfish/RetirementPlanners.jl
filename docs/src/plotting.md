@@ -8,7 +8,6 @@ using RetirementPlanners
 
 Currently, `RetirementPlanners.jl` provides two specialized plotting functions: `plot_gradient` and `plot_sensitivity`. Each plotting function is illustrated below using the code detailed in the [basic example](basic_example.md) and the [advanced example](advanced_example.md). For ease of presentation, only key elements of the code are visible by default. The code to setup the simulation can be revealed by clicking on the arrow button. 
 
-
 ## Gradient Plot 
 
  The function `plot_gradient` is used to plot the distribution of a quantity across time. Some examples include, net worth and total income. This functionality is useful in cases involving thousands of simulations, which would lead to overplotting. `plot_gradient` overcomes this challenge by representing variability as a density gradient, where darker regions correspond to more likely trajectories. `plot_gradient` is conditionally loaded into your active session when `RetirementPlanners` and `Plots` are loaded. The example below shows a gradient density plot for 1000 simulations. The full set of code can be seen by expanding the hidden code under *Show Code*.
@@ -53,7 +52,20 @@ config = (
     # invest parameters
     kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
     # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -124,7 +136,20 @@ config = (
         end_age = [55:2:65;]
     ),
     # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -175,7 +200,20 @@ config = (
         end_age = [55:2:65;]
     ),
     # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+    kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -251,7 +289,20 @@ config = (
         end_age = [55:2:65;]
     ),
     # interest parameters
-    kw_interest = (gbm = VarGBM(; αμ = 0.07, ημ = 0.005, ασ = 0.025, ησ = 0.010),),
+        kw_interest = (
+        gbm = VarGBM(;
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
+        # recession: age => duration
+        recessions = Dict(0 => 0)
+    )
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 

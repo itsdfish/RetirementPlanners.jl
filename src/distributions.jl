@@ -77,25 +77,27 @@ Increment the stock price over the period `Δt`.
 # Keywords
 
 - `Δt`: the time step for Geometric Brownian Motion
+- `kwargs...`: optional keyword arguments passed to `modify`
 """
 function increment!(
     dist::AbstractGBM;
     Δt,
     t = 0,
-    recession_onset = -1,
-    recession_duration = 0,
-    _...
+    kwargs...
 )
     (; x) = dist
-    μ′, σ′ = modify(dist, t, recession_onset, recession_duration)
+    μ′, σ′ = modify(dist, t; kwargs...)
     dist.x += x * (μ′ * Δt + σ′ * randn() * √(Δt))
     return nothing
 end
 
-function modify(dist::AbstractGBM, t, recession_onset, recession_duration)
+function modify(dist::AbstractGBM, t; recessions = nothing)
     (; μ, μᵣ, σ, σᵣ) = dist
-    if (t ≥ recession_onset) && (t < (recession_onset + recession_duration))
-        return μᵣ, σᵣ
+    isnothing(recessions) ? (return μ, σ) : nothing
+    for (start_time,duration) ∈ recessions 
+        if (t ≥ start_time) && (t < (start_time + duration))
+            return μᵣ, σᵣ
+        end
     end
     return return μ, σ
 end

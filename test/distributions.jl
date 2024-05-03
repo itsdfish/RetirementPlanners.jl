@@ -38,8 +38,9 @@
             μᵣ = -0.10
             σᵣ = 0.01
             dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
+            recessions = Dict(1 => 1)
 
-            increment!(dist; t = 1, Δt, recession_onset = 1, recession_duration = 1)
+            increment!(dist; t = 1, Δt, recessions)
             @test dist.x ≈ 0.90 atol = 1e-2
         end
 
@@ -48,7 +49,26 @@
             using RetirementPlanners
             using Test
 
-            Random.seed!(41)
+            Random.seed!(18)
+
+            Δt = 1
+            μ = 0.10
+            σ = 0.01
+            μᵣ = -0.10
+            σᵣ = 0.01
+            dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
+            recessions = Dict(1 => 1)
+
+            increment!(dist; t = 0, Δt, recessions)
+            @test dist.x ≈ 1.10 atol = 1e-2
+        end
+
+        @safetestset "3" begin
+            using Random
+            using RetirementPlanners
+            using Test
+
+            Random.seed!(620)
 
             Δt = 1
             μ = 0.10
@@ -56,8 +76,9 @@
             μᵣ = -0.10
             σᵣ = 0.001
             dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
+            recessions = Dict(1 => 1)
 
-            increment!(dist; t = 2, Δt, recession_onset = 1, recession_duration = 1)
+            increment!(dist; t = 2, Δt, recessions)
             @test dist.x ≈ 1.1 atol = 1e-2
         end
     end
