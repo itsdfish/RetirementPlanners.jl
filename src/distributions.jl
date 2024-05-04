@@ -65,26 +65,21 @@ function GBM(; μ, σ, μᵣ = μ, σᵣ = σ, x0 = 1.0, x = x0)
 end
 
 """
-    increment!(dist::AbstractGBM, Δt)
+    increment!(dist::AbstractGBM; Δt, t = 0, kwargs...)
 
 Increment the stock price over the period `Δt`.
 
 # Arguments 
 
 - `dist::GBM`: a distribution object for Geometric Brownian Motion 
-- `x`: current stock value 
 
 # Keywords
 
 - `Δt`: the time step for Geometric Brownian Motion
+- `t`: current time (age)
 - `kwargs...`: optional keyword arguments passed to `modify`
 """
-function increment!(
-    dist::AbstractGBM;
-    Δt,
-    t = 0,
-    kwargs...
-)
+function increment!(dist::AbstractGBM; Δt, t = 0, kwargs...)
     (; x) = dist
     μ′, σ′ = modify(dist, t; kwargs...)
     dist.x += x * (μ′ * Δt + σ′ * randn() * √(Δt))
@@ -94,7 +89,7 @@ end
 function modify(dist::AbstractGBM, t; recessions = nothing)
     (; μ, μᵣ, σ, σᵣ) = dist
     isnothing(recessions) ? (return μ, σ) : nothing
-    for (start_time,duration) ∈ recessions 
+    for (start_time, duration) ∈ recessions
         if (t ≥ start_time) && (t < (start_time + duration))
             return μᵣ, σᵣ
         end

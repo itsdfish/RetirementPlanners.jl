@@ -1,10 +1,6 @@
 """
-    fixed_invest(
-        model::AbstractModel, 
-        t;
-        invest_amount = 1000.0,
-        end_age = 67.0
-    )
+    fixed_invest(model::AbstractModel, t; invest_amount = 1000.0, end_age = 67.0)
+    
 Contribute a fixed amount into investments per time step.
 
 # Arguments
@@ -28,6 +24,8 @@ end
         t;
         end_age = 67.0,
         distribution = Normal(1000, 200),
+        real_growth = 0.0,
+        peak_age = 45,
         lump_sum_investments = nothing
     )
 

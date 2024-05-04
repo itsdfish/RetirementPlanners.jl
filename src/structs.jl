@@ -208,7 +208,7 @@ function Model(;
     state = State(),
     withdraw! = variable_withdraw,
     invest! = variable_invest,
-    update_income! = fixed_income,
+    update_income! = update_income!,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
     update_net_worth! = default_net_worth,
@@ -231,4 +231,16 @@ function Model(;
         log!,
         NamedTuple(config)
     )
+end
+
+abstract type AbstractIncomeSource{T, D} end 
+
+struct IncomeSource{T, D} <: AbstractIncomeSource{T, D}
+    start_age::T
+    end_age::T
+    amount::D
+end
+
+function IncomeSource(; start_age=0.0, end_age = Inf, amount)
+    return IncomeSource(promote(start_age, end_age)..., amount)
 end

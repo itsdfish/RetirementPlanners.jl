@@ -1,45 +1,45 @@
 @safetestset "update functions" begin
-    @safetestset "fixed_income" begin
+    @safetestset "update_income!" begin
+        using Distributions
         using RetirementPlanners
         using Test
 
         model = Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-        fixed_income(
+        update_income!(
             model,
             1.0;
-            social_security_income = 1000,
-            social_security_start_age = 65
+            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
         )
         @test model.state.income_amount == 0
 
-        fixed_income(
+        update_income!(
             model,
-            65;
-            social_security_income = 1000,
-            social_security_start_age = 65
+            2.0;
+            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
         )
-        @test model.state.income_amount == 1000
+        @test model.state.income_amount == 100
 
-        fixed_income(
+        update_income!(
             model,
-            65;
-            social_security_income = 1000,
-            social_security_start_age = 65,
-            pension_income = 1000,
-            pension_start_age = 67
+            3.0;
+            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
         )
-        @test model.state.income_amount == 1000
+        @test model.state.income_amount == 100
 
-        fixed_income(
+        update_income!(
             model,
-            67;
-            social_security_income = 1000,
-            social_security_start_age = 65,
-            pension_income = 1000,
-            pension_start_age = 67
+            3.08;
+            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
         )
-        @test model.state.income_amount == 2000
+        @test model.state.income_amount == 0
+
+        update_income!(
+            model,
+            2.08;
+            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = Normal(100, 0))]
+        )
+        @test model.state.income_amount == 100
     end
 
     @safetestset "fixed_inflation" begin
@@ -104,21 +104,19 @@
             start_age = 65
 
             reset!(model)
-            fixed_income(
+            update_income!(
                 model,
                 1.0;
-                social_security_income = 1000,
-                social_security_start_age = 65
+                income_sources = [IncomeSource(; start_age=65, amount=1000)]
             )
             fixed_withdraw(model, 1.0; withdraw_amount, start_age)
             @test model.state.withdraw_amount == 0
 
             reset!(model)
-            fixed_income(
+            update_income!(
                 model,
                 start_age;
-                social_security_income = 1000,
-                social_security_start_age = 65
+                income_sources = [IncomeSource(; start_age=65, amount=1000)]
             )
             fixed_withdraw(
                 model,
@@ -131,11 +129,10 @@
 
             model.start_amount = 400
             reset!(model)
-            fixed_income(
+            update_income!(
                 model,
                 start_age;
-                social_security_income = 1000,
-                social_security_start_age = 65
+                income_sources = [IncomeSource(; start_age=65, amount=1000)]
             )
             fixed_withdraw(
                 model,

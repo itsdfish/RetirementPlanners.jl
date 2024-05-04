@@ -43,9 +43,12 @@ end
 """
     dynamic_interest(
         model::AbstractModel,
-        t; 
-        gbm = GBM(; μ=.07, σ=.05, x0=1)
+        t;
+        rebalance_rate = Inf,
+        gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1),
+        kwargs...
     )
+    
 Models interest in the stock market as a geometric brownian motion process. 
 
 # Arguments

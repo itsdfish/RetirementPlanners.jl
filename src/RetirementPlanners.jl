@@ -2,6 +2,7 @@ module RetirementPlanners
 
 using ConcreteStructs
 using Distributions: ContinuousUnivariateDistribution
+using Distributions: Distribution
 using Distributions: MvNormal
 using Distributions: Normal
 using Distributions: truncated
@@ -20,11 +21,13 @@ import Distributions: std
 import Distributions: var
 
 export AbstractGBM
+export AbstractIncomeSource
 export AbstractModel
 export AbstractLogger
 export AbstractState
 
 export GBM
+export IncomeSource
 export MGBM
 export Model
 export Logger
@@ -53,7 +56,6 @@ export dynamic_interest
 
 export default_log!
 export default_net_worth
-export fixed_income
 export fixed_inflation
 export fixed_interest
 export fixed_invest
@@ -64,6 +66,7 @@ export variable_inflation
 export variable_interest
 export variable_invest
 export variable_withdraw
+export update_income!
 
 include("structs.jl")
 include("core.jl")

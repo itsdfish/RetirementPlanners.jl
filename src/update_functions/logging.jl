@@ -1,11 +1,5 @@
 """
-    default_log!(
-        model::AbstractModel,
-        logger,
-        step,
-        rep;
-        _...
-    )
+    default_log!(model::AbstractModel, logger, step, rep; _...)
 
 Logs the following information on each time step of each simulation repetition:
 

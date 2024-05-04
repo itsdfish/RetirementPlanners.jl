@@ -92,11 +92,12 @@ end
     adaptive_withdraw(
         model::AbstractModel,
         t;
-        start_age = 67, 
+        start_age = 67,
         min_withdraw = 1000,
         percent_of_real_growth = 1,
         income_adjustment = 0.0,
-        volitility = .1,
+        volitility = 0.5,
+        lump_sum_withdraws = nothing
     )
 
 An adaptive withdraw scheme based on current real growth rate. As long as there are sufficient funds, a minimum amount 
