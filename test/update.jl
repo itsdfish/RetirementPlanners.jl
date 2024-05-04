@@ -9,35 +9,39 @@
         update_income!(
             model,
             1.0;
-            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
+            income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
         )
         @test model.state.income_amount == 0
 
         update_income!(
             model,
             2.0;
-            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
+            income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
         )
         @test model.state.income_amount == 100
 
         update_income!(
             model,
             3.0;
-            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
+            income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
         )
         @test model.state.income_amount == 100
 
         update_income!(
             model,
             3.08;
-            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = 100)]
+            income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
         )
         @test model.state.income_amount == 0
 
         update_income!(
             model,
             2.08;
-            income_sources = [IncomeSource(; start_age = 2, end_age = 3, amount = Normal(100, 0))]
+            income_sources = Transaction(;
+                start_age = 2,
+                end_age = 3,
+                amount = Normal(100, 0)
+            )
         )
         @test model.state.income_amount == 100
     end
@@ -107,7 +111,7 @@
             update_income!(
                 model,
                 1.0;
-                income_sources = [IncomeSource(; start_age=65, amount=1000)]
+                income_sources = Transaction(; start_age = 65, amount = 1000)
             )
             fixed_withdraw(model, 1.0; withdraw_amount, start_age)
             @test model.state.withdraw_amount == 0
@@ -116,7 +120,7 @@
             update_income!(
                 model,
                 start_age;
-                income_sources = [IncomeSource(; start_age=65, amount=1000)]
+                income_sources = Transaction(; start_age = 65, amount = 1000)
             )
             fixed_withdraw(
                 model,
@@ -132,7 +136,7 @@
             update_income!(
                 model,
                 start_age;
-                income_sources = [IncomeSource(; start_age=65, amount=1000)]
+                income_sources = Transaction(; start_age = 65, amount = 1000)
             )
             fixed_withdraw(
                 model,
@@ -417,7 +421,7 @@
         @test true_value ≈ model.state.net_worth
     end
 
-    @safetestset "variable_invest" begin
+    @safetestset "invest!" begin
         @safetestset "1" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
@@ -433,14 +437,15 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 66;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
-                lump_sum_investments = Dict()
+                investments = Transaction(;
+                    start_age = 25,
+                    end_age = 67,
+                    amount = Normal(mean_investment, 0)
+                )
             )
-
             @test model.state.invest_amount ≈ mean_investment atol = 1e-10
         end
 
@@ -459,12 +464,14 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 68;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
-                lump_sum_investments = Dict()
+                investments = Transaction(;
+                    start_age = 25,
+                    end_age = 67,
+                    amount = Normal(mean_investment, 0)
+                )
             )
 
             @test model.state.invest_amount ≈ 0 atol = 1e-10
@@ -493,6 +500,21 @@
                 lump_sum_investments = Dict(68 => mean_investment)
             )
 
+            invest!(
+                model,
+                68;
+                investments = [
+                    Transaction(;
+                        start_age = 25,
+                        end_age = 67,
+                        amount = Normal(mean_investment, 0)),
+                    Transaction(;
+                        start_age = 68,
+                        end_age = 68,
+                        amount = Normal(mean_investment, 0))
+                ]
+            )
+
             @test model.state.invest_amount ≈ mean_investment atol = 1e-10
         end
 
@@ -512,12 +534,19 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 45;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
-                lump_sum_investments = Dict(45 => lump_sum)
+                investments = [
+                    Transaction(;
+                        start_age = 25,
+                        end_age = 67,
+                        amount = Normal(mean_investment, 0)),
+                    Transaction(;
+                        start_age = 45,
+                        end_age = 45,
+                        amount = Normal(lump_sum, 0))
+                ]
             )
 
             @test model.state.invest_amount ≈ lump_sum + mean_investment atol = 1e-10
@@ -539,14 +568,20 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 46;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
-                lump_sum_investments = Dict(45 => lump_sum)
+                investments = [
+                    Transaction(;
+                        start_age = 25,
+                        end_age = 67,
+                        amount = Normal(mean_investment, 0)),
+                    Transaction(;
+                        start_age = 45,
+                        end_age = 45,
+                        amount = Normal(lump_sum, 0))
+                ]
             )
-
             @test model.state.invest_amount ≈ mean_investment atol = 1e-10
         end
 
@@ -565,15 +600,16 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 25;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
+                investments = Transaction(;
+                    start_age = 25,
+                    end_age = 67,
+                    amount = Normal(mean_investment, 0)),
                 peak_age = 45,
                 real_growth = 0.02
             )
-
             @test model.state.invest_amount ≈ mean_investment * 1.02^0 atol = 1e-10
         end
 
@@ -592,11 +628,13 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 30;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
+                investments = Transaction(;
+                    start_age = 25,
+                    end_age = 67,
+                    amount = Normal(mean_investment, 0)),
                 peak_age = 45,
                 real_growth = 0.02
             )
@@ -619,11 +657,13 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            variable_invest(
+            invest!(
                 model,
                 50;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
+                investments = Transaction(;
+                    start_age = 25,
+                    end_age = 67,
+                    amount = Normal(mean_investment, 0)),
                 peak_age = 45,
                 real_growth = 0.02
             )

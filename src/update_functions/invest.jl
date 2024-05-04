@@ -19,7 +19,7 @@ function fixed_invest(model::AbstractModel, t; invest_amount = 1000.0, end_age =
 end
 
 """
-    variable_invest(
+    invest!(
         model::AbstractModel,
         t;
         end_age = 67.0,
@@ -47,29 +47,42 @@ Contribute a variable amount into investments per time step using the specifed d
 - `lump_sum_investments = nothing`: single investments to occur at a specified age. Values in the dictionary are
     `Dict(age => amount)`. 
 """
-function variable_invest(
+function invest!(
     model::AbstractModel,
     t;
-    end_age = 67.0,
-    distribution = Normal(1000, 200),
+    investments = Transaction(0.0, -1.0, 0.0),
     real_growth = 0.0,
-    peak_age = 45,
-    lump_sum_investments = nothing
+    peak_age = 45)
+    model.state.invest_amount = 0.0
+    return _invest!(model, t, investments; real_growth, peak_age)
+end
+
+function _invest!(
+    model::AbstractModel,
+    t,
+    investment::AbstractTransaction;
+    real_growth = 0.0,
+    peak_age = 45
 )
     (; start_age, state, Δt) = model
-    if end_age ≥ t
+    if is_available(investment, t)
+        base_investment = transact(investment)
         n_years = t ≥ peak_age ? (peak_age - start_age) : (t - model.start_age)
         growth_factor = (1 + real_growth)^floor(n_years)
-        state.invest_amount = rand(distribution) * growth_factor
-    else
-        state.invest_amount = 0.0
+        state.invest_amount += base_investment * growth_factor
     end
-    isnothing(lump_sum_investments) ? (return nothing) : nothing
-    for k ∈ keys(lump_sum_investments)
-        if (k > (t - Δt)) && (k < (t + Δt))
-            invest_amount = lump_sum_investments[k]
-            state.invest_amount += invest_amount
-        end
+    return nothing
+end
+
+function _invest!(
+    model::AbstractModel,
+    t,
+    investments::Vector{<:AbstractTransaction};
+    real_growth = 0.0,
+    peak_age = 45
+)
+    for investment ∈ investments
+        _invest!(model, t, investment; real_growth, peak_age)
     end
     return nothing
 end

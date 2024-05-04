@@ -21,13 +21,13 @@ import Distributions: std
 import Distributions: var
 
 export AbstractGBM
-export AbstractIncomeSource
+export AbstractTransaction
 export AbstractModel
 export AbstractLogger
 export AbstractState
 
 export GBM
-export IncomeSource
+export Transaction
 export MGBM
 export Model
 export Logger
@@ -63,7 +63,7 @@ export fixed_withdraw
 
 export variable_income
 export variable_inflation
-export variable_interest
+export invest!
 export variable_invest
 export variable_withdraw
 export update_income!

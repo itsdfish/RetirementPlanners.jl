@@ -207,7 +207,7 @@ function Model(;
     start_amount,
     state = State(),
     withdraw! = variable_withdraw,
-    invest! = variable_invest,
+    invest! = invest!,
     update_income! = update_income!,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
@@ -233,14 +233,14 @@ function Model(;
     )
 end
 
-abstract type AbstractIncomeSource{T, D} end 
+abstract type AbstractTransaction{T, D} end
 
-struct IncomeSource{T, D} <: AbstractIncomeSource{T, D}
+struct Transaction{T, D} <: AbstractTransaction{T, D}
     start_age::T
     end_age::T
     amount::D
 end
 
-function IncomeSource(; start_age=0.0, end_age = Inf, amount)
-    return IncomeSource(promote(start_age, end_age)..., amount)
+function Transaction(; start_age = 0.0, end_age = Inf, amount)
+    return Transaction(promote(start_age, end_age)..., amount)
 end
