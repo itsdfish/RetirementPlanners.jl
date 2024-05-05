@@ -26,6 +26,8 @@ export AbstractModel
 export AbstractLogger
 export AbstractState
 
+export AdaptiveInvestment
+export AdaptiveWithdraw
 export GBM
 export Transaction
 export MGBM
@@ -49,8 +51,8 @@ export std
 export to_dataframe
 export update!
 export var
+export withdraw!
 
-export adaptive_withdraw
 export dynamic_inflation
 export dynamic_interest
 

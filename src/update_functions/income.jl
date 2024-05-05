@@ -1,14 +1,11 @@
 """
-    fixed_income(
+    update_income!(
         model::AbstractModel,
         t;
-        social_security_income = 0.0,
-        pension_income = 0.0,
-        social_security_start_age = 67.0,
-        pension_start_age = 67
+        income_sources = Transaction(0.0, -1.0, 0.0)
     )
 
-Recieve a fixed amount of income (e.g., social security, pension) per time step
+Recieve income from multiple sources per time step, as indicated by `income_sources`.
 
 # Arguments
 
@@ -17,6 +14,8 @@ Recieve a fixed amount of income (e.g., social security, pension) per time step
 
 # Keywords
 
+- `income_sources = Transaction(0.0, -1.0, 0.0)`: a transaction or vector of transactions indicating the amount and time period
+of income recieved per time step 
 """
 function update_income!(
     model::AbstractModel,
@@ -35,7 +34,7 @@ function _update_income!(
     state.income_amount = 0.0
     for source ∈ income_sources
         if is_available(source, t)
-            state.income_amount += transact(source)
+            state.income_amount += transact(source; t)
         end
     end
     return nothing
@@ -45,13 +44,13 @@ function _update_income!(model::AbstractModel, t, source::AbstractTransaction)
     (; state) = model
     state.income_amount = 0.0
     if is_available(source, t)
-        state.income_amount += transact(source)
+        state.income_amount += transact(source; t)
     end
     return nothing
 end
 
 is_available(source::AbstractTransaction, t) =
     (source.start_age ≤ t) && (source.end_age ≥ t)
-transact(source::AbstractTransaction{T, D}) where {T, D <: Real} = source.amount
-transact(source::AbstractTransaction{T, D}) where {T, D <: Distribution} =
+transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Real} = source.amount
+transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Distribution} =
     rand(source.amount)

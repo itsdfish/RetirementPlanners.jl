@@ -149,7 +149,7 @@
         end
     end
 
-    @safetestset "adaptive_withdraw" begin
+    @safetestset "withdraw!" begin
         @safetestset "1" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
@@ -158,25 +158,22 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = 0.5
-
             reset!(model)
             model.state.net_worth = 1_000_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
                 1.0;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility
+                withdraws = Transaction(;
+                    start_age = 67,
+                    amount = AdaptiveWithdraw(;
+                        min_withdraw = 1000,
+                        percent_of_real_growth = 1,
+                        income_adjustment = 0.0,
+                        volitility = 0.5)
+                )
             )
             @test model.state.withdraw_amount == 0
         end
@@ -189,25 +186,22 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = eps()
-
             reset!(model)
             model.state.net_worth = 1_000_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                68;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility
+                68.0;
+                withdraws = Transaction(;
+                    start_age = 67,
+                    amount = AdaptiveWithdraw(;
+                        min_withdraw = 1000,
+                        percent_of_real_growth = 1,
+                        income_adjustment = 0.0,
+                        volitility = eps())
+                )
             )
             @test model.state.withdraw_amount ≈ 5494.0 atol = 0.5
         end
@@ -220,25 +214,22 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 0.5
-            income_adjustment = 0.0
-            volitility = eps()
-
             reset!(model)
             model.state.net_worth = 1_000_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                68;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility
+                68.0;
+                withdraws = Transaction(;
+                    start_age = 67,
+                    amount = AdaptiveWithdraw(;
+                        min_withdraw = 1000,
+                        percent_of_real_growth = 0.50,
+                        income_adjustment = 0.0,
+                        volitility = eps())
+                )
             )
             @test model.state.withdraw_amount ≈ 5494.0 / 2 atol = 0.5
         end
@@ -251,27 +242,24 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = eps()
-
             reset!(model)
             model.state.net_worth = 100_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                68;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility
+                68.0;
+                withdraws = Transaction(;
+                    start_age = 67,
+                    amount = AdaptiveWithdraw(;
+                        min_withdraw = 1000,
+                        percent_of_real_growth = 1.0,
+                        income_adjustment = 0.0,
+                        volitility = eps())
+                )
             )
-            @test model.state.withdraw_amount ≈ min_withdraw
+            @test model.state.withdraw_amount ≈ 1000
         end
 
         @safetestset "4" begin
@@ -282,25 +270,22 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = eps()
-
             reset!(model)
             model.state.net_worth = 500
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                68;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility
+                68.0;
+                withdraws = Transaction(;
+                    start_age = 67,
+                    amount = AdaptiveWithdraw(;
+                        min_withdraw = 1000,
+                        percent_of_real_growth = 1.0,
+                        income_adjustment = 0.0,
+                        volitility = 0.0)
+                )
             )
             @test model.state.withdraw_amount == 500
         end
@@ -313,27 +298,39 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = 0.5
-            lump_sum_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
-
             reset!(model)
             model.state.net_worth = 1_000_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                25;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility,
-                lump_sum_withdraws
+                25.0;
+                withdraws = [
+                    Transaction(;
+                        start_age = 67,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 1000,
+                            percent_of_real_growth = 1.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 - 1 / 12,
+                        end_age = start_age = 25 - 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 200,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 + 1 / 12,
+                        end_age = start_age = 25 + 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 100,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0))
+                ]
             )
             @test model.state.withdraw_amount == 0
         end
@@ -346,27 +343,39 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            start_age = 67
-            min_withdraw = 1000
-            percent_of_real_growth = 1
-            income_adjustment = 0.0
-            volitility = 0.5
-            lump_sum_withdraws = Dict(25 + 1 / 12 => 100.0, 25 - 1 / 12 => 200.0)
-
             reset!(model)
             model.state.net_worth = 1_000_000
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                25 + 1 / 12;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility,
-                lump_sum_withdraws
+                25.0 + 1 / 12;
+                withdraws = [
+                    Transaction(;
+                        start_age = 67,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 1000,
+                            percent_of_real_growth = 1.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 - 1 / 12,
+                        end_age = start_age = 25 - 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 200,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 + 1 / 12,
+                        end_age = start_age = 25 + 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 100,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0))
+                ]
             )
             @test model.state.withdraw_amount == 100
         end
@@ -391,15 +400,34 @@
             model.state.interest_rate = 0.10
             model.state.inflation_rate = 0.03
 
-            adaptive_withdraw(
+            withdraw!(
                 model,
-                25 + 1 / 12;
-                start_age,
-                min_withdraw,
-                percent_of_real_growth,
-                income_adjustment,
-                volitility,
-                lump_sum_withdraws
+                25.0 + 1 / 12;
+                withdraws = [
+                    Transaction(;
+                        start_age = 67,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 1000,
+                            percent_of_real_growth = 1.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 - 1 / 12,
+                        end_age = start_age = 25 - 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 200,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0)),
+                    Transaction(;
+                        start_age = 25 + 1 / 12,
+                        end_age = start_age = 25 + 1 / 12,
+                        amount = AdaptiveWithdraw(;
+                            min_withdraw = 100,
+                            percent_of_real_growth = 0.0,
+                            income_adjustment = 0.0,
+                            volitility = 0.0))
+                ]
             )
             @test model.state.withdraw_amount == 50
         end
@@ -487,47 +515,6 @@
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
             mean_investment = 1000
-            reset!(model)
-            model.state.net_worth = 0.0
-            model.state.interest_rate = 0.10
-            model.state.inflation_rate = 0.03
-
-            variable_invest(
-                model,
-                68;
-                end_age = 67.0,
-                distribution = Normal(mean_investment, 0),
-                lump_sum_investments = Dict(68 => mean_investment)
-            )
-
-            invest!(
-                model,
-                68;
-                investments = [
-                    Transaction(;
-                        start_age = 25,
-                        end_age = 67,
-                        amount = Normal(mean_investment, 0)),
-                    Transaction(;
-                        start_age = 68,
-                        end_age = 68,
-                        amount = Normal(mean_investment, 0))
-                ]
-            )
-
-            @test model.state.invest_amount ≈ mean_investment atol = 1e-10
-        end
-
-        @safetestset "4" begin
-            using RetirementPlanners
-            using RetirementPlanners: reset!
-            using Distributions
-            using Test
-
-            model =
-                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
-
-            mean_investment = 1000
             lump_sum = 500
             reset!(model)
             model.state.net_worth = 0.0
@@ -606,9 +593,14 @@
                 investments = Transaction(;
                     start_age = 25,
                     end_age = 67,
-                    amount = Normal(mean_investment, 0)),
-                peak_age = 45,
-                real_growth = 0.02
+                    amount = AdaptiveInvestment(;
+                        mean = 1000,
+                        std = 0,
+                        start_age = 25,
+                        peak_age = 45,
+                        real_growth_rate = 0.02
+                    )
+                )
             )
             @test model.state.invest_amount ≈ mean_investment * 1.02^0 atol = 1e-10
         end
@@ -622,7 +614,6 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            mean_investment = 1000
             reset!(model)
             model.state.net_worth = 0.0
             model.state.interest_rate = 0.10
@@ -634,12 +625,17 @@
                 investments = Transaction(;
                     start_age = 25,
                     end_age = 67,
-                    amount = Normal(mean_investment, 0)),
-                peak_age = 45,
-                real_growth = 0.02
+                    amount = AdaptiveInvestment(;
+                        mean = 1000,
+                        std = 0,
+                        start_age = 25,
+                        peak_age = 45,
+                        real_growth_rate = 0.02
+                    )
+                )
             )
 
-            @test model.state.invest_amount ≈ mean_investment * 1.02^5 atol = 1e-10
+            @test model.state.invest_amount ≈ 1000 * 1.02^5 atol = 1e-10
         end
 
         @safetestset "8" begin
@@ -651,7 +647,6 @@
             model =
                 Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
 
-            mean_investment = 1000
             reset!(model)
             model.state.net_worth = 0.0
             model.state.interest_rate = 0.10
@@ -663,12 +658,17 @@
                 investments = Transaction(;
                     start_age = 25,
                     end_age = 67,
-                    amount = Normal(mean_investment, 0)),
-                peak_age = 45,
-                real_growth = 0.02
+                    amount = AdaptiveInvestment(;
+                        mean = 1000,
+                        std = 0,
+                        start_age = 25,
+                        peak_age = 45,
+                        real_growth_rate = 0.02
+                    )
+                )
             )
 
-            @test model.state.invest_amount ≈ mean_investment * 1.02^20 atol = 1e-10
+            @test model.state.invest_amount ≈ 1000 * 1.02^20 atol = 1e-10
         end
     end
 end

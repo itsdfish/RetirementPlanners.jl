@@ -206,7 +206,7 @@ function Model(;
     start_age,
     start_amount,
     state = State(),
-    withdraw! = variable_withdraw,
+    withdraw! = withdraw!,
     invest! = invest!,
     update_income! = update_income!,
     update_inflation! = dynamic_inflation,
@@ -235,6 +235,21 @@ end
 
 abstract type AbstractTransaction{T, D} end
 
+"""
+    Transaction{T, D} <: AbstractTransaction{T, D}
+
+Specifies the time range and amount of a transaction. 
+
+# Fields 
+
+- `start_age = 0.0`: the age at which a series of transactions begin
+- `end_age = Inf`: the age at which a series of transactions end
+- `amount`: the of each transaction
+
+# Constructor
+
+    Transaction(; start_age = 0.0, end_age = Inf, amount)
+"""
 struct Transaction{T, D} <: AbstractTransaction{T, D}
     start_age::T
     end_age::T
@@ -243,4 +258,103 @@ end
 
 function Transaction(; start_age = 0.0, end_age = Inf, amount)
     return Transaction(promote(start_age, end_age)..., amount)
+end
+
+"""
+    AdaptiveWithdraw{T <: Real}
+
+An adaptive withdraw scheme based on current real growth rate. As long as there are sufficient funds, a minimum amount 
+`min_withdraw` is withdrawn. More can be withdrawn if the current real growth rate supports a larger amount. The parameters below allow
+the user to control how much can be withdrawn as a function of real growth rate (`percent_of_real_growth`) and how much volitility in the withdraw 
+amount is tolerated (`volitility`). The withdraw amount may also be decreased based on alternative income (e.g., social security, pension).
+
+
+# Fields 
+
+- `min_withdraw = 1000`: the minimum withdraw amount
+- `percent_of_real_growth = 1`: the percent of real growth withdrawn. If equal to 1, the max of real growth or 
+    `min_withdraw`. 
+- `income_adjustment = 0.0`: a value between 0 and 1 representing the reduction in `withdraw_amount`
+    relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
+- `volitility = .1`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
+    is the mean withdraw × volitility
+
+# Constructor
+
+    AdaptiveWithdraw(;
+        min_withdraw,
+        volitility = 0.0,
+        income_adjustment = 0.0,
+        percent_of_real_growth = 0.0
+    )
+"""
+struct AdaptiveWithdraw{T <: Real}
+    min_withdraw::T
+    volitility::T
+    income_adjustment::T
+    percent_of_real_growth::T
+end
+
+function AdaptiveWithdraw(;
+    min_withdraw,
+    volitility = 0.0,
+    income_adjustment = 0.0,
+    percent_of_real_growth = 0.0
+)
+    return AdaptiveWithdraw(promote(
+        min_withdraw,
+        volitility,
+        income_adjustment,
+        percent_of_real_growth
+    )...)
+end
+
+struct AdaptiveInvestment{T <: Real}
+    start_age::T
+    peak_age::T
+    real_growth_rate::T
+    mean::T
+    std::T
+end
+
+"""
+    AdaptiveInvestment(;
+        start_age,
+        peak_age,
+        real_growth_rate,
+        mean,
+        std
+    )
+
+
+- `real_growth = 0`: percent of annual growth in investment amount. The growth factor (1 + real_growth)^n_years 
+    is multiplied by the random invest amount from `distribution`, meaning the mean and variance increase over time 
+    assuming `real_growth` > 0.
+- `peak_age`: the age at which investment amount stops growing. Many people reach their maximum income around 45-50.
+"""
+function AdaptiveInvestment(;
+    start_age,
+    peak_age,
+    real_growth_rate,
+    mean,
+    std
+)
+    return AdaptiveInvestment(promote(
+        start_age,
+        peak_age,
+        real_growth_rate,
+        mean,
+        std)...)
+end
+
+function transact(
+    investment::Transaction{T, D};
+    t
+) where {T, D <: AdaptiveInvestment}
+    (; start_age, real_growth_rate, peak_age, mean, std) =
+        investment.amount
+    base_investment = rand(Normal(mean, std))
+    n_years = t ≥ peak_age ? (peak_age - start_age) : (t - start_age)
+    growth_factor = (1 + real_growth_rate)^floor(n_years)
+    return base_investment * growth_factor
 end

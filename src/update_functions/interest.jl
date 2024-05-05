@@ -59,11 +59,11 @@ Models interest in the stock market as a geometric brownian motion process.
 # Keyword
 
 - `gbm = GBM(; μ=.07, σ=.05, x0=1)`: a geometric Brownian motion object with parameters 
-`μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
-sets an arbitrary scale. Other variations of geometric Brownian motion can be used, including `VarGBM` and 
+    `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
+    sets an arbitrary scale. Other variations of geometric Brownian motion can be used, including `VarGBM` and 
     `MvGBM`
 - `rebalance_rate = Inf`: the time elapsed in years between rebalacing the portfolio. Not applicable 
-to `GBM`
+    to `GBM`
 - `kwargs...`: optional keyword arguments passed to `increment!`
 """
 function dynamic_interest(
