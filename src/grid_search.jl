@@ -81,14 +81,19 @@ function grid_search(
     yoked_values = ()
 )
     fixed_inputs, config = separate_np_non_np_inputs(model_type; all_args...)
+    # println("fixed_inputs $fixed_inputs")
+    # println("config $config")
     np_combs = make_nps(config, yoked_values)
+    println("np_combs $(length(np_combs))")
     var_parms = get_var_parms(config)
+    #println("var_parms $var_parms")
 
     progress = ProgressMeter.Progress(length(np_combs); enabled = show_progress)
     mapfun = threaded ? ThreadsX.map : map
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
+        println("np_combs $np_combs")
         model = model_type(; fixed_inputs..., np_combs...)
         times = get_times(model)
         n_steps = length(times)
@@ -99,6 +104,8 @@ function grid_search(
 end
 
 function make_np(config, config_keys, index)
+    # println("index $index")
+    # println("config_keys $config_keys")
     x = map(i -> config[i[1]][i[2]], zip(config_keys, index))
     return NamedTuple{config_keys}(x)
 end
@@ -113,9 +120,20 @@ function matches(config, match_pairs)
     return false
 end
 
-function get_value(config, k)
-    return config[k[1]][k[2]]
+# function get_value(config, k)
+#     println("k $k")
+#     return config[k[1]][k[2]]
+# end
+
+function get_value(config, k::Tuple)
+    _v = config
+    for i ∈ 1:length(k)
+        _v = getfield(_v, k[i])
+    end
+    return return _v
 end
+
+
 
 function make_nps(config, dependent_values)
     _config = map(d -> permute(d), config)
@@ -123,7 +141,7 @@ function make_nps(config, dependent_values)
     ranges = map(k -> 1:length(_config[k]), config_keys)
     indices = Iterators.product(ranges...) |> collect
     nps = map(index -> make_np(_config, config_keys, index), indices[:])
-    filter!(x -> matches(x, dependent_values), nps)
+    #filter!(x -> matches(x, dependent_values), nps)
     return nps
 end
 
@@ -164,9 +182,9 @@ function separate_np_non_np_inputs(
     duration,
     start_age,
     start_amount,
-    withdraw! = variable_withdraw,
-    invest! = variable_invest,
-    update_income! = fixed_income,
+    withdraw! = withdraw!,
+    invest! = invest!,
+    update_income! = update_income!,
     update_inflation! = dynamic_inflation,
     update_interest! = dynamic_interest,
     update_net_worth! = default_net_worth,

@@ -288,7 +288,7 @@ amount is tolerated (`volitility`). The withdraw amount may also be decreased ba
         percent_of_real_growth = 0.0
     )
 """
-struct AdaptiveWithdraw{T <: Real}
+mutable struct AdaptiveWithdraw{T <: Real}
     min_withdraw::T
     volitility::T
     income_adjustment::T
@@ -309,7 +309,7 @@ function AdaptiveWithdraw(;
     )...)
 end
 
-struct AdaptiveInvestment{T <: Real}
+mutable struct AdaptiveInvestment{T <: Real}
     start_age::T
     peak_age::T
     real_growth_rate::T
