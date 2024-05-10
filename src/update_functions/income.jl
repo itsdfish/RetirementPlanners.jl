@@ -15,7 +15,7 @@ Recieve income from multiple sources per time step, as indicated by `income_sour
 # Keywords
 
 - `income_sources = Transaction(0.0, -1.0, 0.0)`: a transaction or vector of transactions indicating the amount and time period
-of income recieved per time step 
+    of income recieved per time step 
 """
 function update_income!(
     model::AbstractModel,
@@ -28,12 +28,12 @@ end
 function _update_income!(
     model::AbstractModel,
     t,
-    income_sources::Vector{<:AbstractTransaction}
+    income_sources
 )
-    (; state) = model
+    (; state, Δt) = model
     state.income_amount = 0.0
     for source ∈ income_sources
-        if is_available(source, t)
+        if can_transact(source, t; Δt)
             state.income_amount += transact(source; t)
         end
     end
@@ -41,16 +41,10 @@ function _update_income!(
 end
 
 function _update_income!(model::AbstractModel, t, source::AbstractTransaction)
-    (; state) = model
+    (; state, Δt) = model
     state.income_amount = 0.0
-    if is_available(source, t)
+    if can_transact(source, t; Δt)
         state.income_amount += transact(source; t)
     end
     return nothing
 end
-
-is_available(source::AbstractTransaction, t) =
-    (source.start_age ≤ t) && (source.end_age ≥ t)
-transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Real} = source.amount
-transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Distribution} =
-    rand(source.amount)

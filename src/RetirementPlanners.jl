@@ -72,8 +72,8 @@ export update_income!
 
 include("structs.jl")
 include("core.jl")
-include("utilities.jl")
 include("distributions.jl")
+include("utilities.jl")
 include("grid_search.jl")
 include("update_functions/income.jl")
 include("update_functions/inflation.jl")

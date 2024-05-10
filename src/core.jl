@@ -166,3 +166,9 @@ function is_event_time(model::AbstractModel, t, rate)
     start_time = model.start_age
     return mod(t - start_time, rate) ≈ 0
 end
+
+can_transact(source::AbstractTransaction, t; Δt = 0.0) =
+    (source.start_age - Δt / 2 ≤ t) && (source.end_age + Δt / 2 ≥ t)
+transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Real} = source.amount
+transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Distribution} =
+    rand(source.amount)

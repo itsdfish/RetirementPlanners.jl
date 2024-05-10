@@ -82,18 +82,18 @@ function grid_search(
 )
     fixed_inputs, config = separate_np_non_np_inputs(model_type; all_args...)
     # println("fixed_inputs $fixed_inputs")
-    # println("config $config")
+    # println("config $(keys(config))")
     np_combs = make_nps(config, yoked_values)
-    println("np_combs $(length(np_combs))")
+    #println("np_combs $(length(np_combs))")
     var_parms = get_var_parms(config)
-    #println("var_parms $var_parms")
+    # println("var_parms $var_parms")
 
     progress = ProgressMeter.Progress(length(np_combs); enabled = show_progress)
     mapfun = threaded ? ThreadsX.map : map
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
-        println("np_combs $np_combs")
+        #println("np_combs $np_combs")
         model = model_type(; fixed_inputs..., np_combs...)
         times = get_times(model)
         n_steps = length(times)
@@ -133,15 +133,13 @@ function get_value(config, k::Tuple)
     return return _v
 end
 
-
-
 function make_nps(config, dependent_values)
     _config = map(d -> permute(d), config)
     config_keys = keys(_config)
     ranges = map(k -> 1:length(_config[k]), config_keys)
     indices = Iterators.product(ranges...) |> collect
     nps = map(index -> make_np(_config, config_keys, index), indices[:])
-    #filter!(x -> matches(x, dependent_values), nps)
+    filter!(x -> matches(x, dependent_values), nps)
     return nps
 end
 

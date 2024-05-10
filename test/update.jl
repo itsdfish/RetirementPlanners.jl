@@ -70,85 +70,6 @@
         @test model.state.interest_rate == interest_rate
     end
 
-    @safetestset "fixed_withdraw" begin
-        @safetestset "1" begin
-            using RetirementPlanners
-            using RetirementPlanners: reset!
-            using Test
-
-            model =
-                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
-
-            withdraw_amount = 1000
-            start_age = 65
-
-            reset!(model)
-            fixed_withdraw(model, 1.0; withdraw_amount, start_age)
-            @test model.state.withdraw_amount == 0
-
-            reset!(model)
-            fixed_withdraw(model, start_age; withdraw_amount, start_age)
-            @test model.state.withdraw_amount == withdraw_amount
-
-            model.start_amount = 800
-            reset!(model)
-            fixed_withdraw(model, start_age; withdraw_amount, start_age)
-            @test model.state.withdraw_amount == 800
-        end
-
-        @safetestset "2" begin
-            using RetirementPlanners
-            using RetirementPlanners: reset!
-            using Test
-
-            model =
-                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
-
-            withdraw_amount = 1000
-            start_age = 65
-
-            reset!(model)
-            update_income!(
-                model,
-                1.0;
-                income_sources = Transaction(; start_age = 65, amount = 1000)
-            )
-            fixed_withdraw(model, 1.0; withdraw_amount, start_age)
-            @test model.state.withdraw_amount == 0
-
-            reset!(model)
-            update_income!(
-                model,
-                start_age;
-                income_sources = Transaction(; start_age = 65, amount = 1000)
-            )
-            fixed_withdraw(
-                model,
-                start_age;
-                withdraw_amount,
-                start_age,
-                income_adjustment = 0.5
-            )
-            @test model.state.withdraw_amount == withdraw_amount * 0.50
-
-            model.start_amount = 400
-            reset!(model)
-            update_income!(
-                model,
-                start_age;
-                income_sources = Transaction(; start_age = 65, amount = 1000)
-            )
-            fixed_withdraw(
-                model,
-                start_age;
-                withdraw_amount,
-                start_age,
-                income_adjustment = 0.5
-            )
-            @test model.state.withdraw_amount == 400
-        end
-    end
-
     @safetestset "withdraw!" begin
         @safetestset "1" begin
             using RetirementPlanners
@@ -306,7 +227,7 @@
             withdraw!(
                 model,
                 25.0;
-                withdraws = [
+                withdraws = (
                     Transaction(;
                         start_age = 67,
                         amount = AdaptiveWithdraw(;
@@ -330,7 +251,7 @@
                             percent_of_real_growth = 0.0,
                             income_adjustment = 0.0,
                             volitility = 0.0))
-                ]
+                )
             )
             @test model.state.withdraw_amount == 0
         end

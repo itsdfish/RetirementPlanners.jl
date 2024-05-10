@@ -244,7 +244,7 @@ Specifies the time range and amount of a transaction.
 
 - `start_age = 0.0`: the age at which a series of transactions begin
 - `end_age = Inf`: the age at which a series of transactions end
-- `amount`: the of each transaction
+- `amount`: the amount of each transaction
 
 # Constructor
 
@@ -259,6 +259,8 @@ end
 function Transaction(; start_age = 0.0, end_age = Inf, amount)
     return Transaction(promote(start_age, end_age)..., amount)
 end
+
+Base.broadcastable(dist::Transaction) = Ref(dist)
 
 """
     AdaptiveWithdraw{T <: Real}

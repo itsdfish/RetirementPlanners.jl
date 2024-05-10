@@ -1,24 +1,4 @@
 """
-    fixed_invest(model::AbstractModel, t; invest_amount = 1000.0, end_age = 67.0)
-    
-Contribute a fixed amount into investments per time step.
-
-# Arguments
-
-- `model::AbstractModel`: an abstract Model object 
-- `t`: current time of simulation in years 
-
-# Keywords
-
-- `invest_amount = 3000.0`: the amount contributed to investments per time step
-- `start_age = 67.0`: the age at which investing stops 
-"""
-function fixed_invest(model::AbstractModel, t; invest_amount = 1000.0, end_age = 67.0)
-    model.state.invest_amount = end_age ≥ t ? invest_amount : 0.0
-    return nothing
-end
-
-"""
     invest!(
         model::AbstractModel,
         t;
@@ -52,7 +32,7 @@ function _invest!(
     t,
     investment::AbstractTransaction;)
     (; start_age, state, Δt) = model
-    if is_available(investment, t)
+    if can_transact(investment, t; Δt)
         state.invest_amount += transact(investment; t)
     end
     return nothing
@@ -61,7 +41,7 @@ end
 function _invest!(
     model::AbstractModel,
     t,
-    investments::Vector{<:AbstractTransaction};
+    investments;
 )
     for investment ∈ investments
         _invest!(model, t, investment)
