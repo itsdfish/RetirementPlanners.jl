@@ -44,7 +44,7 @@ function _update_income!(model::AbstractModel, t, source::AbstractTransaction)
     (; state, Δt) = model
     state.income_amount = 0.0
     if can_transact(source, t; Δt)
-        state.income_amount += transact(source; t)
+        state.income_amount += transact(model, source; t)
     end
     return nothing
 end

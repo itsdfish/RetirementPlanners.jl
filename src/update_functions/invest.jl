@@ -33,7 +33,7 @@ function _invest!(
     investment::AbstractTransaction;)
     (; start_age, state, Δt) = model
     if can_transact(investment, t; Δt)
-        state.invest_amount += transact(investment; t)
+        state.invest_amount += transact(model, investment; t)
     end
     return nothing
 end

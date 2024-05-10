@@ -29,11 +29,11 @@ end
 
 Performs an update on each time step by calling the following functions defined in `model`:
 
-- `update_income!`: update sources of income, such as social security, pension etc. 
-- `withdraw!`: withdraw money
-- `invest!`: invest money
 - `update_inflation!`: compute inflation
 - `update_interest!`: compute interest 
+- `invest!`: invest money
+- `withdraw!`: withdraw money
+- `update_income!`: update sources of income, such as social security, pension etc. 
 - `update_net_worth!`: compute net worth for the time step 
 - `log!`: log desired variables 
 
@@ -112,11 +112,11 @@ function _update!(
     kw_net_worth = (),
     kw_log = ()
 )
-    model.update_income!(model, t; kw_income...)
-    model.invest!(model, t; kw_invest...)
-    model.withdraw!(model, t; kw_withdraw...)
     model.update_inflation!(model, t; kw_inflation...)
     model.update_interest!(model, t; kw_interest...)
+    model.invest!(model, t; kw_invest...)
+    model.withdraw!(model, t; kw_withdraw...)
+    model.update_income!(model, t; kw_income...)
     model.update_net_worth!(model, t; kw_net_worth...)
     model.log!(model, logger, step, rep; kw_log...)
     return nothing
@@ -169,6 +169,37 @@ end
 
 can_transact(source::AbstractTransaction, t; Δt = 0.0) =
     (source.start_age - Δt / 2 ≤ t) && (source.end_age + Δt / 2 ≥ t)
-transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Real} = source.amount
-transact(source::AbstractTransaction{T, D}; _...) where {T, D <: Distribution} =
+transact(::AbstractModel, source::AbstractTransaction{T, D}; _...) where {T, D <: Real} =
+    source.amount
+transact(
+    ::AbstractModel,
+    source::AbstractTransaction{T, D};
+    _...
+) where {T, D <: Distribution} =
     rand(source.amount)
+
+
+function transact(
+    model::AbstractModel,
+    income::Transaction{T, D};
+    t
+) where {T, D <: AdjustedAmount}
+    income.amount.adjust ? nothing : (return income.amount.amount)
+    (; Δt) = model
+    r = (1 + model.state.inflation_rate)^Δt
+    income.amount.amount /= r
+    return income.amount.amount  
+end
+    
+function transact(
+    ::AbstractModel,
+    investment::Transaction{T, D};
+    t
+) where {T, D <: AdaptiveInvestment}
+    (; start_age, real_growth_rate, peak_age, mean, std) =
+        investment.amount
+    base_investment = rand(Normal(mean, std))
+    n_years = t ≥ peak_age ? (peak_age - start_age) : (t - start_age)
+    growth_factor = (1 + real_growth_rate)^floor(n_years)
+    return base_investment * growth_factor
+end

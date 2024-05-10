@@ -22,7 +22,7 @@
 
     @test all(x -> x == 0.07, logger.interest)
     @test all(x -> x == 0.03, logger.inflation)
-    true_net_worth = 10_000 * (1.07/1.03)^35
+    true_net_worth = 10_000 * (1.07 / 1.03)^35
     @test logger.net_worth[end, 1] ≈ true_net_worth rtol = 0.01
     @test logger.net_worth[end, 2] ≈ true_net_worth rtol = 0.01
 end
@@ -92,11 +92,11 @@ end
         using RetirementPlanners
         using RetirementPlanners: can_transact
         using Test
-    
+
         transaction = Transaction(; start_age = 1, end_age = 2, amount = 10)
-    
+
         @test can_transact(transaction, 1)
-        @test !can_transact(transaction, .99)
+        @test !can_transact(transaction, 0.99)
         @test !can_transact(transaction, 2.01)
         @test can_transact(transaction, 1.1)
     end
@@ -105,17 +105,16 @@ end
         using RetirementPlanners
         using RetirementPlanners: can_transact
         using Test
-    
+
         transaction = Transaction(; start_age = 1, end_age = 1, amount = 10)
         Δt = 1 / 12
 
         @test can_transact(transaction, 1; Δt)
-        @test !can_transact(transaction, .5; Δt)
+        @test !can_transact(transaction, 0.5; Δt)
         @test !can_transact(transaction, 1.5; Δt)
-        @test can_transact(transaction, 1.0  + Δt / 2; Δt)
-        @test can_transact(transaction, 1.0  - Δt / 2; Δt)
-        @test !can_transact(transaction, 1.0  + Δt / 2 + eps(); Δt)
-        @test !can_transact(transaction, 1.0  - Δt / 2 - eps(); Δt)
+        @test can_transact(transaction, 1.0 + Δt / 2; Δt)
+        @test can_transact(transaction, 1.0 - Δt / 2; Δt)
+        @test !can_transact(transaction, 1.0 + Δt / 2 + eps(); Δt)
+        @test !can_transact(transaction, 1.0 - Δt / 2 - eps(); Δt)
     end
 end
-

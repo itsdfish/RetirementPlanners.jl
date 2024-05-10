@@ -328,11 +328,15 @@ end
         std
     )
 
+# Fields 
 
+- `start_age`: the age at which investing begins
+- `peak_age`: the age at which investment amount stops growing. Many people reach their maximum income around 45-50.
 - `real_growth = 0`: percent of annual growth in investment amount. The growth factor (1 + real_growth)^n_years 
     is multiplied by the random invest amount from `distribution`, meaning the mean and variance increase over time 
     assuming `real_growth` > 0.
-- `peak_age`: the age at which investment amount stops growing. Many people reach their maximum income around 45-50.
+- `mean`: the average amount invested
+- `std`: the standard deviation of the amount invested
 """
 function AdaptiveInvestment(;
     start_age,
@@ -349,14 +353,13 @@ function AdaptiveInvestment(;
         std)...)
 end
 
-function transact(
-    investment::Transaction{T, D};
-    t
-) where {T, D <: AdaptiveInvestment}
-    (; start_age, real_growth_rate, peak_age, mean, std) =
-        investment.amount
-    base_investment = rand(Normal(mean, std))
-    n_years = t ≥ peak_age ? (peak_age - start_age) : (t - start_age)
-    growth_factor = (1 + real_growth_rate)^floor(n_years)
-    return base_investment * growth_factor
+
+mutable struct AdjustedAmount{T <: AbstractFloat}
+    amount::T
+    adjust::Bool
 end
+
+function AdjustedAmount(; amount, adjust = true)
+    return AdjustedAmount(amount, adjust)
+end
+

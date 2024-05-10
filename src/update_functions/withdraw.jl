@@ -32,7 +32,7 @@ end
 function _withdraw!(model::AbstractModel, t, withdraw::AbstractTransaction)
     (; Δt) = model
     if can_transact(withdraw, t; Δt)
-        model.state.withdraw_amount += transact(withdraw; t, model)
+        model.state.withdraw_amount += transact(model, withdraw; t)
     end
     return nothing
 end
@@ -45,8 +45,8 @@ function _withdraw!(model::AbstractModel, t, withdraws)
 end
 
 function transact(
+    model::AbstractModel,
     withdraw::AbstractTransaction{T, D};
-    model,
     t
 ) where {T, D <: AdaptiveWithdraw}
     (; Δt, state) = model

@@ -28,6 +28,7 @@ export AbstractState
 
 export AdaptiveInvestment
 export AdaptiveWithdraw
+export AdjustedAmount
 export GBM
 export Transaction
 export MGBM
