@@ -229,4 +229,3 @@ function transact(
     amount.amount /= r
     return amount.amount
 end
-

@@ -27,8 +27,8 @@ The discrete time simulation is governed by seven update functions, which are ex
 - `invest!`: a function called on each time step to invest money into investments 
 - `update_income!`: a function called on each time step to update income sources 
 - `update_inflation!`: a function called on each time step to compute inflation 
-- `update_interest!`: a function called on each time step to compute interest on investments
-- `update_net_worth!`: a function called on each time step to compute net worth 
+- `update_market!`: a function called on each time step to compute interest on investments
+- `update_investments!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 
 Each function is assigned a default method with default arguments. Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
@@ -41,8 +41,8 @@ Each update function described in the previous section has default parameter val
 - `kw_withdraw`: optional keyword arguments passed to `withdraw!`
 - `kw_invest`: optional keyword arguments passed to `invest!`
 - `kw_inflation`: optional keyword arguments passed to `update_inflation!`
-- `kw_interest`: optional keyword arguments passed to `update_interest!` 
-- `kw_net_worth`: optional keyword arguments passed to `update_net_worth!`
+- `kw_interest`: optional keyword arguments passed to `update_market!` 
+- `kw_net_worth`: optional keyword arguments passed to `update_investments!`
 - `kw_log`: optional keyword arguments passed to `log!`
 
 # Example 
@@ -75,15 +75,15 @@ Based on the scenario above, we will use the following required parameters:
 
 ### Optional Update Functions
 
-In this simple simulation, we use several, simple update functions pre-fixed with the word `fixed`. As the names suggest, these simplified functions use fixed quantities in the simulation. However, for `update_net_worth!` and `log!`, we will use the default update functions. Each update function is described below:
+In this simple simulation, we use several, simple update functions pre-fixed with the word `fixed`. As the names suggest, these simplified functions use fixed quantities in the simulation. However, for `update_investments!` and `log!`, we will use the default update functions. Each update function is described below:
 
 - `fixed_withdraw`: withdraw a fixed amount from investments on each time step starting at a specified age
-- `fixed_investment`: invest a fixed amount on each time step until a specified age is reached
-- `fixed_income`: recieve a fixed income (e.g., social security, or pension) on each time step starting at a specified age
+- `invest!`: invest a specified amount on each time step until a specified age is reached. In this case, we will invest a fixed     amount
+- `fixed_income`: recieve specified income (e.g., social security, or pension) on each time step starting at a specified age
 - `fixed_inflation`: a fixed yearly inflation rate used to adjust interest (i.e., growth) earned on investments
 - `fixed_interest`: a fixed yearly interest rate earned on intestments 
-- `default_net_worth`: computes net worth on each time step based on inflation, interest, investments, and withdraws. 
-- `log!`: records interest rate, inflation rate, and net worth on each time step
+- `update_investments!`: computes total value of investments on each time step based on inflation, interest, investments, and withdraws. 
+- `default_log!`: records interest rate, inflation rate, and net worth on each time step
 
 Note: you can view additional documentation for the update functions above via `? function_name` in the REPL, or by referencing the [API](./api.md/#Update-Methods).
 
@@ -101,32 +101,18 @@ config = (
     duration = 58,
     # initial investment amount 
     start_amount = 10_000,
-    # withdraw function
-    withdraw! = fixed_withdraw,
-    # invest function
-    invest! = fixed_invest,
+    # function for simulating growth in the market
+    update_market! = fixed_market,
+    # interest parameters
+    kw_market = (interest_rate = 0.07,),
     # function for updating inflation
     update_inflation! = fixed_inflation,
-    # function for updating interest (growth)
-    update_interest! = fixed_interest,
-    # invest parameters
-    kw_invest = (
-        invest_amount = 625.0,
-        end_age = 60,
-    ),
-    # interest parameters
-    kw_interest = (
-        interest_rate = .07,
-    ),
     # inflation parameters
-    kw_inflation = (
-        inflation_rate = .035,
-    ),
-    # withdraw parameters
-    kw_withdraw = (
-        withdraw_amount = 2200.0,
-        start_age = 60,
-    )
+    kw_inflation = (inflation_rate = 0.035,),
+    # invest parameters
+    kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
+    # withdraw parameters 
+    kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
 )
 ```
 ## Construct Model 
@@ -190,3 +176,56 @@ plot(times, logger.net_worth, grid=false, label=false, xlabel="Age", ylabel="Net
 ```
 
 Based on the assumptions we have made, you will have `$`219,771 remaining in investments at age 85. Needless to say, this simulation is too simplistic stress test your financial situation. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [advanced example](advanced_example.md) will show you how to introduce random variables into the simulation to account for various sources of uncertainty.
+
+```@raw html
+<details>
+<summary><b>All Code</b></summary>
+```
+```julia
+using RetirementPlanners
+using Plots
+
+config = (
+    # time step in years
+    Δt = 1 / 12,
+    # starting age of simulation
+    start_age = 25,
+    # duration of simulation
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # function for simulating growth in the market
+    update_market! = fixed_market,
+    # interest parameters
+    kw_market = (interest_rate = 0.07,),
+    # function for updating inflation
+    update_inflation! = fixed_inflation,
+    # inflation parameters
+    kw_inflation = (inflation_rate = 0.035,),
+    # invest parameters
+    kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
+    # withdraw parameters 
+    kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
+)
+
+model = Model(; config...)
+
+times = get_times(model)
+n_steps = length(times)
+n_reps = 1
+logger = Logger(; n_reps, n_steps)
+
+simulate!(model, logger, n_reps)
+
+plot(
+    times,
+    logger.net_worth,
+    grid = false,
+    label = false,
+    xlabel = "Age",
+    ylabel = "Net Worth"
+)
+```
+```@raw html
+</details>
+```

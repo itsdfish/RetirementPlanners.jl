@@ -72,15 +72,13 @@ variable_invest
 default_log!
 ```
 
-### Update Net Worth
+### Update Investments
 
 ```@docs
-default_net_worth
+update_investments!
 ```
 ### Update Withdraw
 
 ```@docs 
-adaptive_withdraw
-fixed_withdraw
-variable_withdraw
+withdraw!
 ```
