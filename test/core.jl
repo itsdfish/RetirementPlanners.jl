@@ -10,7 +10,7 @@
         withdraw!,
         invest!,
         update_inflation! = fixed_inflation,
-        update_interest! = fixed_interest
+        update_market! = fixed_market
     )
 
     times = get_times(model)

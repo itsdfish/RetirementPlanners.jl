@@ -163,26 +163,27 @@ The default retirement simulation Model.
 - `invest!`: a function called on each time step to invest money into investments 
 - `update_income!`: a function called on each time step to update income sources 
 - `update_inflation!`: a function called on each time step to compute inflation 
-- `update_interest!`: a function called on each time step to compute interest on investments
-- `update_net_worth!`: a function called on each time step to compute net worth 
+- `update_market!`: a function called on each time step to compute interest on investments
+- `update_investments!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 
 # Constructor
 
     Model(;
-            Δt,
-            duration,
-            start_age,
-            start_amount,
-            state = State(),
-            withdraw! = variable_withdraw,
-            invest! = variable_invest,
-            update_income! = fixed_income,
-            update_inflation! = dynamic_inflation,
-            update_interest! = dynamic_interest,
-            update_net_worth! = default_net_worth,
-            log! = default_log!
-        )
+        Δt,
+        duration,
+        start_age,
+        start_amount,
+        state = State(),
+        withdraw! = withdraw!,
+        invest! = invest!,
+        update_income! = update_income!,
+        update_inflation! = dynamic_inflation,
+        update_market! = dynamic_interest,
+        update_investments! = update_investments!,
+        log! = default_log!,
+        config...
+    )
 """
 @concrete mutable struct Model{S, T <: Real} <: AbstractModel
     Δt::T
@@ -194,8 +195,8 @@ The default retirement simulation Model.
     invest!
     update_income!
     update_inflation!
-    update_interest!
-    update_net_worth!
+    update_market!
+    update_investments!
     log!
     config
 end
@@ -210,8 +211,8 @@ function Model(;
     invest! = invest!,
     update_income! = update_income!,
     update_inflation! = dynamic_inflation,
-    update_interest! = dynamic_interest,
-    update_net_worth! = default_net_worth,
+    update_market! = dynamic_interest,
+    update_investments! = update_investments!,
     log! = default_log!,
     config...
 )
@@ -226,8 +227,8 @@ function Model(;
         invest!,
         update_income!,
         update_inflation!,
-        update_interest!,
-        update_net_worth!,
+        update_market!,
+        update_investments!,
         log!,
         NamedTuple(config)
     )
@@ -311,22 +312,9 @@ function AdaptiveWithdraw(;
     )...)
 end
 
-mutable struct AdaptiveInvestment{T <: Real}
-    start_age::T
-    peak_age::T
-    real_growth_rate::T
-    mean::T
-    std::T
-end
-
 """
-    AdaptiveInvestment(;
-        start_age,
-        peak_age,
-        real_growth_rate,
-        mean,
-        std
-    )
+
+    AdaptiveInvestment{T <: Real}
 
 # Fields 
 
@@ -337,7 +325,25 @@ end
     assuming `real_growth` > 0.
 - `mean`: the average amount invested
 - `std`: the standard deviation of the amount invested
+
+# Constructor
+
+    AdaptiveInvestment(;
+        start_age,
+        peak_age,
+        real_growth_rate,
+        mean,
+        std
+    )
 """
+mutable struct AdaptiveInvestment{T <: Real}
+    start_age::T
+    peak_age::T
+    real_growth_rate::T
+    mean::T
+    std::T
+end
+
 function AdaptiveInvestment(;
     start_age,
     peak_age,
@@ -353,13 +359,27 @@ function AdaptiveInvestment(;
         std)...)
 end
 
+"""
+    NominalAmount{T <: AbstractFloat}
 
-mutable struct AdjustedAmount{T <: AbstractFloat}
+Allows a specified income source to change with inflation.
+
+# Fields
+
+- `amount::T`: the nominal amount
+- `adjust::Bool`: adjust if true, otherwise don't adjust 
+- `initial_amount::T`: the initial value used to reset `amount`
+"""
+mutable struct NominalAmount{T <: AbstractFloat}
     amount::T
     adjust::Bool
+    initial_amount::T
 end
 
-function AdjustedAmount(; amount, adjust = true)
-    return AdjustedAmount(amount, adjust)
+function NominalAmount(; amount, adjust = true)
+    return NominalAmount(amount, adjust, amount)
 end
 
+function NominalAmount(amount, adjust = true, initial_amount = amount)
+    return NominalAmount(amount, adjust, initial_amount)
+end

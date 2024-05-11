@@ -1,10 +1,11 @@
 """
-    adaptive_withdraw(
+    withdraw!(
         model::AbstractModel,
         t;
-        withdraws
+        withdraws = Transaction(0.0, -1.0, 0.0)
     )
 
+Schedules withdraws from investments as specified in `withdraws`.
 
 # Arguments
 

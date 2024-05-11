@@ -30,11 +30,11 @@ end
 Performs an update on each time step by calling the following functions defined in `model`:
 
 - `update_inflation!`: compute inflation
-- `update_interest!`: compute interest 
+- `update_market!`: compute interest 
 - `invest!`: invest money
 - `withdraw!`: withdraw money
 - `update_income!`: update sources of income, such as social security, pension etc. 
-- `update_net_worth!`: compute net worth for the time step 
+- `update_investments!`: compute net worth for the time step 
 - `log!`: log desired variables 
 
 Each function except `log!` has the signature `my_func(model, t; kwargs...)`. The function `log!` has the signature 
@@ -58,14 +58,14 @@ end
         logger::AbstractLogger,
         step,
         rep,
-        t; 
-        kw_income=(),
-        kw_withdraw=(),
-        kw_invest=(),
-        kw_inflation=(),
-        kw_interest=(),
-        kw_net_worth=(),
-        kw_log=()
+        t;
+        kw_income = (),
+        kw_withdraw = (),
+        kw_invest = (),
+        kw_inflation = (),
+        kw_market = (),
+        kw_investments = (),
+        kw_log = ()
     )
             
 Performs an update on each time step by calling the following functions defined in `model`:
@@ -74,8 +74,8 @@ Performs an update on each time step by calling the following functions defined 
 - `withdraw!`: withdraw money
 - `invest!`: invest money
 - `update_inflation!`: compute inflation
-- `update_interest!`: compute interest 
-- `update_net_worth!`: compute net worth for the time step 
+- `update_market!`: compute interest 
+- `update_investments!`: compute net worth for the time step 
 - `log!`: log desired variables 
 
 Each function except `log!` has the signature `my_func(model, t; kwargs...)`. The function `log!` has the signature 
@@ -94,8 +94,8 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `kw_withdraw = ()`: optional keyword arguments passed to `withdraw!`
 - `kw_invest = ()`: optional keyword arguments passed to `invest!`
 - `kw_inflation = ()`: optional keyword arguments passed to `update_inflation!`
-- `kw_interest = ()`: optional keyword arguments passed to `update_interest!` 
-- `kw_net_worth = ()`: optional keyword arguments passed to `update_net_worth!`
+- `kw_market = ()`: optional keyword arguments passed to `update_market!` 
+- `kw_investments = ()`: optional keyword arguments passed to `update_investments!`
 - `kw_log = ()`: optional keyword arguments passed to `log!`
 """
 function _update!(
@@ -108,16 +108,16 @@ function _update!(
     kw_withdraw = (),
     kw_invest = (),
     kw_inflation = (),
-    kw_interest = (),
-    kw_net_worth = (),
+    kw_market = (),
+    kw_investments = (),
     kw_log = ()
 )
     model.update_inflation!(model, t; kw_inflation...)
-    model.update_interest!(model, t; kw_interest...)
+    model.update_market!(model, t; kw_market...)
     model.invest!(model, t; kw_invest...)
     model.withdraw!(model, t; kw_withdraw...)
     model.update_income!(model, t; kw_income...)
-    model.update_net_worth!(model, t; kw_net_worth...)
+    model.update_investments!(model, t; kw_investments...)
     model.log!(model, logger, step, rep; kw_log...)
     return nothing
 end
@@ -171,35 +171,62 @@ can_transact(source::AbstractTransaction, t; Δt = 0.0) =
     (source.start_age - Δt / 2 ≤ t) && (source.end_age + Δt / 2 ≥ t)
 transact(::AbstractModel, source::AbstractTransaction{T, D}; _...) where {T, D <: Real} =
     source.amount
-transact(
+
+"""
+    transact(
+        model::AbstractModel,
+        income::Transaction{T, D};
+        t
+    ) where {T, D <: Distribution}
+
+Sample a amount from a specified distribution and execute a transaction. 
+
+# Arguments
+
+- `::AbstractModel`: unused model object 
+- `investment::Transaction{T, D}`: a transaction object specifing an investment rule
+
+# Keywords
+
+- `t`: the current time
+"""
+function transact(
     ::AbstractModel,
     source::AbstractTransaction{T, D};
     _...
-) where {T, D <: Distribution} =
-    rand(source.amount)
+) where {T, D <: Distribution}
+    return rand(source.amount)
+end
 
+"""
+    transact(
+        model::AbstractModel,
+        income::Transaction{T, D};
+        t
+    ) where {T, D <: NominalAmount}
 
+Execute a transaction using the nominal value of the transaction amount. 
+
+# Arguments
+
+- `::AbstractModel`: unused model object 
+- `investment::Transaction{T, D}`: a transaction object specifing an investment rule
+
+# Keywords
+
+- `t`: the current time
+"""
 function transact(
     model::AbstractModel,
     income::Transaction{T, D};
     t
-) where {T, D <: AdjustedAmount}
+) where {T, D <: NominalAmount}
     income.amount.adjust ? nothing : (return income.amount.amount)
-    (; Δt) = model
-    r = (1 + model.state.inflation_rate)^Δt
-    income.amount.amount /= r
-    return income.amount.amount  
+    (; Δt, state, start_age) = model
+    (; amount) = income
+    amount.amount = start_age ≈ t ? (amount.initial_amount) : amount.amount
+    r = (1 + state.inflation_rate)^Δt
+    amount.amount /= r
+    return amount.amount
 end
-    
-function transact(
-    ::AbstractModel,
-    investment::Transaction{T, D};
-    t
-) where {T, D <: AdaptiveInvestment}
-    (; start_age, real_growth_rate, peak_age, mean, std) =
-        investment.amount
-    base_investment = rand(Normal(mean, std))
-    n_years = t ≥ peak_age ? (peak_age - start_age) : (t - start_age)
-    growth_factor = (1 + real_growth_rate)^floor(n_years)
-    return base_investment * growth_factor
-end
+

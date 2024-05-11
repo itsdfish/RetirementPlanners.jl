@@ -28,16 +28,17 @@ export AbstractState
 
 export AdaptiveInvestment
 export AdaptiveWithdraw
-export AdjustedAmount
 export GBM
 export Transaction
 export MGBM
 export Model
 export Logger
 export MvGBM
+export NominalAmount
 export State
 export VarGBM
 
+export can_transact
 export fit
 export get_times
 export grid_search
@@ -50,26 +51,21 @@ export rand
 export simulate!
 export std
 export to_dataframe
+export transact
 export update!
 export var
 export withdraw!
 
-export dynamic_inflation
-export dynamic_interest
-
 export default_log!
-export default_net_worth
+export dynamic_inflation
+export dynamic_market
 export fixed_inflation
-export fixed_interest
-export fixed_invest
-export fixed_withdraw
-
-export variable_income
-export variable_inflation
+export fixed_market
 export invest!
-export variable_invest
-export variable_withdraw
 export update_income!
+export update_investments!
+export variable_inflation
+export variable_market
 
 include("structs.jl")
 include("core.jl")
@@ -78,9 +74,9 @@ include("utilities.jl")
 include("grid_search.jl")
 include("update_functions/income.jl")
 include("update_functions/inflation.jl")
-include("update_functions/interest.jl")
+include("update_functions/market.jl")
 include("update_functions/invest.jl")
 include("update_functions/logging.jl")
-include("update_functions/net_worth.jl")
+include("update_functions/investments.jl")
 include("update_functions/withdraw.jl")
 end

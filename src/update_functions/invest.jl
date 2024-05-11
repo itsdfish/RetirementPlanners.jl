@@ -7,7 +7,7 @@
         peak_age = 45
     )
 
-Contribute a variable amount into investments per time step using the specifed distribution.
+Contribute a specified amount into investments on each time step.
 
 # Arguments
 
@@ -47,4 +47,36 @@ function _invest!(
         _invest!(model, t, investment)
     end
     return nothing
+end
+
+"""
+    transact(
+        ::AbstractModel,
+        investment::Transaction{T, D};
+        t
+    ) where {T, D <: AdaptiveInvestment}
+
+Execute an adaptive investment transaction in which the real invested amount increased until reaching 
+a peak earning potential. 
+
+# Arguments
+
+- `::AbstractModel`: unused model object 
+- `investment::Transaction{T, D}`: a transaction object specifing an investment rule
+
+# Keywords
+
+- `t`: the current time
+"""
+function transact(
+    ::AbstractModel,
+    investment::Transaction{T, D};
+    t
+) where {T, D <: AdaptiveInvestment}
+    (; start_age, real_growth_rate, peak_age, mean, std) =
+        investment.amount
+    base_investment = rand(Normal(mean, std))
+    n_years = t ≥ peak_age ? (peak_age - start_age) : (t - start_age)
+    growth_factor = (1 + real_growth_rate)^floor(n_years)
+    return base_investment * growth_factor
 end

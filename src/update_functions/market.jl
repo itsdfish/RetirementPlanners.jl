@@ -1,5 +1,5 @@
 """
-    fixed_interest(model::AbstractModel, t; interest_rate = .07)
+    fixed_market(model::AbstractModel, t; interest_rate = .07)
 
 Returns a fixed interesting rate using a specified value.
 
@@ -12,13 +12,13 @@ Returns a fixed interesting rate using a specified value.
 
 - `interest_rate = .07`: a constant rate of investment growth per year
 """
-function fixed_interest(model::AbstractModel, t; interest_rate = 0.07)
+function fixed_market(model::AbstractModel, t; interest_rate = 0.07)
     model.state.interest_rate = interest_rate
     return nothing
 end
 
 """
-    variable_interest(
+    variable_market(
         model::AbstractModel,
         t;
         distribution = Normal(.07, .05)
@@ -35,7 +35,7 @@ Returns interest rate sampled from a specified distribution.
 
 - `distribution = Normal(.07, .05)`: the distribution of interest per year 
 """
-function variable_interest(model::AbstractModel, t; distribution = Normal(0.07, 0.05))
+function variable_market(model::AbstractModel, t; distribution = Normal(0.07, 0.05))
     model.state.interest_rate = rand(distribution)
     return nothing
 end

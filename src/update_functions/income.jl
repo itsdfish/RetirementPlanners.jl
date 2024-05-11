@@ -5,7 +5,7 @@
         income_sources = Transaction(0.0, -1.0, 0.0)
     )
 
-Recieve income from multiple sources per time step, as indicated by `income_sources`.
+Recieve income from specified sources on each time step, as indicated by `income_sources`.
 
 # Arguments
 

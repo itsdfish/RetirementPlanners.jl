@@ -58,7 +58,7 @@
         @test model.state.inflation_rate == inflation_rate
     end
 
-    @safetestset "fixed_interest" begin
+    @safetestset "fixed_market" begin
         using RetirementPlanners
         using Test
 
@@ -66,7 +66,7 @@
 
         interest_rate = 0.05
 
-        fixed_interest(model, 1.0; interest_rate)
+        fixed_market(model, 1.0; interest_rate)
         @test model.state.interest_rate == interest_rate
     end
 
@@ -354,7 +354,7 @@
         end
     end
 
-    @safetestset "update_net_worth!" begin
+    @safetestset "update_investments!" begin
         using RetirementPlanners
         using Test
 
@@ -363,7 +363,7 @@
         model.state.net_worth = model.start_amount
         model.state.interest_rate = 0.10
         model.state.inflation_rate = 0.03
-        default_net_worth(model, 1.0)
+        update_investments!(model, 1.0)
 
         true_value = 10_000 * (1.1 / 1.03)^(1 / 12)
 
