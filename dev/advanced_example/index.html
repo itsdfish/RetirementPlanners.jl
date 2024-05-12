@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Advanced Example · RetirementPlanners</title><meta name="title" content="Advanced Example · RetirementPlanners"/><meta property="og:title" content="Advanced Example · RetirementPlanners"/><meta property="twitter:title" content="Advanced Example · RetirementPlanners"/><meta name="description" content="Documentation for RetirementPlanners."/><meta property="og:description" content="Documentation for RetirementPlanners."/><meta property="twitter:description" content="Documentation for RetirementPlanners."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="RetirementPlanners logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">RetirementPlanners</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../basic_example/">Basic Example</a></li><li class="is-active"><a class="tocitem" href>Advanced Example</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Example"><span>Example</span></a></li><li><a class="tocitem" href="#Scenario"><span>Scenario</span></a></li><li><a class="tocitem" href="#Load-Packages"><span>Load Packages</span></a></li><li><a class="tocitem" href="#Configure-Update-Options"><span>Configure Update Options</span></a></li><li><a class="tocitem" href="#Create-Model-Object"><span>Create Model Object</span></a></li><li><a class="tocitem" href="#Setup-Logger"><span>Setup Logger</span></a></li><li><a class="tocitem" href="#Run-Simulation"><span>Run Simulation</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Advanced Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Advanced Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl/blob/main/docs/src/advanced_example.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Overview"><a class="docs-heading-anchor" href="#Overview">Overview</a><a id="Overview-1"></a><a class="docs-heading-anchor-permalink" href="#Overview" title="Permalink"></a></h1><p>The goal of this example is to illustrate how to setup a realistic simulation to stress test your retirement plan. This example builds upon the <a href="../basic_example/">basic example</a> and attempts to overcome some of its limitations. The primary limitation with the basic example is its failure to capture uncertainty in various quantaties, such as interest rates, and the amount withdrawn from investments during retirement. To capture the inherent uncertainty of future events, we will sample these quantities from specified distributions. In so doing, we will be able to stress test the retirement plan under a wide variety of uncertain scenarios to determine the survival probability as a function of time. This will allow us to answer questions, such as <em>what is the chance of running out of money after 20 years?</em></p><h1 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h1><h2 id="Scenario"><a class="docs-heading-anchor" href="#Scenario">Scenario</a><a id="Scenario-1"></a><a class="docs-heading-anchor-permalink" href="#Scenario" title="Permalink"></a></h2><p>In this example, we will assume that you have completed the <a href="../basic_example/">basic example</a> and have a rudimentary understanding of the API. If that is not the case, please review the basic example before proceeding. We will use the same scenario described in the basic example, which is reproduced below for your convienence: </p><p><em>Let&#39;s assume that you are 27 years old with an initial investment of <code>$</code>10,000, and you invest <code>$</code>625 each month until early retirement at age 60. Assume further that the yearly interest rate on investments is .07, and inflation is .035. Upon reaching 60 years old, we will assume you will withdraw <code>$</code>2,200 per month until reaching age 85.</em></p><h2 id="Load-Packages"><a class="docs-heading-anchor" href="#Load-Packages">Load Packages</a><a id="Load-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Packages" title="Permalink"></a></h2><p>The first step is to load the required packages. In the code block below, we will load <code>RetirementPlanners</code> to run the retirement simulation, <code>Distributions</code> to make the simulation stochastic, and <code>Plots</code> to plot the results of the simulation. </p><pre><code class="language-julia hljs">using Distributions
 using Plots
-using RetirementPlanners</code></pre><h2 id="Configure-Update-Options"><a class="docs-heading-anchor" href="#Configure-Update-Options">Configure Update Options</a><a id="Configure-Update-Options-1"></a><a class="docs-heading-anchor-permalink" href="#Configure-Update-Options" title="Permalink"></a></h2><p>The configuration for the simulation is presented below. </p><pre><code class="language-julia hljs">config = (
+using RetirementPlanners</code></pre><h2 id="Configure-Update-Options"><a class="docs-heading-anchor" href="#Configure-Update-Options">Configure Update Options</a><a id="Configure-Update-Options-1"></a><a class="docs-heading-anchor-permalink" href="#Configure-Update-Options" title="Permalink"></a></h2><p>The configuration for the simulation is presented below. </p><pre><code class="language-julia hljs"># configuration options
+config = (
     # time step in years
     Δt = 1 / 12,
     # start age of simulation
@@ -10,23 +11,32 @@ using RetirementPlanners</code></pre><h2 id="Configure-Update-Options"><a class=
     duration = 58,
     # initial investment amount
     start_amount = 10_000,
-    # function for adaptive withdraw
-    withdraw! = adaptive_withdraw,
     # withdraw parameters
-    kw_withdraw = (
-        start_age = 60.0,
-        income_adjustment = 0,
-        min_withdraw = 2200,
-        percent_of_real_growth = 0.15,
-        volitility = 0.05,
-    ),
+    kw_withdraw = (withdraws = Transaction(;
+        start_age = 60,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),),
     # invest parameters
-    kw_interest = (
+    kw_invest = (investments = Transaction(;
+        start_age = 27,
+        end_age = 60,
+        amount = Normal(625, 100)
+    ),),
+    # interest parameters
+    kw_market = (
+        # dynamic model of the stock market
         gbm = VarGBM(;
+            # non-recession parameters
             αμ = 0.070,
             ημ = 0.010,
             ασ = 0.035,
             ησ = 0.010,
+            # recession parameters
             αμᵣ = -0.05,
             ημᵣ = 0.010,
             ασᵣ = 0.035,
@@ -38,8 +48,8 @@ using RetirementPlanners</code></pre><h2 id="Configure-Update-Options"><a class=
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters
-    kw_income = (social_security_income = 1300, social_security_start_age = 67)
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Δt = 0.08333333333333333, start_age = 27, duration = 58, start_amount = 10000, withdraw! = RetirementPlanners.adaptive_withdraw, kw_withdraw = (start_age = 60.0, income_adjustment = 0, min_withdraw = 2200, percent_of_real_growth = 0.15, volitility = 0.05), kw_interest = (gbm = VarGBM{Float64}(
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Δt = 0.08333333333333333, start_age = 27, duration = 58, start_amount = 10000, kw_withdraw = (withdraws = Transaction{Float64, AdaptiveWithdraw{Float64}}(60.0, Inf, AdaptiveWithdraw{Float64}(2200.0, 0.05, 0.0, 0.15)),), kw_invest = (investments = Transaction{Int64, Distributions.Normal{Float64}}(27, 60, Distributions.Normal{Float64}(μ=625.0, σ=100.0)),), kw_market = (gbm = VarGBM{Float64}(
 μ: 0.0
 σ: 0.0
 μᵣ: 0.0
@@ -71,27 +81,27 @@ x: 1.0
 x0: 1.0
 x: 1.0
 )
-,), kw_income = (social_security_income = 1300, social_security_start_age = 67))</code></pre><p>Notice that many parameters are the same as those from the basic example. However, there are importance differences, which we will examine below. </p><h3 id="Adaptive-Withdraw"><a class="docs-heading-anchor" href="#Adaptive-Withdraw">Adaptive Withdraw</a><a id="Adaptive-Withdraw-1"></a><a class="docs-heading-anchor-permalink" href="#Adaptive-Withdraw" title="Permalink"></a></h3><p>In this simulation, we will use the function <code>adaptive_withdraw</code> to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, <code>adaptive_withdraw</code> will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.</p><p><code>adaptive_withdraw</code> has the following parameters:</p><ul><li><code>start_age</code>: specifies age at which funds are withdrawn from the investments.</li><li><code>income_adjustment</code>: allows you to subtract a portion of the your income (e.g., social security or pension) from the investment amount. Doing so, would provide the opportunity for the investments to grow. </li><li><code>percent_of_real_growth</code>: specifies the percent of real growth withdrawn. If real growth in one month was <code>$</code>6,000, and <code>percent_of_real_growth = .5</code>, the withdraw amount would be <code>$</code>3,000. However, the withdraw amount cannot be less than the amount specified by the parameter <code>min_withdraw</code> (unless the total investments are less than <code>min_withdraw</code>). </li><li><code>volitility</code> controls the variability of the withdraw amount. The variance is proportional to the mean withdraw amount. </li></ul><h3 id="Investment"><a class="docs-heading-anchor" href="#Investment">Investment</a><a id="Investment-1"></a><a class="docs-heading-anchor-permalink" href="#Investment" title="Permalink"></a></h3><p>In the intermediate example, we will use the default function <code>variable_invest</code> to specify an investment schedule. One benefit of using <code>variable_invest</code> it can model fluctuations in investment amounts due to factors such as, unexpected expenses and bonuses. <code>variable_invest</code> has the following parameters:</p><ul><li><code>end_age</code>: the age at which one stops contributing to investments</li><li><code>distribution</code>: a distribution object from which investment amounts are sampled </li><li><code>lump_sum_investments</code>: an optional dictionary of lump sums (e.g., inheritance) to be invested at specified times</li></ul><h3 id="Interest"><a class="docs-heading-anchor" href="#Interest">Interest</a><a id="Interest-1"></a><a class="docs-heading-anchor-permalink" href="#Interest" title="Permalink"></a></h3><p>In this example, we will simulate growth the stock market using a stochastic process model called Geometric Brownian Motion (GBM). One advantage of GBM is that it provides a more accurate description of the temporal dynamics of stock market growth: the value of the stock market is noisy, but current value depends on the previous value.  Below, we will use the function <code>dynamic_interest</code> to simulate stock market growth with the GBM. A standard GBM has two parameters:</p><ul><li><code>μ</code>: growth rate</li><li><code>σ</code>: volitility in growth rate</li></ul><p>More information can be found by expanding the details option below.</p><details>
-<summary><b>Show Details</b></summary><p>Brownian motion component of GBM is based on random movement of particles in space when no force is present to move the particles in a specific direction. Although particle physics seems disconnected from stock market behavior, it turns out to be a reasonable model because there is inherent randomness in stock prices as well as a general tendency to grow. If we add a growth rate parameter to Brownian motion and force the price to change proportially to its current value, the result is the GBM. The stochastic differential equation for the GBM is given by:</p><p><span>$X(t) = X(t)[ \mu dt + s \sqrt{dt}],$</span></p><p>where <span>$X(t)$</span> is the stock market value at time <span>$t$</span>, <span>$dt$</span> is the infintesimal time step,  <span>$\mu$</span> is the average growth rate, and <span>$s \sim \mathrm{normal}(0,\sigma)$</span> is normally distributed noise with standard deviation <span>$\sigma$</span>. The stochastic differential equation has two terms:</p><ul><li><span>$\mu dt$</span>: represents the average growth rate of the stock market. </li><li><span>$s \sqrt{dt}$</span>: represents the diffusion or <em>jitter</em> in the growth rate, which sometimes causes the price to increase or decrease more than the average growth rate. </li></ul><p>An important implication of multipling the two terms on the right hand side by <span>$X(t)$</span> is that growth and volitiliy scale with the current price, and the price cannot be negative. The code block below illustrates how to simulate and plot 10 trajectories of the GBM. The growth rate is <span>$\mu=.07$</span> with a standard deviation of <span>$\sigma=.07$</span>, indicating moderately high volitility. </p></details><p>The figure below shows 10 example trajectories of GBM over a 10 year period. The average growth rate is 7% with moderate volitility of 3%. </p><pre><code class="language-julia hljs">gdm = GBM(; μ = .07, σ = .03)
+,), kw_income = (income_sources = Transaction{Float64, Int64}(67.0, Inf, 2000),))</code></pre><p>Notice that many parameters are the same as those from the basic example. However, there are importance differences, which we will examine below. </p><h3 id="Adaptive-Withdraw"><a class="docs-heading-anchor" href="#Adaptive-Withdraw">Adaptive Withdraw</a><a id="Adaptive-Withdraw-1"></a><a class="docs-heading-anchor-permalink" href="#Adaptive-Withdraw" title="Permalink"></a></h3><p>In this simulation, we will use the type <code>AdaptiveWithdraw</code> to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, <code>AdaptiveWithdraw</code> will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.</p><p><code>AdaptiveWithdraw</code> has the following fields:</p><ul><li><code>start_age</code>: specifies age at which funds are withdrawn from the investments.</li><li><code>income_adjustment</code>: allows you to subtract a portion of the your income (e.g., social security or pension) from the investment amount. Doing so, would provide the opportunity for the investments to grow. </li><li><code>percent_of_real_growth</code>: specifies the percent of real growth withdrawn. If real growth in one month was <code>$</code>6,000, and <code>percent_of_real_growth = .5</code>, the withdraw amount would be <code>$</code>3,000. However, the withdraw amount cannot be less than the amount specified by the parameter <code>min_withdraw</code> (unless the total investments are less than <code>min_withdraw</code>). </li><li><code>volitility</code> controls the variability of the withdraw amount. The variance is proportional to the mean withdraw amount. </li></ul><h3 id="Investment"><a class="docs-heading-anchor" href="#Investment">Investment</a><a id="Investment-1"></a><a class="docs-heading-anchor-permalink" href="#Investment" title="Permalink"></a></h3><p>In the advanced example, we will sample each investment contribution from a normal distribution to reflect fluctuations due to factors such as, unexpected expenses and bonuses. This is accomplished by setting the <code>amount</code> field of <code>Transaction</code> to <code>Normal(μ, σ)</code>. <code>Normal</code> has the following parameters:</p><ul><li><code>μ</code>: the average contribution</li><li><code>σ</code>: the standard deviation of the contribution</li></ul><h3 id="Interest"><a class="docs-heading-anchor" href="#Interest">Interest</a><a id="Interest-1"></a><a class="docs-heading-anchor-permalink" href="#Interest" title="Permalink"></a></h3><p>In this example, we will simulate growth the stock market using a stochastic process model called Geometric Brownian Motion (GBM). One advantage of GBM is that it provides a more accurate description of the temporal dynamics of stock market growth: the value of the stock market is noisy, but current value depends on the previous value.  Below, we will use the function <code>dynamic_interest</code> to simulate stock market growth with the GBM. A standard GBM has two parameters:</p><ul><li><code>μ</code>: growth rate</li><li><code>σ</code>: volitility in growth rate</li></ul><p>More information can be found by expanding the details option below.</p><details>
+<summary><b>Show Details</b></summary><p>Brownian motion component of GBM is based on random movement of particles in space when no force is present to move the particles in a specific direction. Although particle physics seems disconnected from stock market behavior, it turns out to be a reasonable model because there is inherent randomness in stock prices as well as a general tendency to grow. If we add a growth rate parameter to Brownian motion and force the price to change proportially to its current value, the result is the GBM. The stochastic differential equation for the GBM is given by:</p><p><span>$X(t) = X(t)[ \mu dt + s \sqrt{dt}],$</span></p><p>where <span>$X(t)$</span> is the stock market value at time <span>$t$</span>, <span>$dt$</span> is the infintesimal time step,  <span>$\mu$</span> is the average growth rate, and <span>$s \sim \mathrm{normal}(0,\sigma)$</span> is normally distributed noise with standard deviation <span>$\sigma$</span>. The stochastic differential equation has two terms:</p><ul><li><span>$\mu dt$</span>: represents the average growth rate of the stock market. </li><li><span>$s \sqrt{dt}$</span>: represents the diffusion or <em>jitter</em> in the growth rate, which sometimes causes the price to increase or decrease more than the average growth rate. </li></ul><p>An important implication of multipling the two terms on the right hand side by <span>$X(t)$</span> is that growth and volitiliy scale with the current price, and the price cannot be negative. The code block below illustrates how to simulate and plot 10 trajectories of the GBM. The growth rate is <span>$\mu=.07$</span> with a standard deviation of <span>$\sigma=.07$</span>, indicating moderately high volitility. </p></details><p>The figure below shows 10 example trajectories of GBM over a 10 year period. The average growth rate is 10% with moderate volitility of 7%. </p><pre><code class="language-julia hljs">gdm = GBM(; μ = .10, σ = .07)
 trajectories = rand(gdm, 365 * 10, 10; Δt = 1 / 365)
-plot(trajectories, leg=false, grid=false)</code></pre><img src="b22f592a.svg" alt="Example block output"/><p>In reality, however, we are uncertain about the values of parameters <code>μ</code> and <code>σ</code>. Setting <code>μ</code> to 07 is reasonable (albiet somewhat pessimistic), but setting <code>μ</code> to .08 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation of GBM in which <code>μ</code> and <code>σ</code> are sampled from a distribution for each simulation of a 58 year period. <code>VarGBM</code> has four parameters:</p><ul><li><code>αμ</code>: mean of growth rate distribution</li><li><code>ασ</code>: mean of volitility of growth rate distribution</li><li><code>ημ</code>: standard deviation of growth rate distribution</li><li><code>ησ</code>: standard deviation of volitility of growth rate distribution</li></ul><h2 id="Create-Model-Object"><a class="docs-heading-anchor" href="#Create-Model-Object">Create Model Object</a><a id="Create-Model-Object-1"></a><a class="docs-heading-anchor-permalink" href="#Create-Model-Object" title="Permalink"></a></h2><p>Now that we have configured the parameters of the simulation, we are now in the position to create the model object:</p><pre><code class="language-julia hljs">model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
-┌───────────────────┬───────────────────────────────────────────────────────────
-│ Field             │ Value                                                    ⋯
-├───────────────────┼───────────────────────────────────────────────────────────
-│ Δt                │  0.08                                                    ⋯
-│ duration          │ 58.00                                                    ⋯
-│ start_age         │ 27.00                                                    ⋯
-│ start_amount      │ 10000.00                                                 ⋯
-│ state             │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)             ⋯
-│ withdraw!         │ adaptive_withdraw                                        ⋯
-│ invest!           │ variable_invest                                          ⋯
-│ update_income!    │ fixed_income                                             ⋯
-│ update_inflation! │ dynamic_inflation                                        ⋯
-│ update_interest!  │ dynamic_interest                                         ⋯
-│ update_net_worth! │ default_net_worth                                        ⋯
-│ log!              │ default_log!                                             ⋯
-│ config            │ (kw_withdraw = (start_age = 60.0, income_adjustment = 0, ⋯
-└───────────────────┴───────────────────────────────────────────────────────────
+plot(trajectories, leg=false, grid=false)</code></pre><img src="af345b30.svg" alt="Example block output"/><p>Although we set parameters <code>μ</code> and <code>σ</code> to plausible values, there are other plausible values we could have selected. Setting <code>μ</code> to .07 is reasonable (albiet somewhat pessimistic), but setting <code>μ</code> to .11 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation of GBM in which <code>μ</code> and <code>σ</code> are sampled from a distribution for each simulation of a 58 year period. <code>VarGBM</code> has four required parameters:</p><ul><li><code>αμ</code>: mean of growth rate distribution</li><li><code>ασ</code>: mean of volitility of growth rate distribution</li><li><code>ημ</code>: standard deviation of growth rate distribution</li><li><code>ησ</code>: standard deviation of volitility of growth rate distribution</li></ul><p>In addition, you may optionally specify corresponding parameters for periods of recession: <code>αμᵣ</code>, <code>ημᵣ</code>, <code>ασᵣ</code>, <code>ησᵣ</code>. One advantage of specifying the timing of recessions manually is to examine sequence of return risk. The timing of a recession is important because it is more difficult to recover if it occurs near the beginning of retirement. The time and duration of a recession can be specified by passing a dictionary called <code>recession</code>. Note that recessions may emerge naturally from GBM under suitible parameters. </p><h2 id="Create-Model-Object"><a class="docs-heading-anchor" href="#Create-Model-Object">Create Model Object</a><a id="Create-Model-Object-1"></a><a class="docs-heading-anchor-permalink" href="#Create-Model-Object" title="Permalink"></a></h2><p>Now that we have configured the parameters of the simulation, we are now in the position to create the model object:</p><pre><code class="language-julia hljs">model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
+┌─────────────────────┬─────────────────────────────────────────────────────────
+│ Field               │ Value                                                  ⋯
+├─────────────────────┼─────────────────────────────────────────────────────────
+│ Δt                  │  0.08                                                  ⋯
+│ duration            │ 58.00                                                  ⋯
+│ start_age           │ 27.00                                                  ⋯
+│ start_amount        │ 10000.00                                               ⋯
+│ state               │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)           ⋯
+│ withdraw!           │ withdraw!                                              ⋯
+│ invest!             │ invest!                                                ⋯
+│ update_income!      │ update_income!                                         ⋯
+│ update_inflation!   │ dynamic_inflation                                      ⋯
+│ update_market!      │ dynamic_market                                         ⋯
+│ update_investments! │ update_investments!                                    ⋯
+│ log!                │ default_log!                                           ⋯
+│ config              │ (kw_withdraw = (withdraws = Transaction{Float64, Adapt ⋯
+└─────────────────────┴─────────────────────────────────────────────────────────
 <span class="sgr36">                                                                1 column omitted
 </span></span></code></pre><h2 id="Setup-Logger"><a class="docs-heading-anchor" href="#Setup-Logger">Setup Logger</a><a id="Setup-Logger-1"></a><a class="docs-heading-anchor-permalink" href="#Setup-Logger" title="Permalink"></a></h2><p>The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: annualized interest rate, annualized inflation rate, and net worth. The <code>Logger</code> object requires two inputs: <code>n_steps</code>: the total number of time steps in one simulation, and <code>n_reps</code>: the total repetitions of the simulation. The total number of time steps can be found by getting the length of the time steps. In this simple scenario, we will repeat the simulation <code>10,000</code> times to provide a stable estimate of the variability in the investment and retirement conditions. </p><pre><code class="language-julia hljs">times = get_times(model)
 n_reps = 1000
@@ -107,8 +117,7 @@ logger = Logger(; n_steps, n_reps)</code></pre><pre class="documenter-example-ou
 └──────────────┴────────────────────────────────────────────────────────────────
 <span class="sgr36">                                                                1 column omitted
 </span></span></code></pre><h2 id="Run-Simulation"><a class="docs-heading-anchor" href="#Run-Simulation">Run Simulation</a><a id="Run-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Simulation" title="Permalink"></a></h2><p>Now that we have specified the parameters of the simulation, we can use the function <code>simulate!</code> to generate retirement numbers and save them to the <code>Logger</code> object. As shown below, <code>simulate!</code> requires our model object, the logger, and the number of repetitions. </p><pre><code class="language-julia hljs">simulate!(model, logger, n_reps)</code></pre><p>One of the biggest changes from the basic example is the use of random values for withdraw and interest. In the code block below, we will use the function <code>plot_gradient</code> to represent variability in networth projections. Darker values correspond to higher density or more likely trajectories.   </p><details>
-<summary><b>Show Details</b></summary><pre><code class="language-julia hljs"># plot of survival probability as a function of time
-survival_probs = mean(logger.net_worth .&gt; 0, dims = 2)
+<summary><b>Show Details</b></summary><pre><code class="language-julia hljs">survival_probs = mean(logger.net_worth .&gt; 0, dims = 2)
 survival_plot = plot(
     times,
     survival_probs,
@@ -116,7 +125,7 @@ survival_plot = plot(
     xlabel = &quot;Age&quot;,
     grid = false,
     ylabel = &quot;Survival Probability&quot;,
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     ylims = (0.5, 1.05),
     color = :black
 )
@@ -126,8 +135,8 @@ net_worth_plot = plot_gradient(
     times,
     logger.net_worth;
     xlabel = &quot;Age&quot;,
-    ylabel = &quot;Net Worth&quot;,
-    n_lines = 0,
+    ylabel = &quot;Investment Value&quot;,
+    n_lines = 0
 )
 
 # growth rate distribution across repetitions of the simulation
@@ -158,10 +167,10 @@ income_plot = plot_gradient(
     logger.total_income;
     xlabel = &quot;Age&quot;,
     ylabel = &quot;Total Income&quot;,
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     n_lines = 0,
     color = :blue
-)</code></pre><img src="d0f2cb37.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))</code></pre><img src="fcc47d11.svg" alt="Example block output"/><details>
+)</code></pre><img src="c06fc582.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))</code></pre><img src="1380cd5f.svg" alt="Example block output"/><details>
 <summary><b>All Code</b></summary><pre><code class="language-julia hljs">###############################################################################################################
 #                                           load dependencies
 ###############################################################################################################
@@ -186,26 +195,32 @@ config = (
     duration = 58,
     # initial investment amount 
     start_amount = 10_000,
-    # function for adaptive withdraw
-    withdraw! = adaptive_withdraw,
     # withdraw parameters 
-    kw_withdraw = (
-        start_age = 60.0,
-        income_adjustment = 0,
-        min_withdraw = 2000,
-        percent_of_real_growth = 0.15,
-        volitility = 0.05,
-        lump_sum_withdraws = Dict(0 =&gt; 0)
-    ),
+    kw_withdraw = (withdraws = Transaction(;
+        start_age = 60,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),),
     # invest parameters
-    kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
+    kw_invest = (investments = Transaction(;
+        start_age = 27,
+        end_age = 60,
+        amount = Normal(contribution, 100)
+    ),),
     # interest parameters
-    kw_interest = (
+    kw_market = (
+        # dynamic model of the stock market
         gbm = VarGBM(;
+            # non-recession parameters
             αμ = 0.070,
             ημ = 0.010,
             ασ = 0.035,
             ησ = 0.010,
+            # recession parameters
             αμᵣ = -0.05,
             ημᵣ = 0.010,
             ασᵣ = 0.035,
@@ -217,7 +232,7 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 2000, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 # setup retirement model
 model = Model(; config...)
@@ -241,7 +256,7 @@ survival_plot = plot(
     xlabel = &quot;Age&quot;,
     grid = false,
     ylabel = &quot;Survival Probability&quot;,
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     ylims = (0.5, 1.05),
     color = :black
 )
@@ -251,7 +266,7 @@ net_worth_plot = plot_gradient(
     times,
     logger.net_worth;
     xlabel = &quot;Age&quot;,
-    ylabel = &quot;Net Worth&quot;,
+    ylabel = &quot;Investment Value&quot;,
     n_lines = 0
 )
 
@@ -276,8 +291,6 @@ vline!(
     linestyle = :dash,
     label = false
 )
-# laplace_dist = fit(Laplace, growth)
-# plot!(interest_plot, -.50:.01:.50, pdf.(laplace_dist, -.50:.01:.50), color=:black, leg=false)
 
 # income as a function of time. 
 income_plot = plot_gradient(
@@ -285,8 +298,8 @@ income_plot = plot_gradient(
     logger.total_income;
     xlabel = &quot;Age&quot;,
     ylabel = &quot;Total Income&quot;,
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     n_lines = 0,
     color = :blue
 )
-plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../basic_example/">« Basic Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 6 May 2024 20:49">Monday 6 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../basic_example/">« Basic Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Sunday 12 May 2024 11:36">Sunday 12 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
