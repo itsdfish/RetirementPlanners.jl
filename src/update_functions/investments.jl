@@ -1,14 +1,18 @@
 """
-    default_net_worth(model::AbstractModel, t)
+    update_investments!(model::AbstractModel, t)
 
 Computes net worth for the current time step as follows:
+
+1. withdraw money
+2. contribute money
+3. multiply by real growth rate.
 
 # Arguments
 
 - `model::AbstractModel`: an abstract Model object 
 - `t`: current time of simulation in years 
 """
-function default_net_worth(model::AbstractModel, t; _...)
+function update_investments!(model::AbstractModel, t; _...)
     model.state.net_worth -= model.state.withdraw_amount
     model.state.net_worth += model.state.invest_amount
     real_growth = compute_real_growth_rate(model)

@@ -1,5 +1,5 @@
 """
-    fixed_interest(model::AbstractModel, t; interest_rate = .07)
+    fixed_market(model::AbstractModel, t; interest_rate = .07)
 
 Returns a fixed interesting rate using a specified value.
 
@@ -12,13 +12,13 @@ Returns a fixed interesting rate using a specified value.
 
 - `interest_rate = .07`: a constant rate of investment growth per year
 """
-function fixed_interest(model::AbstractModel, t; interest_rate = 0.07)
+function fixed_market(model::AbstractModel, t; interest_rate = 0.07)
     model.state.interest_rate = interest_rate
     return nothing
 end
 
 """
-    variable_interest(
+    variable_market(
         model::AbstractModel,
         t;
         distribution = Normal(.07, .05)
@@ -35,18 +35,21 @@ Returns interest rate sampled from a specified distribution.
 
 - `distribution = Normal(.07, .05)`: the distribution of interest per year 
 """
-function variable_interest(model::AbstractModel, t; distribution = Normal(0.07, 0.05))
+function variable_market(model::AbstractModel, t; distribution = Normal(0.07, 0.05))
     model.state.interest_rate = rand(distribution)
     return nothing
 end
 
 """
-    dynamic_interest(
+    dynamic_market(
         model::AbstractModel,
-        t; 
-        gbm = GBM(; μ=.07, σ=.05, x0=1)
+        t;
+        rebalance_rate = Inf,
+        gbm = GBM(; μ = 0.07, σ = 0.05, x0 = 1),
+        kwargs...
     )
-Models interest in the stock market as a geometric brownian motion process. 
+    
+Models the stock market as a geometric brownian motion process. 
 
 # Arguments
 
@@ -56,14 +59,14 @@ Models interest in the stock market as a geometric brownian motion process.
 # Keyword
 
 - `gbm = GBM(; μ=.07, σ=.05, x0=1)`: a geometric Brownian motion object with parameters 
-`μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
-sets an arbitrary scale. Other variations of geometric Brownian motion can be used, including `VarGBM` and 
+    `μ` reflecting mean growth rate, and `σ` reflecting volitility in growth rate. The parameter `x0`
+    sets an arbitrary scale. Other variations of geometric Brownian motion can be used, including `VarGBM` and 
     `MvGBM`
 - `rebalance_rate = Inf`: the time elapsed in years between rebalacing the portfolio. Not applicable 
-to `GBM`
+    to `GBM`
 - `kwargs...`: optional keyword arguments passed to `increment!`
 """
-function dynamic_interest(
+function dynamic_market(
     model::AbstractModel,
     t;
     rebalance_rate = Inf,

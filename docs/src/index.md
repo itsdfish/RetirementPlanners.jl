@@ -17,8 +17,8 @@
 2. `invest!`: invest money
 3. `update_income!`: update sources of income, such as social security, pension etc. 
 4. `update_inflation!`: compute inflation
-5. `update_interest!`: compute interest 
-6. `update_net_worth!`: compute net worth 
+5. `update_market!`: simulate stock market 
+6. `update_investments!`: compute total value of investments
 7. `log!`: log desired variables
 
 Each function above is treated as a variable with default value that can be overwritten to suit your needs. There are two ways to overwrite the default functions: First, you can select a pre-defined function from those listed in the [API](api.md). Second, you may define your own update functions as needed. 

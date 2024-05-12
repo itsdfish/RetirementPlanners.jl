@@ -163,26 +163,27 @@ The default retirement simulation Model.
 - `invest!`: a function called on each time step to invest money into investments 
 - `update_income!`: a function called on each time step to update income sources 
 - `update_inflation!`: a function called on each time step to compute inflation 
-- `update_interest!`: a function called on each time step to compute interest on investments
-- `update_net_worth!`: a function called on each time step to compute net worth 
+- `update_market!`: a function called on each time step to compute interest on investments
+- `update_investments!`: a function called on each time step to compute net worth 
 - `log!`: a function called on each time step to log data
 
 # Constructor
 
     Model(;
-            Δt,
-            duration,
-            start_age,
-            start_amount,
-            state = State(),
-            withdraw! = variable_withdraw,
-            invest! = variable_invest,
-            update_income! = fixed_income,
-            update_inflation! = dynamic_inflation,
-            update_interest! = dynamic_interest,
-            update_net_worth! = default_net_worth,
-            log! = default_log!
-        )
+        Δt,
+        duration,
+        start_age,
+        start_amount,
+        state = State(),
+        withdraw! = withdraw!,
+        invest! = invest!,
+        update_income! = update_income!,
+        update_inflation! = dynamic_inflation,
+        update_market! = dynamic_market,
+        update_investments! = update_investments!,
+        log! = default_log!,
+        config...
+    )
 """
 @concrete mutable struct Model{S, T <: Real} <: AbstractModel
     Δt::T
@@ -194,8 +195,8 @@ The default retirement simulation Model.
     invest!
     update_income!
     update_inflation!
-    update_interest!
-    update_net_worth!
+    update_market!
+    update_investments!
     log!
     config
 end
@@ -206,12 +207,12 @@ function Model(;
     start_age,
     start_amount,
     state = State(),
-    withdraw! = variable_withdraw,
-    invest! = variable_invest,
-    update_income! = fixed_income,
+    withdraw! = withdraw!,
+    invest! = invest!,
+    update_income! = update_income!,
     update_inflation! = dynamic_inflation,
-    update_interest! = dynamic_interest,
-    update_net_worth! = default_net_worth,
+    update_market! = dynamic_market,
+    update_investments! = update_investments!,
     log! = default_log!,
     config...
 )
@@ -226,9 +227,164 @@ function Model(;
         invest!,
         update_income!,
         update_inflation!,
-        update_interest!,
-        update_net_worth!,
+        update_market!,
+        update_investments!,
         log!,
         NamedTuple(config)
     )
+end
+
+"""
+    AbstractTransaction{T, D}
+    
+An abstract type for scheduling transactions. 
+"""
+abstract type AbstractTransaction{T, D} end
+
+"""
+    Transaction{T, D} <: AbstractTransaction{T, D}
+
+Specifies the time range and amount of a transaction. 
+
+# Fields 
+
+- `start_age = 0.0`: the age at which a series of transactions begin
+- `end_age = Inf`: the age at which a series of transactions end
+- `amount`: the amount of each transaction
+
+# Constructor
+
+    Transaction(; start_age = 0.0, end_age = Inf, amount)
+"""
+struct Transaction{T, D} <: AbstractTransaction{T, D}
+    start_age::T
+    end_age::T
+    amount::D
+end
+
+function Transaction(; start_age = 0.0, end_age = Inf, amount)
+    return Transaction(promote(start_age, end_age)..., amount)
+end
+
+Base.broadcastable(dist::Transaction) = Ref(dist)
+
+"""
+    AdaptiveWithdraw{T <: Real}
+
+An adaptive withdraw scheme based on current real growth rate. As long as there are sufficient funds, a minimum amount 
+`min_withdraw` is withdrawn. More can be withdrawn if the current real growth rate supports a larger amount. The parameters below allow
+the user to control how much can be withdrawn as a function of real growth rate (`percent_of_real_growth`) and how much volitility in the withdraw 
+amount is tolerated (`volitility`). The withdraw amount may also be decreased based on alternative income (e.g., social security, pension).
+
+
+# Fields 
+
+- `min_withdraw = 1000`: the minimum withdraw amount
+- `percent_of_real_growth = 1`: the percent of real growth withdrawn. If equal to 1, the max of real growth or 
+    `min_withdraw`. 
+- `income_adjustment = 0.0`: a value between 0 and 1 representing the reduction in `withdraw_amount`
+    relative to other income (e.g., social security, pension, etc). 1 indicates all income is subtracted from `withdraw_amount`.
+- `volitility = .1`: a value greater than zero which controls the variability in withdraw amount. The standard deviation 
+    is the mean withdraw × volitility
+
+# Constructor
+
+    AdaptiveWithdraw(;
+        min_withdraw,
+        volitility = 0.0,
+        income_adjustment = 0.0,
+        percent_of_real_growth = 0.0
+    )
+"""
+mutable struct AdaptiveWithdraw{T <: Real}
+    min_withdraw::T
+    volitility::T
+    income_adjustment::T
+    percent_of_real_growth::T
+end
+
+function AdaptiveWithdraw(;
+    min_withdraw,
+    volitility = 0.0,
+    income_adjustment = 0.0,
+    percent_of_real_growth = 0.0
+)
+    return AdaptiveWithdraw(promote(
+        min_withdraw,
+        volitility,
+        income_adjustment,
+        percent_of_real_growth
+    )...)
+end
+
+"""
+
+    AdaptiveInvestment{T <: Real}
+
+# Fields 
+
+- `start_age`: the age at which investing begins
+- `peak_age`: the age at which investment amount stops growing. Many people reach their maximum income around 45-50.
+- `real_growth = 0`: percent of annual growth in investment amount. The growth factor (1 + real_growth)^n_years 
+    is multiplied by the random invest amount from `distribution`, meaning the mean and variance increase over time 
+    assuming `real_growth` > 0.
+- `mean`: the average amount invested
+- `std`: the standard deviation of the amount invested
+
+# Constructor
+
+    AdaptiveInvestment(;
+        start_age,
+        peak_age,
+        real_growth_rate,
+        mean,
+        std
+    )
+"""
+mutable struct AdaptiveInvestment{T <: Real}
+    start_age::T
+    peak_age::T
+    real_growth_rate::T
+    mean::T
+    std::T
+end
+
+function AdaptiveInvestment(;
+    start_age,
+    peak_age,
+    real_growth_rate,
+    mean,
+    std
+)
+    return AdaptiveInvestment(promote(
+        start_age,
+        peak_age,
+        real_growth_rate,
+        mean,
+        std)...)
+end
+
+"""
+    NominalAmount{T <: AbstractFloat}
+
+Allows a specified income source to change with inflation.
+
+# Fields
+
+- `amount::T`: the nominal amount
+- `adjust::Bool`: adjust if true, otherwise don't adjust 
+- `initial_amount::T`: the initial value used to reset `amount`
+"""
+mutable struct NominalAmount{T <: AbstractFloat}
+    amount::T
+    adjust::Bool
+    initial_amount::T
+end
+
+function NominalAmount(; amount, adjust = true)
+    return NominalAmount(amount, adjust, amount)
+end
+
+function NominalAmount(amount, adjust = true, initial_amount = amount)
+    return NominalAmount(amount, adjust, initial_amount)
 end

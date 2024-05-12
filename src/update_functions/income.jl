@@ -1,14 +1,11 @@
 """
-    fixed_income(
+    update_income!(
         model::AbstractModel,
         t;
-        social_security_income = 0.0,
-        pension_income = 0.0,
-        social_security_start_age = 67.0,
-        pension_start_age = 67
+        income_sources = Transaction(0.0, -1.0, 0.0)
     )
 
-Recieve a fixed amount of income (e.g., social security, pension) per time step
+Recieve income from specified sources on each time step, as indicated by `income_sources`.
 
 # Arguments
 
@@ -17,25 +14,37 @@ Recieve a fixed amount of income (e.g., social security, pension) per time step
 
 # Keywords
 
-- `social_security_income = 0.0`: income from social security on a per period basis
-- `pension_income = 0.0`: income from pensions on a per period basis
-- `social_security_start_age = 67.0`: age at which social security income begins 
-- `pension_start_age = 67`: age at which pension income begins 
+- `income_sources = Transaction(0.0, -1.0, 0.0)`: a transaction or vector of transactions indicating the amount and time period
+    of income recieved per time step 
 """
-function fixed_income(
+function update_income!(
     model::AbstractModel,
     t;
-    social_security_income = 0.0,
-    pension_income = 0.0,
-    social_security_start_age = 67.0,
-    pension_start_age = 67
+    income_sources = Transaction(0.0, -1.0, 0.0)
 )
-    model.state.income_amount = 0.0
-    if social_security_start_age ≤ t
-        model.state.income_amount += social_security_income
+    return _update_income!(model, t, income_sources)
+end
+
+function _update_income!(
+    model::AbstractModel,
+    t,
+    income_sources
+)
+    (; state, Δt) = model
+    state.income_amount = 0.0
+    for source ∈ income_sources
+        if can_transact(source, t; Δt)
+            state.income_amount += transact(source; t)
+        end
     end
-    if pension_start_age ≤ t
-        model.state.income_amount += pension_income
+    return nothing
+end
+
+function _update_income!(model::AbstractModel, t, source::AbstractTransaction)
+    (; state, Δt) = model
+    state.income_amount = 0.0
+    if can_transact(source, t; Δt)
+        state.income_amount += transact(model, source; t)
     end
     return nothing
 end

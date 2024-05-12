@@ -18,13 +18,9 @@ Currently, `RetirementPlanners.jl` provides two specialized plotting functions: 
 <summary><b>Show Code</b></summary>
 ```
 ```@example plotting
-using DataFrames
 using Distributions
-using Random
+using Plots
 using RetirementPlanners
-using StatsPlots
-
-Random.seed!(535)
 
 # montly contribution 
 contribution = (50_000 / 12) * 0.15
@@ -38,26 +34,32 @@ config = (
     duration = 58,
     # initial investment amount 
     start_amount = 10_000,
-    # function for adaptive withdraw
-    withdraw! = adaptive_withdraw,
     # withdraw parameters 
-    kw_withdraw = (
-        start_age = 60.0,
-        income_adjustment = 0,
-        min_withdraw = 2000,
-        percent_of_real_growth = 0.15,
-        volitility = 0.05,
-        lump_sum_withdraws = Dict(0 => 0)
-    ),
+    kw_withdraw = (withdraws = Transaction(;
+        start_age = 60,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),),
     # invest parameters
-    kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
+    kw_invest = (investments = Transaction(;
+        start_age = 27,
+        end_age = 60,
+        amount = Normal(contribution, 100)
+    ),),
     # interest parameters
-    kw_interest = (
+    kw_market = (
+        # dynamic model of the stock market
         gbm = VarGBM(;
+            # non-recession parameters
             αμ = 0.070,
             ημ = 0.010,
             ασ = 0.035,
             ησ = 0.010,
+            # recession parameters
             αμᵣ = -0.05,
             ημᵣ = 0.010,
             ασᵣ = 0.035,
@@ -69,11 +71,10 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 2000, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 # setup retirement model
 model = Model(; config...)
-
 times = get_times(model)
 n_reps = 1000
 n_steps = length(times)
@@ -81,19 +82,21 @@ logger = Logger(; n_steps, n_reps)
 simulate!(model, logger, n_reps)
 
 # plot of survival probability as a function of time
-survival_probs = mean(logger.net_worth .> 0, dims = 2);
+survival_probs = mean(logger.net_worth .> 0, dims = 2)
 ```
 ```@raw html
 </details>
 ```
 
 ```@example plotting 
-plot_gradient(
+income_plot = plot_gradient(
     times,
-    logger.net_worth;
+    logger.total_income;
     xlabel = "Age",
-    ylabel = "Net Worth",
-    n_lines = 0
+    ylabel = "Total Income",
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
+    n_lines = 0,
+    color = :blue
 )
 ```
 
@@ -109,6 +112,25 @@ As shown in the configuration below, we specificy a vector of values for the var
 # montly contribution 
 contribute(x, r) = (x / 12) * r
 salary = 50_000
+
+withdraws = map(
+    a -> Transaction(;
+        start_age = a,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),
+    55:65
+)
+
+investments = [
+    Transaction(; start_age = 27, end_age = a, amount = Normal(contribute(5e4, p), 100))
+    for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
+]
+
 # configuration options
 config = (
     # time step in years 
@@ -120,23 +142,11 @@ config = (
     # initial investment amount 
     start_amount = 10_000,
     # withdraw parameters 
-    kw_withdraw = (
-        distribution = Normal(2000, 100),
-        start_age = [55:2:65;],
-        income_adjustment = 0.5
-    ),
+    kw_withdraw = (; withdraws),
     # invest parameters
-    kw_invest = (
-        distribution = [
-            Normal(contribute(salary, 0.10), 100),
-            Normal(contribute(salary, 0.15), 100),
-            Normal(contribute(salary, 0.20), 100),
-            Normal(contribute(salary, 0.25), 100)
-        ],
-        end_age = [55:2:65;]
-    ),
+    kw_invest = (; investments),
     # interest parameters
-    kw_interest = (
+    kw_market = (
         gbm = VarGBM(;
             αμ = 0.070,
             ημ = 0.010,
@@ -153,7 +163,7 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 1300, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 ```
 
@@ -169,10 +179,28 @@ using RetirementPlanners
 using StatsPlots
 
 Random.seed!(6522)
-
 # montly contribution 
 contribute(x, r) = (x / 12) * r
 salary = 50_000
+
+withdraws = map(
+    a -> Transaction(;
+        start_age = a,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),
+    55:65
+)
+
+investments = [
+    Transaction(; start_age = 27, end_age = a, amount = Normal(contribute(5e4, p), 100))
+    for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
+]
+
 # configuration options
 config = (
     # time step in years 
@@ -184,23 +212,11 @@ config = (
     # initial investment amount 
     start_amount = 10_000,
     # withdraw parameters 
-    kw_withdraw = (
-        distribution = Normal(2000, 100),
-        start_age = [55:2:65;],
-        income_adjustment = 0.5
-    ),
+    kw_withdraw = (; withdraws),
     # invest parameters
-    kw_invest = (
-        distribution = [
-            Normal(contribute(salary, 0.10), 100),
-            Normal(contribute(salary, 0.15), 100),
-            Normal(contribute(salary, 0.20), 100),
-            Normal(contribute(salary, 0.25), 100)
-        ],
-        end_age = [55:2:65;]
-    ),
+    kw_invest = (; investments),
     # interest parameters
-    kw_interest = (
+    kw_market = (
         gbm = VarGBM(;
             αμ = 0.070,
             ημ = 0.010,
@@ -217,14 +233,16 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 1300, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 
-yoked_values = [Pair((:kw_withdraw, :start_age), (:kw_invest, :end_age))]
-results = grid_search(Model, Logger, 2000, config; yoked_values);
+yoked_values =
+    [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
+results = grid_search(Model, Logger, 1000, config; yoked_values);
 df = to_dataframe(Model(; config...), results)
 df.survived = df.net_worth .> 0
-df.mean_invest = map(x -> x.μ, df.invest_distribution)
+df.retirement_age = map(x -> x.end_age, df.invest_investments)
+df.mean_investment = map(x -> x.amount.μ, df.invest_investments)
 ```
 ```@raw html
 </details>
@@ -232,7 +250,7 @@ df.mean_invest = map(x -> x.μ, df.invest_distribution)
 ```@example plotting
 plot_sensitivity(
     df,
-    [:invest_end_age, :mean_invest],
+    [:retirement_age, :mean_investment],
     :survived,
     xlabel = "Age",
     ylabel = "Invest Amount",
@@ -262,6 +280,25 @@ using StatsPlots
 # montly contribution 
 contribute(x, r) = (x / 12) * r
 salary = 50_000
+
+withdraws = map(
+    a -> Transaction(;
+        start_age = a,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),
+    55:65
+)
+
+investments = [
+    Transaction(; start_age = 27, end_age = a, amount = Normal(contribute(5e4, p), 100))
+    for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
+]
+
 # configuration options
 config = (
     # time step in years 
@@ -273,23 +310,11 @@ config = (
     # initial investment amount 
     start_amount = 10_000,
     # withdraw parameters 
-    kw_withdraw = (
-        distribution = Normal(2000, 100),
-        start_age = [55:2:65;],
-        income_adjustment = 0.5
-    ),
+    kw_withdraw = (; withdraws),
     # invest parameters
-    kw_invest = (
-        distribution = [
-            Normal(contribute(salary, 0.10), 100),
-            Normal(contribute(salary, 0.15), 100),
-            Normal(contribute(salary, 0.20), 100),
-            Normal(contribute(salary, 0.25), 100)
-        ],
-        end_age = [55:2:65;]
-    ),
+    kw_invest = (; investments),
     # interest parameters
-        kw_interest = (
+    kw_market = (
         gbm = VarGBM(;
             αμ = 0.070,
             ημ = 0.010,
@@ -302,29 +327,31 @@ config = (
         ),
         # recession: age => duration
         recessions = Dict(0 => 0)
-    )
+    ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 1300, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 ###############################################################################################################
 #                                           run simulation
 ###############################################################################################################
-yoked_values = [Pair((:kw_withdraw, :start_age), (:kw_invest, :end_age))]
-results = grid_search(Model, Logger, 2000, config; yoked_values);
+yoked_values =
+    [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
+results = grid_search(Model, Logger, 1000, config; yoked_values);
 df = to_dataframe(Model(; config...), results)
 df.survived = df.net_worth .> 0
-df.mean_invest = map(x -> x.μ, df.invest_distribution)
-df1 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :net_worth => mean)
-df2 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :survived => mean)
+df.retirement_age = map(x -> x.end_age, df.invest_investments)
+df.mean_investment = map(x -> x.amount.μ, df.invest_investments)
+df1 = combine(groupby(df, [:retirement_age, :mean_investment, :time]), :net_worth => mean)
+df2 = combine(groupby(df, [:retirement_age, :mean_investment, :time]), :survived => mean)
 ###############################################################################################################
 #                                            plot results 
 ###############################################################################################################
 @df df1 plot(
     :time,
     :net_worth_mean,
-    group = (:invest_end_age, :mean_invest),
+    group = (:retirement_age, :mean_investment),
     ylims = (0, 2e6),
     legend = false,
     legendtitle = "withdraw age",
@@ -336,7 +363,7 @@ df2 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :survived => 
 @df df2 plot(
     :time,
     :survived_mean,
-    group = (:invest_end_age, :mean_invest),
+    group = (:retirement_age, :mean_investment),
     ylims = (0, 1),
     grid = false,
     xlabel = "Age",
@@ -347,7 +374,7 @@ df2 = combine(groupby(df, [:invest_end_age, :mean_invest, :time]), :survived => 
 
 plot_sensitivity(
     df,
-    [:invest_end_age, :mean_invest],
+    [:retirement_age, :mean_investment],
     :survived,
     xlabel = "Age",
     ylabel = "Invest Amount",

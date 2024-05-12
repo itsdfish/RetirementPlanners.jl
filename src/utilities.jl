@@ -16,6 +16,22 @@ function Base.show(io::IO, ::MIME"text/plain", logger::AbstractState)
     return _show(io::IO, logger)
 end
 
+function Base.show(io::IO, ::MIME"text/plain", model::AbstractTransaction)
+    return _show(io::IO, model)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", model::AdaptiveWithdraw)
+    return _show(io::IO, model)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", model::AdaptiveInvestment)
+    return _show(io::IO, model)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", model::AbstractGBM)
+    return _show(io::IO, model)
+end
+
 function _show(io::IO, model)
     values = [getfield(model, f) for f in fieldnames(typeof(model))]
     values = map(x -> typeof(x) == Bool ? string(x) : x, values)
