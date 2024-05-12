@@ -116,7 +116,7 @@ function rand(dist::AbstractGBM, n_steps::Integer, n_reps::Integer; Δt, kwargs.
     return [rand(dist, n_steps; Δt, kwargs...) for _ ∈ 1:n_reps]
 end
 
-function rand(dist::AbstractGBM, n_steps;Δt, kwargs...)
+function rand(dist::AbstractGBM, n_steps; Δt, kwargs...)
     reset!(dist)
     prices = fill(0.0, n_steps + 1)
     prices[1] = dist.x
