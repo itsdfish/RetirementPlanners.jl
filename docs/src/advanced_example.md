@@ -19,7 +19,7 @@ In this example, we will assume that you have completed the [basic example](basi
 
 The first step is to load the required packages. In the code block below, we will load `RetirementPlanners` to run the retirement simulation, `Distributions` to make the simulation stochastic, and `Plots` to plot the results of the simulation. 
 
-```@example intermediate
+```@example advanced
 using Distributions 
 using Plots
 using RetirementPlanners
@@ -29,7 +29,8 @@ using RetirementPlanners
 
 The configuration for the simulation is presented below. 
 
-```@example intermediate 
+```@example advanced 
+# configuration options
 config = (
     # time step in years 
     Δt = 1 / 12,
@@ -39,23 +40,32 @@ config = (
     duration = 58,
     # initial investment amount 
     start_amount = 10_000,
-    # function for adaptive withdraw
-    withdraw! = adaptive_withdraw,
     # withdraw parameters 
-    kw_withdraw = (
-        start_age = 60.0,
-        income_adjustment = 0,
-        min_withdraw = 2200,
-        percent_of_real_growth = 0.15,
-        volitility = 0.05,
-    ),
+    kw_withdraw = (withdraws = Transaction(;
+        start_age = 60,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),),
     # invest parameters
-    kw_interest = (
+    kw_invest = (investments = Transaction(;
+        start_age = 27,
+        end_age = 60,
+        amount = Normal(625, 100)
+    ),),
+    # interest parameters
+    kw_market = (
+        # dynamic model of the stock market
         gbm = VarGBM(;
+            # non-recession parameters
             αμ = 0.070,
             ημ = 0.010,
             ασ = 0.035,
             ησ = 0.010,
+            # recession parameters
             αμᵣ = -0.05,
             ημᵣ = 0.010,
             ασᵣ = 0.035,
@@ -67,7 +77,7 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 1300, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 ```
 
@@ -75,9 +85,9 @@ Notice that many parameters are the same as those from the basic example. Howeve
 
 ### Adaptive Withdraw
 
-In this simulation, we will use the function `adaptive_withdraw` to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, `adaptive_withdraw` will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.
+In this simulation, we will use the type `AdaptiveWithdraw` to specify the withdraw strategy. Rather than withdrawing a fixed amount each time step, `AdaptiveWithdraw` will withdraw more money during periods of high growth, subject to the contraint that a minimum required amount is withdrawn if funds permit.
 
-`adaptive_withdraw` has the following parameters:
+`AdaptiveWithdraw` has the following fields:
 - `start_age`: specifies age at which funds are withdrawn from the investments.
 - `income_adjustment`: allows you to subtract a portion of the your income (e.g., social security or pension) from the investment amount. Doing so, would provide the opportunity for the investments to grow. 
 - `percent_of_real_growth`: specifies the percent of real growth withdrawn. If real growth in one month was `$`6,000, and `percent_of_real_growth = .5`, the withdraw amount would be `$`3,000. However, the withdraw amount cannot be less than the amount specified by the parameter `min_withdraw` (unless the total investments are less than `min_withdraw`). 
@@ -85,11 +95,10 @@ In this simulation, we will use the function `adaptive_withdraw` to specify the 
 
 ### Investment
 
-In the intermediate example, we will use the default function `variable_invest` to specify an investment schedule. One benefit of using `variable_invest` it can model fluctuations in investment amounts due to factors such as, unexpected expenses and bonuses. `variable_invest` has the following parameters:
+In the advanced example, we will sample each investment contribution from a normal distribution to reflect fluctuations due to factors such as, unexpected expenses and bonuses. This is accomplished by setting the `amount` field of `Transaction` to `Normal(μ, σ)`. `Normal` has the following parameters:
 
-- `end_age`: the age at which one stops contributing to investments
-- `distribution`: a distribution object from which investment amounts are sampled 
-- `lump_sum_investments`: an optional dictionary of lump sums (e.g., inheritance) to be invested at specified times
+- `μ`: the average contribution
+- `σ`: the standard deviation of the contribution
 
 ### Interest
 
@@ -117,24 +126,27 @@ An important implication of multipling the two terms on the right hand side by `
 </details>
 ```
 
-The figure below shows 10 example trajectories of GBM over a 10 year period. The average growth rate is 7% with moderate volitility of 3%. 
-```@example intermediate 
-gdm = GBM(; μ = .07, σ = .03)
+The figure below shows 10 example trajectories of GBM over a 10 year period. The average growth rate is 10% with moderate volitility of 7%. 
+```@example advanced 
+gdm = GBM(; μ = .10, σ = .07)
 trajectories = rand(gdm, 365 * 10, 10; Δt = 1 / 365)
 plot(trajectories, leg=false, grid=false)
 ```
 
-In reality, however, we are uncertain about the values of parameters `μ` and `σ`. Setting `μ` to 07 is reasonable (albiet somewhat pessimistic), but setting `μ` to .08 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation of GBM in which `μ` and `σ` are sampled from a distribution for each simulation of a 58 year period. `VarGBM` has four parameters:
+Although we set parameters `μ` and `σ` to plausible values, there are other plausible values we could have selected. Setting `μ` to .07 is reasonable (albiet somewhat pessimistic), but setting `μ` to .11 would be reasonable also. In an effort to account for uncertainty in growth rate and volitility, we will use a variation of GBM in which `μ` and `σ` are sampled from a distribution for each simulation of a 58 year period. `VarGBM` has four required parameters:
 
 - `αμ`: mean of growth rate distribution
 - `ασ`: mean of volitility of growth rate distribution
 - `ημ`: standard deviation of growth rate distribution
 - `ησ`: standard deviation of volitility of growth rate distribution
 
+In addition, you may optionally specify corresponding parameters for periods of recession: `αμᵣ`, `ημᵣ`, `ασᵣ`, `ησᵣ`. One advantage of specifying the timing of recessions manually is to examine sequence of return risk. The timing of a recession is important because it is more difficult to recover if it occurs near the beginning of retirement. The time and duration of a recession can be specified by passing a dictionary called `recession`. Note that recessions may emerge naturally from GBM under suitible parameters. 
+
 ## Create Model Object 
+
 Now that we have configured the parameters of the simulation, we are now in the position to create the model object:
 
-```@example intermediate 
+```@example advanced 
 model = Model(; config...)
 ```
 
@@ -142,7 +154,7 @@ model = Model(; config...)
 
 The next step is to initialize the data logger. On each time step, the data logger stores the following quantities: annualized interest rate, annualized inflation rate, and net worth. The `Logger` object requires two inputs: `n_steps`: the total number of time steps in one simulation, and `n_reps`: the total repetitions of the simulation. The total number of time steps can be found by getting the length of the time steps. In this simple scenario, we will repeat the simulation `10,000` times to provide a stable estimate of the variability in the investment and retirement conditions. 
 
-```@example intermediate 
+```@example advanced 
 times = get_times(model)
 n_reps = 1000
 n_steps = length(times)
@@ -153,19 +165,17 @@ logger = Logger(; n_steps, n_reps)
 
 Now that we have specified the parameters of the simulation, we can use the function `simulate!` to generate retirement numbers and save them to the `Logger` object. As shown below, `simulate!` requires our model object, the logger, and the number of repetitions. 
 
-```@example intermediate
+```@example advanced
 simulate!(model, logger, n_reps)
 ```
 
 One of the biggest changes from the basic example is the use of random values for withdraw and interest. In the code block below, we will use the function `plot_gradient` to represent variability in networth projections. Darker values correspond to higher density or more likely trajectories.   
 
-
 ```@raw html
 <details>
 <summary><b>Show Details</b></summary>
 ```
-```@example intermediate 
-# plot of survival probability as a function of time
+```@example advanced 
 survival_probs = mean(logger.net_worth .> 0, dims = 2)
 survival_plot = plot(
     times,
@@ -174,7 +184,7 @@ survival_plot = plot(
     xlabel = "Age",
     grid = false,
     ylabel = "Survival Probability",
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     ylims = (0.5, 1.05),
     color = :black
 )
@@ -184,8 +194,8 @@ net_worth_plot = plot_gradient(
     times,
     logger.net_worth;
     xlabel = "Age",
-    ylabel = "Net Worth",
-    n_lines = 0,
+    ylabel = "Investment Value",
+    n_lines = 0
 )
 
 # growth rate distribution across repetitions of the simulation 
@@ -216,7 +226,7 @@ income_plot = plot_gradient(
     logger.total_income;
     xlabel = "Age",
     ylabel = "Total Income",
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     n_lines = 0,
     color = :blue
 )
@@ -224,10 +234,10 @@ income_plot = plot_gradient(
 ```@raw html
 </details>
 ```
-```@example intermediate 
+
+```@example advanced
 plot(survival_plot, net_worth_plot, interest_plot, income_plot, layout = (2, 2))
 ```
-
 
 ```@raw html
 <details>
@@ -258,26 +268,32 @@ config = (
     duration = 58,
     # initial investment amount 
     start_amount = 10_000,
-    # function for adaptive withdraw
-    withdraw! = adaptive_withdraw,
     # withdraw parameters 
-    kw_withdraw = (
-        start_age = 60.0,
-        income_adjustment = 0,
-        min_withdraw = 2000,
-        percent_of_real_growth = 0.15,
-        volitility = 0.05,
-        lump_sum_withdraws = Dict(0 => 0)
-    ),
+    kw_withdraw = (withdraws = Transaction(;
+        start_age = 60,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),),
     # invest parameters
-    kw_invest = (distribution = Normal(contribution, 100), end_age = 60),
+    kw_invest = (investments = Transaction(;
+        start_age = 27,
+        end_age = 60,
+        amount = Normal(contribution, 100)
+    ),),
     # interest parameters
-    kw_interest = (
+    kw_market = (
+        # dynamic model of the stock market
         gbm = VarGBM(;
+            # non-recession parameters
             αμ = 0.070,
             ημ = 0.010,
             ασ = 0.035,
             ησ = 0.010,
+            # recession parameters
             αμᵣ = -0.05,
             ημᵣ = 0.010,
             ασᵣ = 0.035,
@@ -289,7 +305,7 @@ config = (
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
-    kw_income = (social_security_income = 2000, social_security_start_age = 67)
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
 )
 # setup retirement model
 model = Model(; config...)
@@ -313,7 +329,7 @@ survival_plot = plot(
     xlabel = "Age",
     grid = false,
     ylabel = "Survival Probability",
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     ylims = (0.5, 1.05),
     color = :black
 )
@@ -323,7 +339,7 @@ net_worth_plot = plot_gradient(
     times,
     logger.net_worth;
     xlabel = "Age",
-    ylabel = "Net Worth",
+    ylabel = "Investment Value",
     n_lines = 0
 )
 
@@ -348,8 +364,6 @@ vline!(
     linestyle = :dash,
     label = false
 )
-# laplace_dist = fit(Laplace, growth)
-# plot!(interest_plot, -.50:.01:.50, pdf.(laplace_dist, -.50:.01:.50), color=:black, leg=false)
 
 # income as a function of time. 
 income_plot = plot_gradient(
@@ -357,7 +371,7 @@ income_plot = plot_gradient(
     logger.total_income;
     xlabel = "Age",
     ylabel = "Total Income",
-    xlims = (config.kw_withdraw.start_age, times[end]),
+    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     n_lines = 0,
     color = :blue
 )

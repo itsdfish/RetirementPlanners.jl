@@ -6,9 +6,10 @@ The abstract types below can be extended to add new functionality.
 
 ```@docs 
 AbstractGBM
+AbstractLogger
 AbstractModel
 AbstractState
-AbstractLogger
+AbstractTransaction
 ```
 
 ## Concrete Types
@@ -20,6 +21,7 @@ MvGBM
 Model
 State
 Logger
+Transaction
 ```
 
 # Methods 
@@ -32,6 +34,7 @@ grid_search
 is_event_time
 rand
 simulate!
+transact
 update!
 ```
 
@@ -40,7 +43,7 @@ update!
 ### Update Income
 
 ```@docs
-fixed_income
+update_income!
 ```
 
 ### Update Inflation
@@ -54,16 +57,15 @@ dynamic_inflation
 ### Update Interest
 
 ```@docs
-fixed_interest
-variable_interest
-dynamic_interest
+fixed_market
+variable_market
+dynamic_market
 ```
 
 ### Update Investments 
 
 ```@docs 
-fixed_invest
-variable_invest
+invest!
 ```
 
 ### Log

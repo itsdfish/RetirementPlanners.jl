@@ -35,7 +35,7 @@ config = (
         end_age = 65,
     ),
     # interest parameters
-    kw_interest = (
+    kw_market = (
         gbm = GBM(; μ = .07, σ = .05),
     ),
     # inflation parameters
@@ -184,8 +184,8 @@ function separate_np_non_np_inputs(
     invest! = invest!,
     update_income! = update_income!,
     update_inflation! = dynamic_inflation,
-    update_interest! = dynamic_interest,
-    update_net_worth! = default_net_worth,
+    update_market! = dynamic_market,
+    update_investments! = update_investments!,
     log! = default_log!,
     config...)
     non_np = (;
@@ -197,8 +197,8 @@ function separate_np_non_np_inputs(
         invest!,
         update_income!,
         update_inflation!,
-        update_interest!,
-        update_net_worth!,
+        update_market!,
+        update_investments!,
         log!
     )
 

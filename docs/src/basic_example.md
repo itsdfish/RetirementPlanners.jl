@@ -4,11 +4,21 @@ using RetirementPlanners
 ```
 # Overview
 
-The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benfit of making the API clear, but will not result in in a valid stress test of your retirement plan. For more realistic examples, please read the documentation for the [advanced example](advanced_example.md). 
+The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benifit of making the API clear, but will not result in in a valid stress test of your retirement plan. For more realistic examples, please read the documentation for the [advanced example](advanced_example.md). 
 
 # API
 
 In this section, we will provide an overview of the API for configuring a retirement simulation. As detailed below, some parameters require user input, whereas other parameters have default values which can optionally be overwritten with your desired values. 
+
+## Transaction
+
+The transfer of money to and from investments is scheduled through an object called `Transaction`, which contains the following fields:
+
+- `start_age = 0.0`: the age at which a series of transactions begin
+- `end_age = Inf`: the age at which a series of transactions end
+- `amount`: the amount of each transaction
+
+To schedule multiple transactions across time, you may specify a vector of `Transaction` objects, which can be useful when, for example, you have multiple income sources occuring at different times (e.g., social security, pension, rent income etc.). The function `transact` will carry out the transaction at allowable times. By default, the `RetirementPlanners` supports transaction for real numbers, probability distributions, and a few adaptive rules described below. You can create your own type and method for `transact` to implement a custom strategy. 
 
 ## Required Parameters
 
@@ -27,8 +37,8 @@ The discrete time simulation is governed by seven update functions, which are ex
 - `invest!`: a function called on each time step to invest money into investments 
 - `update_income!`: a function called on each time step to update income sources 
 - `update_inflation!`: a function called on each time step to compute inflation 
-- `update_market!`: a function called on each time step to compute interest on investments
-- `update_investments!`: a function called on each time step to compute net worth 
+- `update_market!`: a function called on each time step to simulate the stock market
+- `update_investments!`: a function called on each time step to compute the total value of the investments
 - `log!`: a function called on each time step to log data
 
 Each function is assigned a default method with default arguments. Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
@@ -71,7 +81,7 @@ Based on the scenario above, we will use the following required parameters:
 - `Δt`: $\frac{1}{12}$
 - `start_age`: $27$
 - `duration`: $58$
-- `start_amount`: $\$10,000$
+- `start_amount`: '$'$10,000$
 
 ### Optional Update Functions
 

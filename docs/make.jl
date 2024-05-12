@@ -23,9 +23,9 @@ makedocs(
         "Home" => "index.md",
         "Examples" => [
             "Basic Example" => "basic_example.md"
-        #"Advanced Example" => "advanced_example.md"
+            "Advanced Example" => "advanced_example.md"
         ],
-        #"Plotting" => "plotting.md",
+        "Plotting" => "plotting.md",
         "API" => "api.md"
     ]
 )

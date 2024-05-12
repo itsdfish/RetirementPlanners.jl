@@ -41,7 +41,7 @@ function variable_market(model::AbstractModel, t; distribution = Normal(0.07, 0.
 end
 
 """
-    dynamic_interest(
+    dynamic_market(
         model::AbstractModel,
         t;
         rebalance_rate = Inf,
@@ -49,7 +49,7 @@ end
         kwargs...
     )
     
-Models interest in the stock market as a geometric brownian motion process. 
+Models the stock market as a geometric brownian motion process. 
 
 # Arguments
 
@@ -66,7 +66,7 @@ Models interest in the stock market as a geometric brownian motion process.
     to `GBM`
 - `kwargs...`: optional keyword arguments passed to `increment!`
 """
-function dynamic_interest(
+function dynamic_market(
     model::AbstractModel,
     t;
     rebalance_rate = Inf,

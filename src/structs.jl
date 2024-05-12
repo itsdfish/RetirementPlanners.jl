@@ -179,7 +179,7 @@ The default retirement simulation Model.
         invest! = invest!,
         update_income! = update_income!,
         update_inflation! = dynamic_inflation,
-        update_market! = dynamic_interest,
+        update_market! = dynamic_market,
         update_investments! = update_investments!,
         log! = default_log!,
         config...
@@ -211,7 +211,7 @@ function Model(;
     invest! = invest!,
     update_income! = update_income!,
     update_inflation! = dynamic_inflation,
-    update_market! = dynamic_interest,
+    update_market! = dynamic_market,
     update_investments! = update_investments!,
     log! = default_log!,
     config...
@@ -234,6 +234,11 @@ function Model(;
     )
 end
 
+"""
+    AbstractTransaction{T, D}
+    
+An abstract type for scheduling transactions. 
+"""
 abstract type AbstractTransaction{T, D} end
 
 """
