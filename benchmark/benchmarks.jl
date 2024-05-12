@@ -34,7 +34,7 @@ config = (
     kw_invest = (investments = Transaction(;
         start_age = 27,
         end_age = 60,
-        amount = Normal(contribution, 100)
+        amount = Normal(625.0, 100)
     ),),
     # interest parameters
     kw_market = (
@@ -68,4 +68,4 @@ times = get_times(model)
 n_reps = 1000
 n_steps = length(times)
 logger = Logger(; n_steps, n_reps)
-suite["simulate!"] = @benchmarkable simulate!(model, logger, n_reps)
+suite["simulate!"] = @benchmarkable simulate!($model, $logger, $n_reps)
