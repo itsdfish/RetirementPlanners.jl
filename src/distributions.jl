@@ -100,7 +100,7 @@ end
 """
     rand(dist::AbstractGBM, n_steps, n_reps; Δt)
 
-Simulate a random trajector of a Geometric Brownian motion process. 
+Simulate a random trajectory of a Geometric Brownian motion process. 
 
 # Arguments 
 
@@ -112,11 +112,11 @@ Simulate a random trajector of a Geometric Brownian motion process.
 
 - `Δt`: the time step for Geometric Brownian Motion
 """
-function rand(dist::AbstractGBM, n_steps, n_reps; Δt, kwargs...)
+function rand(dist::AbstractGBM, n_steps::Integer, n_reps::Integer; Δt, kwargs...)
     return [rand(dist, n_steps; Δt, kwargs...) for _ ∈ 1:n_reps]
 end
 
-function rand(dist::AbstractGBM, n_steps; Δt, kwargs...)
+function rand(dist::AbstractGBM, n_steps::Integer; Δt, kwargs...)
     reset!(dist)
     prices = fill(0.0, n_steps + 1)
     prices[1] = dist.x
@@ -134,9 +134,9 @@ end
 
 compute_total(dist::AbstractGBM) = sum(dist.x)
 
-mean(dist::AbstractGBM, t) = exp(dist.μ * t)
-var(dist::AbstractGBM, t) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
-std(dist::AbstractGBM, t) = sqrt(var(dist, t))
+mean(dist::AbstractGBM, t::Real) = exp(dist.μ * t)
+var(dist::AbstractGBM, t::Real) = exp(2 * dist.μ * t) * (exp(dist.σ^2 * t) - 1)
+std(dist::AbstractGBM, t::Real) = sqrt(var(dist, t))
 
 function fit(dist::Type{<:AbstractGBM}, ts; Δt)
     ts = log.(ts)
@@ -474,7 +474,7 @@ function increment!(dist::MGBM; Δt)
     return nothing
 end
 
-mean(dist::MvGBM, t) = dist.ratios .* exp.(dist.μ * t)
-var(dist::MvGBM, t) =
+mean(dist::MvGBM, t::Real) = dist.ratios .* exp.(dist.μ * t)
+var(dist::MvGBM, t::Real) =
     dist.ratios .^ 2 .* exp.(2 .* dist.μ .* t) .* (exp.(dist.σ .^ 2 .* t) .- 1)
-std(dist::MvGBM, t) = sqrt.(var(dist, t))
+std(dist::MvGBM, t::Real) = sqrt.(var(dist, t))

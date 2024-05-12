@@ -4,37 +4,38 @@
             using Distributions
             using RetirementPlanners
             using Test
-    
-            model = Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
-    
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
             update_income!(
                 model,
                 1.0;
                 income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
             )
             @test model.state.income_amount == 0
-    
+
             update_income!(
                 model,
                 2.0;
                 income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
             )
             @test model.state.income_amount == 100
-    
+
             update_income!(
                 model,
                 3.0;
                 income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
             )
             @test model.state.income_amount == 100
-    
+
             update_income!(
                 model,
                 3.08;
                 income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100)
             )
             @test model.state.income_amount == 0
-    
+
             update_income!(
                 model,
                 2.08;
@@ -51,9 +52,10 @@
             using Distributions
             using RetirementPlanners
             using Test
-    
-            model = Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
-    
+
+            model =
+                Model(; Δt = 1 / 12, start_age = 25, duration = 35, start_amount = 10_000)
+
             update_income!(
                 model,
                 2.5;
@@ -62,10 +64,9 @@
                     Transaction(; start_age = 2, end_age = 3, amount = 200)
                 ]
             )
-    
+
             @test model.state.income_amount == 300
         end
-
     end
 
     @safetestset "fixed_inflation" begin
@@ -205,7 +206,7 @@
             @test model.state.withdraw_amount ≈ 1000
         end
 
-        @safetestset "4" begin
+        @safetestset "5" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
             using Test
@@ -233,7 +234,7 @@
             @test model.state.withdraw_amount == 500
         end
 
-        @safetestset "5" begin
+        @safetestset "6" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
             using Test
@@ -278,7 +279,7 @@
             @test model.state.withdraw_amount == 0
         end
 
-        @safetestset "6" begin
+        @safetestset "7" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
             using Test
@@ -323,7 +324,7 @@
             @test model.state.withdraw_amount == 100
         end
 
-        @safetestset "7" begin
+        @safetestset "8" begin
             using RetirementPlanners
             using RetirementPlanners: reset!
             using Test
