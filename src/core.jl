@@ -218,7 +218,7 @@ Execute a transaction using the nominal value of the transaction amount.
 """
 function transact(
     model::AbstractModel,
-    income::Transaction{T, D};
+    income::Transaction{T,D};
     t
 ) where {T, D <: NominalAmount}
     income.amount.adjust ? nothing : (return income.amount.amount)
