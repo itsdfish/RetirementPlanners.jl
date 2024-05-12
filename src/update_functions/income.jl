@@ -34,7 +34,7 @@ function _update_income!(
     state.income_amount = 0.0
     for source ∈ income_sources
         if can_transact(source, t; Δt)
-            state.income_amount += transact(source; t)
+            state.income_amount += transact(model, source; t)
         end
     end
     return nothing
