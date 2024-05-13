@@ -76,15 +76,15 @@ survival_probs = mean(logger.net_worth .&gt; 0, dims = 2)</code></pre><pre class
  1.0
  1.0
  ⋮
- 0.584
- 0.581
- 0.578
- 0.575
- 0.574
- 0.572
- 0.572
- 0.57
- 0.57</code></pre></details><pre><code class="language-julia hljs">income_plot = plot_gradient(
+ 0.608
+ 0.605
+ 0.603
+ 0.599
+ 0.598
+ 0.594
+ 0.593
+ 0.591
+ 0.587</code></pre></details><pre><code class="language-julia hljs">income_plot = plot_gradient(
     times,
     logger.total_income;
     xlabel = &quot;Age&quot;,
@@ -92,7 +92,7 @@ survival_probs = mean(logger.net_worth .&gt; 0, dims = 2)</code></pre><pre class
     xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
     n_lines = 0,
     color = :blue
-)</code></pre><img src="07401652.svg" alt="Example block output"/><h2 id="Sensitivity-Plot"><a class="docs-heading-anchor" href="#Sensitivity-Plot">Sensitivity Plot</a><a id="Sensitivity-Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Sensitivity-Plot" title="Permalink"></a></h2><p>In many cases, it is informative to perform a sensitivity analysis of your retirement strategy. For example, you might want to know to what extent your net worth varies according to changes in investment amount and number of years investing. The function <code>plot_sensitivity</code> uses a contour plot visualize the effect of two variables on another variable.</p><p>In the code block below, invest amount and number of years investing are varied independently across a range of values and the survival probability at the end of the simulation is color coded from low in red to high in green. As you might expect, you are more likely run out of money by withdrawing more and investing less. The benefit of a sensitivity analysis is that it provides details about the magnitude of these changes. </p><p>As shown in the configuration below, we specificy a vector of values for the variables we wish to vary. The configuration is passed to a function called <code>grid_search</code>, which runs the simulation for all combinations of the two variables. Click the arrow to reveal the details. </p><pre><code class="language-julia hljs"># montly contribution 
+)</code></pre><img src="f8ae0f9c.svg" alt="Example block output"/><h2 id="Sensitivity-Plot"><a class="docs-heading-anchor" href="#Sensitivity-Plot">Sensitivity Plot</a><a id="Sensitivity-Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Sensitivity-Plot" title="Permalink"></a></h2><p>In many cases, it is informative to perform a sensitivity analysis of your retirement strategy. For example, you might want to know to what extent your net worth varies according to changes in investment amount and number of years investing. The function <code>plot_sensitivity</code> uses a contour plot visualize the effect of two variables on another variable.</p><p>In the code block below, invest amount and number of years investing are varied independently across a range of values and the survival probability at the end of the simulation is color coded from low in red to high in green. As you might expect, you are more likely run out of money by withdrawing more and investing less. The benefit of a sensitivity analysis is that it provides details about the magnitude of these changes. </p><p>As shown in the configuration below, we specificy a vector of values for the variables we wish to vary. The configuration is passed to a function called <code>grid_search</code>, which runs the simulation for all combinations of the two variables. Click the arrow to reveal the details. </p><pre><code class="language-julia hljs"># montly contribution 
 contribute(x, r) = (x / 12) * r
 salary = 50_000
 
@@ -245,7 +245,7 @@ df.mean_investment = map(x -&gt; x.amount.μ, df.invest_investments)</code></pre
     xlabel = &quot;Age&quot;,
     ylabel = &quot;Invest Amount&quot;,
     colorbar_title = &quot;Surival Probability&quot;
-)</code></pre><img src="53c9cb5d.svg" alt="Example block output"/><details>
+)</code></pre><img src="975367de.svg" alt="Example block output"/><details>
 <summary><b>All Code</b></summary><pre><code class="language-julia hljs">###############################################################################################################
 #                                           load dependencies
 ###############################################################################################################
@@ -362,4 +362,4 @@ plot_sensitivity(
     xlabel = &quot;Age&quot;,
     ylabel = &quot;Invest Amount&quot;,
     colorbar_title = &quot;Surival Probability&quot;
-)</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 13 May 2024 19:32">Monday 13 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+)</code></pre></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 13 May 2024 19:58">Monday 13 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
