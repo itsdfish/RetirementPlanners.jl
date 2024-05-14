@@ -7,7 +7,7 @@ using Distributions
 ###############################################################################################################
 #                                           setup simulation
 ###############################################################################################################
-suite = BenchmarkGroup()
+const SUITE = BenchmarkGroup()
 # montly contribution 
 contribution = (50_000 / 12) * 0.15
 # configuration options
@@ -66,9 +66,9 @@ model = Model(; config...)
 ###############################################################################################################
 times = get_times(model)
 n_steps = length(times)
-suite["simulate!"] = BenchmarkGroup()
+SUITE["simulate!"] = BenchmarkGroup()
 for n_reps ∈ [10, 100, 1000, 10_000]
-    suite["simulate!"][n_reps] = @benchmarkable(
+    SUITE["simulate!"][n_reps] = @benchmarkable(
         simulate!($model, logger, n_reps),
         setup = (logger = Logger(; n_steps, n_reps = $n_reps); n_reps = $n_reps)
     )
@@ -78,26 +78,31 @@ end
 n_years = 10
 n_steps = Int(n_years / Δt)
 dist = GBM(; μ = 0.10, σ = 0.10, x0 = 1)
-suite["GBM"] = BenchmarkGroup()
+SUITE["GBM"] = BenchmarkGroup()
 for n_reps ∈ [10, 100, 1000, 10_000]
-    suite["GBM"][n_reps] = @benchmarkable rand($dist, $n_steps, $n_reps; Δt = $Δt)
+    SUITE["GBM"][n_reps] = @benchmarkable rand($dist, $n_steps, $n_reps; Δt = $Δt)
 end
 
 Δt = 1 / 100
 n_years = 10
 n_steps = Int(n_years / Δt)
-dist = MvGBM(; μ  = [0.10, 0.05], σ = fill(0.05, 2), ρ = [1.0 0.4; 0.4 1], ratios = [0.25, 0.75])
-suite["MvGBM"] = BenchmarkGroup()
+dist = MvGBM(;
+    μ = [0.10, 0.05],
+    σ = fill(0.05, 2),
+    ρ = [1.0 0.4; 0.4 1],
+    ratios = [0.25, 0.75]
+)
+SUITE["MvGBM"] = BenchmarkGroup()
 for n_reps ∈ [10, 100, 1000, 10_000]
-    suite["MvGBM"][n_reps] = @benchmarkable rand($dist, $n_steps, $n_reps; Δt = $Δt)
+    SUITE["MvGBM"][n_reps] = @benchmarkable rand($dist, $n_steps, $n_reps; Δt = $Δt)
 end
 
-suite["update_income!"] = @benchmarkable(
+SUITE["update_income!"] = @benchmarkable(
     update_income!($model, 2.5; income_sources),
     setup = (income_sources = Transaction(; start_age = 2, end_age = 3, amount = 100))
 )
 
-suite["withdraw!"] = @benchmarkable(
+SUITE["withdraw!"] = @benchmarkable(
     withdraw!($model, 68; withdraws),
     setup = (withdraws = Transaction(;
         start_age = 67,
@@ -110,7 +115,7 @@ suite["withdraw!"] = @benchmarkable(
     ))
 )
 
-suite["invest!"] = @benchmarkable(
+SUITE["invest!"] = @benchmarkable(
     invest!($model, 66; investments),
     setup = (investments =
         Transaction(; start_age = 25, end_age = 67, amount = Normal(50, 0)))
