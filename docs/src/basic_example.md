@@ -4,7 +4,7 @@ using RetirementPlanners
 ```
 # Overview
 
-The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benifit of making the API clear, but will not result in in a valid stress test of your retirement plan. For more realistic examples, please read the documentation for the [advanced example](advanced_example.md). 
+The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benefit of making the API clear, but will not result in a valid stress test of your retirement plan. For a more realistic example, please read the documentation for the [advanced example](advanced_example.md). 
 
 # API
 
@@ -12,7 +12,7 @@ In this section, we will provide an overview of the API for configuring a retire
 
 ## Transaction
 
-The transfer of money to and from investments is scheduled through an object called `Transaction`, which contains the following fields:
+The transfer of money between accounts is scheduled through an object called `Transaction`, which contains the following fields:
 
 - `start_age = 0.0`: the age at which a series of transactions begin
 - `end_age = Inf`: the age at which a series of transactions end
@@ -41,7 +41,7 @@ The discrete time simulation is governed by seven update functions, which are ex
 - `update_investments!`: a function called on each time step to compute the total value of the investments
 - `log!`: a function called on each time step to log data
 
-Each function is assigned a default method with default arguments. Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
+Each function is assigned a default method with default arguments. You can specify alternative parameter values as well as alternative update functions. Note that in advanced applications, you can specify a new model type and `update!` to execute a different sequence of update functions. The update functions listed above will suffice for a wide range of use cases.
 
 ## Optional Update Function Parameters
 
@@ -57,7 +57,7 @@ Each update function described in the previous section has default parameter val
 
 # Example 
 
-Now that we have explained the API for configuring simulations, we are now in the position to develop a simple, retirement simulation based on the following scenario:
+Now that we have explained the API for configuring simulations, we are now in the position to develop a simple retirement simulation based on the following scenario:
 
 *Let's assume that you are 27 years old with an initial investment of `$`10,000, and you invest `$`625 each month until early retirement at age 60. Assume further that the yearly interest rate on investments is .07, and inflation is .035. Upon reaching 60 years old, we will assume you will withdraw `$`2,200 per month until reaching age 85.*
 
@@ -81,7 +81,7 @@ Based on the scenario above, we will use the following required parameters:
 - `Δt`: $\frac{1}{12}$
 - `start_age`: $27$
 - `duration`: $58$
-- `start_amount`: '$'$10,000$
+- `start_amount`: `$` $10,000$
 
 ### Optional Update Functions
 
@@ -133,7 +133,7 @@ Now that the model settings have been configured, we can create the model. To do
 model = Model(; config...)
 ```
 
-The output above summarizes the configuration of the `Model` object. First, we can see the provided inputs at the top of the table. The field called `state` stores current values of the system for each time step, including investment amount, and net worth. You can see the details of the `State` object by expanding the menu below.
+The output above summarizes the configuration of the `Model` object. At the bottom, the field `config` contains all of the parameters for the update functions. The remaining fields are global parameters, which include the starting amount and update functions. The field called `state` stores current values of the system for each time step, including investment amount, and net worth. You can see the details of the `State` object by expanding the menu below.
 
 ```@raw html
 <details>
