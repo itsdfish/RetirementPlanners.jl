@@ -110,6 +110,7 @@ Visualizes a sensitivity analysis of two variables with a contour plot.
 
 - `age = nothing`: age on which the sensitivity plot is conditioned. If no value is specified, the maximum
     the sensitivity analysis is conditioned on the maximum age 
+- `func = mean`: function applied to z-axis
 - `kwargs...`: optional keyword arguments passed to `contour`
 """
 function plot_sensitivity(
@@ -117,11 +118,12 @@ function plot_sensitivity(
     factors::Vector{Symbol},
     z::Symbol;
     age = nothing,
+    func = mean,
     kwargs...
 )
     _age = isnothing(age) ? maximum(df.time) : age
     df_end = filter(x -> x.time == _age, df)
-    df_c = combine(groupby(df_end, factors), z => mean => z)
+    df_c = combine(groupby(df_end, factors), z => func => z)
     sort!(df_c, factors)
 
     x = unique(df_c[!, factors[1]])

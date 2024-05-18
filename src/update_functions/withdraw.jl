@@ -65,7 +65,5 @@ function transact(
         volitility ≈ 0.0 ? mean_withdraw :
         rand(Normal(mean_withdraw, mean_withdraw * volitility))
     withdraw_amount = max(withdraw_amount, min_withdraw)
-    withdraw_amount =
-        max(withdraw_amount - state.income_amount * income_adjustment, 0)
-    return withdraw_amount
+    return max(withdraw_amount - state.income_amount * income_adjustment, 0)
 end
