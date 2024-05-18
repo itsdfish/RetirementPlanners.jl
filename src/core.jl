@@ -224,7 +224,7 @@ function transact(
     income.amount.adjust ? nothing : (return income.amount.amount)
     (; Δt, state, start_age) = model
     (; amount) = income
-    amount.amount = start_age ≈ t ? (amount.initial_amount) : amount.amount
+    amount.amount = (start_age + Δt) ≈ t ? (amount.initial_amount) : amount.amount
     r = (1 + state.inflation_rate)^Δt
     amount.amount /= r
     return amount.amount
