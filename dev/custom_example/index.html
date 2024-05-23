@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Example · RetirementPlanners</title><meta name="title" content="Custom Example · RetirementPlanners"/><meta property="og:title" content="Custom Example · RetirementPlanners"/><meta property="twitter:title" content="Custom Example · RetirementPlanners"/><meta name="description" content="Documentation for RetirementPlanners."/><meta property="og:description" content="Documentation for RetirementPlanners."/><meta property="twitter:description" content="Documentation for RetirementPlanners."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="RetirementPlanners logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">RetirementPlanners</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../basic_example/">Basic Example</a></li><li><a class="tocitem" href="../advanced_example/">Advanced Example</a></li><li class="is-active"><a class="tocitem" href>Custom Example</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Load-Packages"><span>Load Packages</span></a></li><li class="toplevel"><a class="tocitem" href="#Custom-Functions"><span>Custom Functions</span></a></li><li class="toplevel"><a class="tocitem" href="#Configuration"><span>Configuration</span></a></li><li class="toplevel"><a class="tocitem" href="#Run-Simulations"><span>Run Simulations</span></a></li><li class="toplevel"><a class="tocitem" href="#Plot-Results"><span>Plot Results</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Custom Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Custom Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl/blob/main/docs/src/custom_example.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Overview"><a class="docs-heading-anchor" href="#Overview">Overview</a><a id="Overview-1"></a><a class="docs-heading-anchor-permalink" href="#Overview" title="Permalink"></a></h1><p>The purpose of this example is to illustrate how to customize update functions in <code>RetirementPlanners.jl</code>. The general process of creating a custom update function involves the following steps:</p><ol><li>Define a function with the following signature <code>your_update_function(model::AbstractModel, t; kwargs...)</code> where <code>kwargs...</code> is an optional set of keyword arguments. </li><li>Pass the function to the configuration data structure <code>config</code>. For example <code>update_investments! = your_update_function</code>.</li><li>Optionally pass keyword arguments to <code>config</code>, e.g., <code>kw_investments = (kwargs...)</code></li></ol><p>As an illustrative example, consider a person who is considering the cost of a financial advisor who charges an annual 1% fee of the value of the assets. Estimating the cost is not straightforward because the fee decreases future growth potential. To estimate the cost, we will run simulations of identical scenarios, except in one case there is a 1% fee, but in the other case there is no fee.   </p><h1 id="Load-Packages"><a class="docs-heading-anchor" href="#Load-Packages">Load Packages</a><a id="Load-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Packages" title="Permalink"></a></h1><p>Below, we load the required packages. </p><pre><code class="language-julia hljs">using Plots
+using Random
+using RetirementPlanners</code></pre><h1 id="Custom-Functions"><a class="docs-heading-anchor" href="#Custom-Functions">Custom Functions</a><a id="Custom-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-Functions" title="Permalink"></a></h1><p>We will define an custom update function for <code>update_investments!</code>, which requires <code>model</code> and time <code>t</code> as positional inputs, and <code>fee_rate</code> as a keyword argument. The custom function is the same as the default function for <code>update_investments!</code>, except the fee is applied once a year to the net_worth of investments. </p><pre><code class="language-julia hljs">function update_investments_fee!(model::AbstractModel, t; fee_rate = 0.0, _...)
+    model.state.net_worth -= model.state.withdraw_amount
+    model.state.net_worth += model.state.invest_amount
+    if mod(t, 1) ≈ 0
+        model.state.net_worth *= (1 - fee_rate)
+    end
+    real_growth = compute_real_growth_rate(model)
+    model.state.net_worth *= (1 + real_growth)^model.Δt
+    return nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">update_investments_fee! (generic function with 1 method)</code></pre><p>In most cases, it is sufficient to define the new update function. However, in this particular case, it is necessary to develop a custom <code>simulate!</code> function which runs each repetition with a different seed for the random number generator. This allows us to generate random simulations which only differ by the fee. In other words, the simulations are correlated between the different conditions. If we did not equate the seeds between the two conditions, the cost would be negative in some cases because we would be comparing simulations under different conditions (e.g., the random growth rate might differ).</p><pre><code class="language-julia hljs">import RetirementPlanners: simulate!
+using RetirementPlanners: simulate_once!
+using RetirementPlanners: compute_real_growth_rate</code></pre><pre><code class="language-julia hljs">function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps, seed)
+    for rep ∈ 1:n_reps
+        Random.seed!(seed + rep)
+        simulate_once!(model, logger, rep)
+    end
+    return nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">simulate! (generic function with 2 methods)</code></pre><h1 id="Configuration"><a class="docs-heading-anchor" href="#Configuration">Configuration</a><a id="Configuration-1"></a><a class="docs-heading-anchor-permalink" href="#Configuration" title="Permalink"></a></h1><p>We will define a configuration for both conditions. The first configuration corresponds to the advisor fee condition. The second configuration is identical except the fee is eliminated.  </p><pre><code class="language-julia hljs">config = (
+    # time step in years
+    Δt = 1 / 12,
+    # start age of simulation
+    start_age = 50,
+    # duration of simulation in years
+    duration = 40,
+    # initial investment amount
+    start_amount = 1_000_000,
+    update_investments! = update_investments_fee!,
+    # investment parameters
+    kw_investments = (; fee_rate = 0.01),
+    # withdraw parameters
+    kw_withdraw = (;
+        withdraws = Transaction(; start_age = 55, amount = Normal(2000, 200)),),
+    # invest parameters
+    kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
+    # interest parameters
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
+)
+# setup retirement model
+model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
+┌─────────────────────┬─────────────────────────────────────────────────────────
+│ Field               │ Value                                                  ⋯
+├─────────────────────┼─────────────────────────────────────────────────────────
+│ Δt                  │  0.08                                                  ⋯
+│ duration            │ 40.00                                                  ⋯
+│ start_age           │ 50.00                                                  ⋯
+│ start_amount        │ 1000000.00                                             ⋯
+│ state               │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)           ⋯
+│ withdraw!           │ withdraw!                                              ⋯
+│ invest!             │ invest!                                                ⋯
+│ update_income!      │ update_income!                                         ⋯
+│ update_inflation!   │ dynamic_inflation                                      ⋯
+│ update_market!      │ dynamic_market                                         ⋯
+│ update_investments! │ update_investments_fee!                                ⋯
+│ log!                │ default_log!                                           ⋯
+│ config              │ (kw_investments = (fee_rate = 0.01,), kw_withdraw = (w ⋯
+└─────────────────────┴─────────────────────────────────────────────────────────
+<span class="sgr36">                                                                1 column omitted
+</span></span></code></pre><pre><code class="language-julia hljs">config2 = (
+    # time step in years
+    Δt = 1 / 12,
+    # start age of simulation
+    start_age = 50,
+    # duration of simulation in years
+    duration = 40,
+    # initial investment amount
+    start_amount = 1_000_000,
+    update_investments! = update_investments_fee!,
+    # investment parameters
+    kw_investments = (; fee_rate = 0.00),
+    # withdraw parameters
+    kw_withdraw = (;
+        withdraws = Transaction(; start_age = 55, amount = Normal(2000, 200)),),
+    # invest parameters
+    kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
+    # interest parameters
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
+)
+# setup retirement model
+model2 = Model(; config2...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
+┌─────────────────────┬─────────────────────────────────────────────────────────
+│ Field               │ Value                                                  ⋯
+├─────────────────────┼─────────────────────────────────────────────────────────
+│ Δt                  │  0.08                                                  ⋯
+│ duration            │ 40.00                                                  ⋯
+│ start_age           │ 50.00                                                  ⋯
+│ start_amount        │ 1000000.00                                             ⋯
+│ state               │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)           ⋯
+│ withdraw!           │ withdraw!                                              ⋯
+│ invest!             │ invest!                                                ⋯
+│ update_income!      │ update_income!                                         ⋯
+│ update_inflation!   │ dynamic_inflation                                      ⋯
+│ update_market!      │ dynamic_market                                         ⋯
+│ update_investments! │ update_investments_fee!                                ⋯
+│ log!                │ default_log!                                           ⋯
+│ config              │ (kw_investments = (fee_rate = 0.0,), kw_withdraw = (wi ⋯
+└─────────────────────┴─────────────────────────────────────────────────────────
+<span class="sgr36">                                                                1 column omitted
+</span></span></code></pre><h1 id="Run-Simulations"><a class="docs-heading-anchor" href="#Run-Simulations">Run Simulations</a><a id="Run-Simulations-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Simulations" title="Permalink"></a></h1><p>In the code block below, we will run both simulations 1000 times each. </p><pre><code class="language-julia hljs">seed = 8564
+times = get_times(model)
+n_reps = 1000
+n_steps = length(times)
+logger1 = Logger(; n_steps, n_reps)
+logger2 = Logger(; n_steps, n_reps)
+
+# simulate scenario with fee
+simulate!(model, logger1, n_reps, seed)
+
+# simulate scenario without fee
+simulate!(model2, logger2, n_reps, seed)</code></pre><p>The code block below computes the cost as the difference in investment value between the simulations with an advisor fee and the simulations without the advisor fee. The units are expressed in millions of dollars for ease of interpretation. </p><pre><code class="language-julia hljs">net_worth_diff = (logger2.net_worth .- logger1.net_worth) / 1_000_000</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">480×1000 Matrix{Float64}:
+ 0.0      0.0      0.0      0.0       0.0      …  0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0      …  0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
+ ⋮                                             ⋱                    
+ 1.25046  1.39089  1.09447  0.709746  3.24595     1.64924  1.97433  0.635295
+ 1.26336  1.39325  1.10879  0.71349   3.2125      1.64549  1.99378  0.640352
+ 1.29199  1.40353  1.123    0.71724   3.17463     1.65308  2.01014  0.642064
+ 1.30638  1.40968  1.11393  0.729441  3.16108     1.66822  2.03034  0.645841
+ 1.32086  1.41171  1.1283   0.733126  3.18488  …  1.65892  2.05415  0.644411
+ 1.29021  1.40372  1.128    0.742763  3.22529     1.67237  2.05504  0.645181
+ 1.31123  1.42007  1.13715  0.750082  3.21727     1.68905  2.06861  0.642919
+ 1.30055  1.42974  1.11091  0.758419  3.20156     1.70879  2.09321  0.653705
+ 1.35924  1.44121  1.11761  0.781706  3.27117     1.7397   2.1594   0.649018</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. after 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. </p><details>
+<summary><b>Show Code </b></summary><pre><code class="language-julia hljs">idx = 12 * 10
+p10 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = &quot;10 years&quot;
+)
+
+idx = 12 * 20
+p20 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = &quot;20 years&quot;
+)
+
+idx = 12 * 30
+p30 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = &quot;30 years&quot;
+)
+
+idx = 12 * 40
+p40 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = &quot;40 years&quot;
+)</code></pre><img src="f3be62a5.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="05430166.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 23 May 2024 13:11">Thursday 23 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
