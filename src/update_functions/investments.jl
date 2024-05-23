@@ -17,6 +17,7 @@ function update_investments!(model::AbstractModel, t; _...)
     model.state.net_worth += model.state.invest_amount
     real_growth = compute_real_growth_rate(model)
     model.state.net_worth *= (1 + real_growth)^model.Δt
+    return nothing
 end
 
 """
