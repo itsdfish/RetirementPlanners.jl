@@ -146,20 +146,7 @@ config = (
     # invest parameters
     kw_invest = (; investments),
     # interest parameters
-    kw_market = (
-        gbm = VarGBM(;
-            αμ = 0.070,
-            ημ = 0.010,
-            ασ = 0.035,
-            ησ = 0.010,
-            αμᵣ = -0.05,
-            ημᵣ = 0.010,
-            ασᵣ = 0.035,
-            ησᵣ = 0.010
-        ),
-        # recession: age => duration
-        recessions = Dict(0 => 0)
-    ),
+    kw_market = (gbm = VarGBM(; αμ = 0.070, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -216,20 +203,7 @@ config = (
     # invest parameters
     kw_invest = (; investments),
     # interest parameters
-    kw_market = (
-        gbm = VarGBM(;
-            αμ = 0.070,
-            ημ = 0.010,
-            ασ = 0.035,
-            ησ = 0.010,
-            αμᵣ = -0.05,
-            ημᵣ = 0.010,
-            ασᵣ = 0.035,
-            ησᵣ = 0.010
-        ),
-        # recession: age => duration
-        recessions = Dict(0 => 0)
-    ),
+    kw_market = (gbm = VarGBM(; αμ = 0.070, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -255,6 +229,21 @@ plot_sensitivity(
     xlabel = "Age",
     ylabel = "Invest Amount",
     colorbar_title = "Surival Probability"
+)
+```
+The example below shows how to make a grid of plots at multiple time points by passing a vector or unit range to the `age` keyword. To ensure each subplot has the same scale, pass lower and upper bounds to the `clims` keyword.
+
+```@example plotting
+plot_sensitivity(
+    df,
+    [:retirement_age, :mean_investment],
+    :survived,
+    xlabel = "Age",
+    ylabel = "Invest Amount",
+    colorbar_title = "Surival Probability",
+    colorbar = false,
+    clims = (0, 1),
+    age = 70:5:85
 )
 ```
 
