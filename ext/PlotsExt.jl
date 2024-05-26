@@ -112,7 +112,7 @@ Visualizes a sensitivity analysis of two variables with a contour plot.
     the sensitivity analysis is conditioned on the maximum age. A grid of plots is returns if a vector of ages is provided. 
 - `z_func = mean`: function applied to z-axis
 - `show_common_color_scale = true`: if true, a color bar is displayed on right when `age` is a vector 
-- `colorbar_title = ""`,
+- `colorbar_title = ""`: the title for the common color scale
 - `kwargs...`: optional keyword arguments passed to `contour`
 """
 function plot_sensitivity(
@@ -162,6 +162,7 @@ function _plot_sensitivity(
     show_common_color_scale = true,
     colorbar_title = "",
     clims,
+    size = (800, 400),
     kwargs...
 )
     plots = map(a -> _plot_sensitivity(df, factors, z, a; clims, z_func), ages)
@@ -175,9 +176,9 @@ function _plot_sensitivity(
             title = ""
         )
         layout = @layout [a e{0.05w}]
-        return plot(plot(plots...; kwargs...), color_bar_plot; layout)
+        return plot(plot(plots...; kwargs...), color_bar_plot; size, layout)
     end
-    return plot(plots...; clims, kwargs...)
+    return plot(plots...; size, clims, kwargs...)
 end
 
 """
