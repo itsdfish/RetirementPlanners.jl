@@ -149,7 +149,7 @@ net_worth_diff = (logger2.net_worth .- logger1.net_worth) / 1_000_000
 
 # Plot Results
 
-Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. after 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. 
+Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. 
 
 ```@raw html
 <details>

@@ -120,14 +120,82 @@ function plot_sensitivity(
     factors::Vector{Symbol},
     z::Symbol;
     age = maximum(df.time),
+    show_common_color_scale = true,
     z_func = mean,
+    colorbar_title,
     kwargs...
 )
-    return _plot_sensitivity(df, factors, z, age; z_func, kwargs...)
+    plots = _plot_sensitivity(df, factors, z, age; z_func, kwargs...)
+    if show_common_color_scale
+        color_bar_plot = plot(
+            plots[end];
+            xlabel = "",
+            ylabel = "",
+            colorbar = true,
+            colorbar_title,
+            title = ""
+        )
+        layout = @layout [a b{0.05w}]
+        return plot(plots, color_bar_plot; layout)
+    end
+    return plots
+end
+
+function plot_sensitivity(
+    df::DataFrame,
+    factors::Vector{Symbol},
+    z::Symbol,
+    group::Symbol;
+    show_common_color_scale = true,
+    colorbar_title,
+    age,
+    z_func = mean,
+    ylabel = "",
+    colorbar = false,
+    margin = 0.6Plots.cm,
+    row_label = "",
+    size,
+    kwargs...
+)
+    df_group = groupby(df, group)
+    row_vals = [values(k)[1] for k ∈ keys(df_group)]
+    plots = map(pairs(df_group)) do (k, v)
+        _plot_sensitivity(
+            v,
+            factors,
+            z,
+            age;
+            ylabel,
+            colorbar,
+            margin,
+            title = "",
+            z_func,
+            kwargs...
+        )
+    end
+    color_bar_plot = plot(
+        plots[end][end];
+        xlabel = "",
+        ylabel = "",
+        colorbar = true,
+        colorbar_title,
+        title = ""
+    )
+
+    [ylabel!(plots[i][1], "$row_label $(row_vals[i]) \n $ylabel") for i ∈ 1:length(row_vals)]
+    [title!(plots[1][i], "age: $(age[i])") for i ∈ 1:length(age)]
+    layout = @layout [a e{0.05w}]
+    return plot(
+        plot(plots..., layout = (length(plots), 1)),
+        color_bar_plot;
+        layout,
+        margin,
+        size
+    )
 end
 
 function _plot_sensitivity(
-    df::DataFrame,
+    df,
     factors::Vector{Symbol},
     z::Symbol,
     age::Real;
@@ -145,7 +213,7 @@ function _plot_sensitivity(
         x,
         y,
         reshape(df_c[!, z], length(y), length(x)),
-        levels = 10,
+        levels = 9,
         title = "Age: $age",
         titlefontsize = 10,
         fill = (true, cgrad(:RdYlGn_9, scale = :log10, rev = false));
@@ -154,31 +222,19 @@ function _plot_sensitivity(
 end
 
 function _plot_sensitivity(
-    df::DataFrame,
+    df,
     factors::Vector{Symbol},
     z::Symbol,
     ages;
     z_func = mean,
-    show_common_color_scale = true,
-    colorbar_title = "",
     clims,
+    layout = (1, length(ages)),
     size = (800, 400),
     kwargs...
 )
+    
     plots = map(a -> _plot_sensitivity(df, factors, z, a; clims, z_func), ages)
-    if show_common_color_scale
-        color_bar_plot = plot(
-            plots[end];
-            xlabel = "",
-            ylabel = "",
-            colorbar = true,
-            colorbar_title,
-            title = ""
-        )
-        layout = @layout [a e{0.05w}]
-        return plot(plot(plots...; kwargs...), color_bar_plot; size, layout)
-    end
-    return plot(plots...; size, clims, kwargs...)
+    return plot(plots...; size, layout, clims, kwargs...)
 end
 
 """
