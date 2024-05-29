@@ -145,22 +145,23 @@ function plot_sensitivity(
     df::DataFrame,
     factors::Vector{Symbol},
     z::Symbol,
-    group::Symbol;
+    row_var::Symbol;
     show_common_color_scale = true,
     colorbar_title,
     age,
     z_func = mean,
     ylabel = "",
     colorbar = false,
-    margin = 0.6Plots.cm,
+    margin = 0.3Plots.cm,
     row_label = "",
+    grid_label_size = 13,
     size,
     kwargs...
 )
-    df_group = groupby(df, group)
-    row_vals = [values(k)[1] for k ∈ keys(df_group)]
-    plots = map(pairs(df_group)) do (k, v)
-        _plot_sensitivity(
+    df_row_var = groupby(df, row_var)
+    row_vals = [values(k)[1] for k ∈ keys(df_row_var)]
+    plots = map(pairs(df_row_var)) do (k, v)
+        p = _plot_sensitivity(
             v,
             factors,
             z,
@@ -172,6 +173,32 @@ function plot_sensitivity(
             z_func,
             kwargs...
         )
+        temp_layout = @layout [a{0.03w} b]
+        p1 = plot(
+            plot(
+                (0, 0),
+                xlims = (-1, 1),
+                ylims = (-1, 1),
+                leg = false,
+                grid = false,
+                axis = ([], false)
+            ),
+            p,
+            layout = temp_layout
+        )
+        annotate!(
+            p1[1],
+            0.0,
+            0.0,
+            text(
+                "$row_label $(values(k)[1])",
+                grid_label_size,
+                :center,
+                :center,
+                rotation = 90
+            )
+        )
+        return p1
     end
     color_bar_plot = plot(
         plots[end][end];
@@ -182,11 +209,10 @@ function plot_sensitivity(
         title = ""
     )
 
-    [ylabel!(plots[i][1], "$row_label $(row_vals[i]) \n $ylabel") for i ∈ 1:length(row_vals)]
-    [title!(plots[1][i], "age: $(age[i])") for i ∈ 1:length(age)]
+    [title!(plots[1][i + 1], "age: $(age[i])") for i ∈ 1:length(age)]
     layout = @layout [a e{0.05w}]
     return plot(
-        plot(plots..., layout = (length(plots), 1)),
+        plot(plots..., titlefontsize = grid_label_size, layout = (length(plots), 1)),
         color_bar_plot;
         layout,
         margin,
@@ -232,7 +258,6 @@ function _plot_sensitivity(
     size = (800, 400),
     kwargs...
 )
-    
     plots = map(a -> _plot_sensitivity(df, factors, z, a; clims, z_func), ages)
     return plot(plots...; size, layout, clims, kwargs...)
 end
