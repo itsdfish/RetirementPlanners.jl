@@ -11,12 +11,12 @@ Simulate the a retirement scenario a specified number of times.
 """
 function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps)
     for rep ∈ 1:n_reps
-        _simulate!(model, logger, rep)
+        simulate_once!(model, logger, rep)
     end
     return nothing
 end
 
-function _simulate!(model::AbstractModel, logger::AbstractLogger, rep)
+function simulate_once!(model::AbstractModel, logger::AbstractLogger, rep)
     reset!(model)
     for (s, t) ∈ enumerate(get_times(model))
         update!(model, logger, s, rep, t)
@@ -224,7 +224,7 @@ function transact(
     income.amount.adjust ? nothing : (return income.amount.amount)
     (; Δt, state, start_age) = model
     (; amount) = income
-    amount.amount = start_age ≈ t ? (amount.initial_amount) : amount.amount
+    amount.amount = (start_age + Δt) ≈ t ? (amount.initial_amount) : amount.amount
     r = (1 + state.inflation_rate)^Δt
     amount.amount /= r
     return amount.amount

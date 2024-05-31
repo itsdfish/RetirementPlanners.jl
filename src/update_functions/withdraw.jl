@@ -33,7 +33,11 @@ end
 function _withdraw!(model::AbstractModel, t, withdraw::AbstractTransaction)
     (; Δt) = model
     if can_transact(withdraw, t; Δt)
-        model.state.withdraw_amount += transact(model, withdraw; t)
+        withdraw_amount = transact(model, withdraw; t)
+        if model.state.net_worth < withdraw_amount
+            withdraw_amount = model.state.net_worth
+        end
+        model.state.withdraw_amount += withdraw_amount
     end
     return nothing
 end
@@ -61,10 +65,5 @@ function transact(
         volitility ≈ 0.0 ? mean_withdraw :
         rand(Normal(mean_withdraw, mean_withdraw * volitility))
     withdraw_amount = max(withdraw_amount, min_withdraw)
-    withdraw_amount =
-        max(withdraw_amount - state.income_amount * income_adjustment, 0)
-    if state.net_worth < withdraw_amount
-        withdraw_amount = state.net_worth
-    end
-    return withdraw_amount
+    return max(withdraw_amount - state.income_amount * income_adjustment, 0)
 end

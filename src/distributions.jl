@@ -173,6 +173,8 @@ function rebalance!(dist::AbstractGBM)
     return nothing
 end
 
+abstract type AbstractVarGBM <: AbstractGBM end
+
 """
     VarGBM{T <: Real} <: AbstractGBM
 
@@ -201,7 +203,7 @@ on each simulation run to capture uncertainy in these parameters.
 
     VarGBM(; αμ, ασ, ημ, ησ, x0=1.0, x=x0)
 """
-mutable struct VarGBM{T <: Real} <: AbstractGBM
+mutable struct VarGBM{T <: Real} <: AbstractVarGBM
     μ::T
     σ::T
     μᵣ::T
@@ -244,9 +246,8 @@ function VarGBM(; αμ, ασ, ημ, ησ, αμᵣ = αμ, ασᵣ = ασ, ημ�
     return VarGBM(zeros(typeof(αμ), 4)..., αμ, ασ, ημ, ησ, αμᵣ, ασᵣ, ημᵣ, ησᵣ, x0, x)
 end
 
-function reset!(dist::VarGBM)
-    dist.x0 = 1.0
-    dist.x = 1.0
+function reset!(dist::AbstractVarGBM)
+    dist.x = dist.x0
     dist.μ = rand(Normal(dist.αμ, dist.ημ))
     dist.σ = rand(truncated(Normal(dist.ασ, dist.ησ), 0.0, Inf))
     dist.μᵣ = rand(Normal(dist.αμᵣ, dist.ημᵣ))

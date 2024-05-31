@@ -21,6 +21,7 @@ import Distributions: std
 import Distributions: var
 
 export AbstractGBM
+export AbstractVarGBM
 export AbstractTransaction
 export AbstractModel
 export AbstractLogger

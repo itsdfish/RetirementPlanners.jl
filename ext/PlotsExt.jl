@@ -94,7 +94,7 @@ end
         df::DataFrame, 
         factors::Vector{Symbol}, 
         z::Symbol; 
-        age = nothing, 
+        age = maximum(df.time), 
         kwargs...
     )
 
@@ -103,25 +103,174 @@ Visualizes a sensitivity analysis of two variables with a contour plot.
 # Arguments  
 
 - `df::DataFrame`: long form dataframe containing columns for `factors` and `z`
-- `factors::Vector{Symbol}`:
-- `z::Symbol`: 
+- `factors::Vector{Symbol}`: two factors forming the x and y dimensions
+- `z::Symbol`: third dimension represented as color
 
 # Keywords 
 
 - `age = nothing`: age on which the sensitivity plot is conditioned. If no value is specified, the maximum
-    the sensitivity analysis is conditioned on the maximum age 
+    the sensitivity analysis is conditioned on the maximum age. A grid of plots is returns if a vector of ages is provided. 
+- `z_func = mean`: function applied to z-axis
+- `show_common_color_scale = true`: if true, a color bar is displayed on right when `age` is a vector 
+- `colorbar_title = ""`: the title for the common color scale
 - `kwargs...`: optional keyword arguments passed to `contour`
 """
 function plot_sensitivity(
     df::DataFrame,
     factors::Vector{Symbol},
     z::Symbol;
-    age = nothing,
+    age = maximum(df.time),
+    show_common_color_scale = true,
+    z_func = mean,
+    colorbar_title,
     kwargs...
 )
-    _age = isnothing(age) ? maximum(df.time) : age
-    df_end = filter(x -> x.time == _age, df)
-    df_c = combine(groupby(df_end, factors), z => mean => z)
+    plots = _plot_sensitivity(df, factors, z, age; z_func, kwargs...)
+    if show_common_color_scale
+        color_bar_plot = plot(
+            plots[end];
+            xlabel = "",
+            ylabel = "",
+            colorbar = true,
+            colorbar_title,
+            title = ""
+        )
+        layout = @layout [a b{0.05w}]
+        return plot(plots, color_bar_plot; layout)
+    end
+    return plots
+end
+
+"""
+    plot_sensitivity(
+        df::DataFrame,
+        factors::Vector{Symbol},
+        z::Symbol,
+        row_var::Symbol;
+        colorbar_title = string(z),
+        age,
+        z_func = mean,
+        ylabel = "",
+        colorbar = false,
+        margin = 0.3Plots.cm,
+        row_label = "",
+        grid_label_size = 13,
+        size,
+        kwargs...
+    )
+
+Generates a grid of contour plots for sensitivity analysis. The x and y coordinates of each contour plot are defined by 
+`factors`, and `z` is the primary outcome displayed as color within the contour plots. The rows of the grid correspond to 
+`row_var` and the columns corresond to time slices defined by `age`.
+
+# Arguments  
+
+- `df::DataFrame`: long form dataframe containing data for sensitivity analysis
+- `factors::Vector{Symbol}`: two factors forming the x and y dimensions of the contour plots
+- `z::Symbol`: third dimension represented as color
+- `row_var::Symbol`: variable name for the rows of the contour grid 
+
+# Keywords 
+
+- `colorbar_title = string(z)`: the title for the common color scale
+- `age = nothing`: age on which the sensitivity plot is conditioned. If no value is specified, the maximum
+    the sensitivity analysis is conditioned on the maximum age. A grid of plots is returns if a vector of ages is provided. 
+- `z_func = mean`: function applied to z-axis
+- `margin = 0.3Plots.cm`: the size of the margin between the contour plots 
+- `colorbar = false`: a color bar is displayed for each contour plot if true 
+- `ylabel = ""`: label of the y-axis for each contour plot 
+- `grid_label_size = 13`: the font size of the row and column labels of the grid 
+- `size`: the dimensions of the entire plot 
+- `kwargs...`: optional keyword arguments passed to `contour`
+"""
+function plot_sensitivity(
+    df::DataFrame,
+    factors::Vector{Symbol},
+    z::Symbol,
+    row_var::Symbol;
+    colorbar_title,
+    age,
+    z_func = mean,
+    ylabel = "",
+    colorbar = false,
+    margin = 0.3Plots.cm,
+    row_label = "",
+    grid_label_size = 13,
+    size,
+    kwargs...
+)
+    df_row_var = groupby(df, row_var)
+    row_vals = [values(k)[1] for k ∈ keys(df_row_var)]
+    plots = map(pairs(df_row_var)) do (k, v)
+        p = _plot_sensitivity(
+            v,
+            factors,
+            z,
+            age;
+            ylabel,
+            colorbar,
+            margin,
+            title = "",
+            z_func,
+            kwargs...
+        )
+        temp_layout = @layout [a{0.03w} b]
+        p1 = plot(
+            plot(
+                (0, 0),
+                xlims = (-1, 1),
+                ylims = (-1, 1),
+                leg = false,
+                grid = false,
+                axis = ([], false)
+            ),
+            p,
+            layout = temp_layout
+        )
+        annotate!(
+            p1[1],
+            0.0,
+            0.0,
+            text(
+                "$row_label $(values(k)[1])",
+                grid_label_size,
+                :center,
+                :center,
+                rotation = 90
+            )
+        )
+        return p1
+    end
+    color_bar_plot = plot(
+        plots[end][end];
+        xlabel = "",
+        ylabel = "",
+        colorbar = true,
+        colorbar_title,
+        title = ""
+    )
+
+    [title!(plots[1][i + 1], "age: $(age[i])") for i ∈ 1:length(age)]
+    layout = @layout [a e{0.05w}]
+    return plot(
+        plot(plots..., titlefontsize = grid_label_size, layout = (length(plots), 1)),
+        color_bar_plot;
+        layout,
+        margin,
+        size
+    )
+end
+
+function _plot_sensitivity(
+    df,
+    factors::Vector{Symbol},
+    z::Symbol,
+    age::Real;
+    z_func = mean,
+    kwargs...
+)
+    df_end = filter(x -> x.time == age, df)
+    df_c = combine(groupby(df_end, factors), z => z_func => z)
     sort!(df_c, factors)
 
     x = unique(df_c[!, factors[1]])
@@ -131,12 +280,27 @@ function plot_sensitivity(
         x,
         y,
         reshape(df_c[!, z], length(y), length(x)),
-        levels = 10,
-        title = "Age: $_age",
+        levels = 9,
+        title = "Age: $age",
         titlefontsize = 10,
         fill = (true, cgrad(:RdYlGn_9, scale = :log10, rev = false));
         kwargs...
     )
+end
+
+function _plot_sensitivity(
+    df,
+    factors::Vector{Symbol},
+    z::Symbol,
+    ages;
+    z_func = mean,
+    clims,
+    layout = (1, length(ages)),
+    size = (800, 400),
+    kwargs...
+)
+    plots = map(a -> _plot_sensitivity(df, factors, z, a; clims, z_func), ages)
+    return plot(plots...; size, layout, clims, kwargs...)
 end
 
 """

@@ -19,8 +19,8 @@
         amount = transact(model, transaction; t = 2)
         @test amount ≈ 100 / 1.03^(2 / 12) atol = 1e-10
 
-        # reset amount 
-        amount = transact(model, transaction; t = 1)
+        # reset amount (recorded time starts at start_time + Δt)
+        amount = transact(model, transaction; t = 1 + 1 / 12)
         @test amount ≈ 100 / 1.03^(1 / 12) atol = 1e-10
     end
 
