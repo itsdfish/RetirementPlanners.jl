@@ -38,7 +38,7 @@
             μᵣ = -0.10
             σᵣ = 0.01
             dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
-            recessions = Dict(1 => 1)
+            recessions = Transaction(; start_age = 1, end_age = 2, amount = 0)
 
             increment!(dist; t = 1, Δt, recessions)
             @test dist.x ≈ 0.90 atol = 1e-2
@@ -57,7 +57,7 @@
             μᵣ = -0.10
             σᵣ = 0.01
             dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
-            recessions = Dict(1 => 1)
+            recessions = Transaction(; start_age = 1, end_age = 2, amount = 0)
 
             increment!(dist; t = 0, Δt, recessions)
             @test dist.x ≈ 1.10 atol = 1e-2
@@ -76,9 +76,9 @@
             μᵣ = -0.10
             σᵣ = 0.001
             dist = GBM(; μ, σ, μᵣ, σᵣ, x0 = 1)
-            recessions = Dict(1 => 1)
+            recessions = Transaction(; start_age = 1, end_age = 2, amount = 0)
 
-            increment!(dist; t = 2, Δt, recessions)
+            increment!(dist; t = 2 + Δt / 2 + 2eps(), Δt, recessions)
             @test dist.x ≈ 1.1 atol = 1e-2
         end
     end
