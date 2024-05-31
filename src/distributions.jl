@@ -81,20 +81,30 @@ Increment the stock price over the period `Δt`.
 """
 function increment!(dist::AbstractGBM; Δt, t = 0, kwargs...)
     (; x) = dist
-    μ′, σ′ = modify(dist, t; kwargs...)
+    μ′, σ′ = modify(dist, t; Δt, kwargs...)
     dist.x += x * (μ′ * Δt + σ′ * randn() * √(Δt))
     return nothing
 end
 
-function modify(dist::AbstractGBM, t; recessions = nothing)
+function modify(dist::AbstractGBM, t; Δt, recessions = nothing)
     (; μ, μᵣ, σ, σᵣ) = dist
     isnothing(recessions) ? (return μ, σ) : nothing
-    for (start_time, duration) ∈ recessions
-        if (t ≥ start_time) && (t < (start_time + duration))
-            return μᵣ, σᵣ
+    if _modify!(dist, recessions, t, Δt)
+        return μᵣ, σᵣ
+    end
+    return μ, σ
+end
+
+_modify!(::AbstractGBM, recession::AbstractTransaction, t, Δt) =
+    can_transact(recession, t; Δt)
+
+function _modify!(dist::AbstractGBM, recessions, t, Δt)
+    for recession ∈ recessions
+        if _modify!(dist, recession, t, Δt)
+            return true
         end
     end
-    return return μ, σ
+    return false
 end
 
 """

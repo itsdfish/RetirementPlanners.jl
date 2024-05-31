@@ -250,11 +250,11 @@ Specifies the time range and amount of a transaction.
 
 - `start_age = 0.0`: the age at which a series of transactions begin
 - `end_age = Inf`: the age at which a series of transactions end
-- `amount`: the amount of each transaction
+- `amount = 0`: the amount of each transaction
 
 # Constructor
 
-    Transaction(; start_age = 0.0, end_age = Inf, amount)
+    Transaction(; start_age = 0.0, end_age = Inf, amount = 0)
 """
 struct Transaction{T, D} <: AbstractTransaction{T, D}
     start_age::T
@@ -262,7 +262,7 @@ struct Transaction{T, D} <: AbstractTransaction{T, D}
     amount::D
 end
 
-function Transaction(; start_age = 0.0, end_age = Inf, amount)
+function Transaction(; start_age = 0.0, end_age = Inf, amount = 0)
     return Transaction(promote(start_age, end_age)..., amount)
 end
 

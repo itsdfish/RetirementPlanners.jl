@@ -65,8 +65,7 @@ config = (
             ασᵣ = 0.035,
             ησᵣ = 0.010
         ),
-        # recession: age => duration
-        recessions = Dict(0 => 0)
+        recessions = Transaction(; start_age = 0, end_age = 0)
     ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
@@ -314,8 +313,7 @@ config = (
             ασᵣ = 0.035,
             ησᵣ = 0.010
         ),
-        # recession: age => duration
-        recessions = Dict(0 => 0)
+        Transaction(; start_age = 0, end_age = 0)
     ),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
