@@ -373,3 +373,159 @@ plot_sensitivity(
 ```@raw html
 </details>
 ```
+
+
+As shown below, you can also create a grid of contour plots in which the rows correspond to a variable of interest and the columns correspond to specified time points. 
+
+```julia
+income_plots = plot_sensitivity(
+    df,
+    [:retirement_age, :mean_investment],
+    :total_income,
+    :mean_growth_rate;
+    row_label = "growth:",
+    xlabel = "Retirement Age",
+    ylabel = "Invest Amount",
+    colorbar_title = "Mean Total Income",
+    clims = (2000, 6000),
+    age = 70:5:85,
+    size = (1200, 600)
+)
+```
+
+The complete code for this example can be found below by expanding the tab labeled *All Code*.
+
+![](assets/income_sensitivity.png)
+
+```@raw html
+<details>
+<summary><b>All Code</b></summary>
+```
+```julia 
+###############################################################################################################
+#                                           load dependencies
+###############################################################################################################
+cd(@__DIR__)
+using Pkg
+Pkg.activate("..")
+using Distributions
+using DataFrames
+using Plots
+using RetirementPlanners
+using Revise
+using StatsPlots
+###############################################################################################################
+#                                           setup simulation
+###############################################################################################################
+# montly contribution 
+contribute(x, r) = (x / 12) * r
+# enter your salary here
+salary = 150_000
+
+# withdraws = map(
+#     a -> Transaction(;
+#         start_age = a,
+#         amount = Normal(2200, 200)
+#     ),
+#     55:65
+# )
+
+withdraws = map(
+    a -> Transaction(;
+        start_age = a,
+        amount = AdaptiveWithdraw(;
+            min_withdraw = 2200,
+            percent_of_real_growth = 0.15,
+            income_adjustment = 0.0,
+            volitility = 0.05
+        )
+    ),
+    55:65
+)
+
+investments = [
+    Transaction(; start_age = 49, end_age = a, amount = Normal(contribute(salary, p), 100))
+    for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
+]
+
+gbm = map(
+    αμ -> VarGBM(;
+        αμ,
+        ημ = 0.010,
+        ασ = 0.035,
+        ησ = 0.010,
+        αμᵣ = -0.05,
+        ημᵣ = 0.010,
+        ασᵣ = 0.035,
+        ησᵣ = 0.010
+    ),
+    0.05:0.025:0.10
+)
+
+# configuration options
+config = (
+    # time step in years 
+    Δt = 1 / 12,
+    # start age of simulation 
+    start_age = 49,
+    # duration of simulation in years
+    duration = 40,
+    # initial investment amount 
+    start_amount = 300_000,
+    # withdraw parameters 
+    kw_withdraw = (; withdraws),
+    # invest parameters
+    kw_invest = (; investments),
+    # interest parameters
+    kw_market = (; gbm,),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
+)
+###############################################################################################################
+#                                           run simulation
+###############################################################################################################
+n_reps = 1000
+yoked_values =
+    [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
+results = grid_search(Model, Logger, n_reps, config; yoked_values);
+df = to_dataframe(Model(; config...), results)
+df.survived = df.net_worth .> 0
+df.retirement_age = map(x -> x.end_age, df.invest_investments)
+df.mean_investment = map(x -> x.amount.μ, df.invest_investments)
+df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
+###############################################################################################################
+#                                            plot results 
+###############################################################################################################
+@time survival_plots = plot_sensitivity(
+    df,
+    [:retirement_age, :mean_investment],
+    :survived,
+    :mean_growth_rate;
+    row_label = "growth:",
+    xlabel = "Retirement Age",
+    ylabel = "Invest Amount",
+    clims = (0, 1),
+    colorbar_title = "Survival Probability",
+    age = 70:5:85,
+    size = (1200, 600)
+)
+
+income_plots = plot_sensitivity(
+    df,
+    [:retirement_age, :mean_investment],
+    :total_income,
+    :mean_growth_rate;
+    row_label = "growth:",
+    xlabel = "Retirement Age",
+    ylabel = "Invest Amount",
+    colorbar_title = "Mean Total Income",
+    clims = (2000, 6000),
+    age = 70:5:85,
+    size = (1200, 600)
+)
+```
+```@raw html
+</details>
+```

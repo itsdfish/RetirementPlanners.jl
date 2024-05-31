@@ -141,12 +141,53 @@ function plot_sensitivity(
     return plots
 end
 
+"""
+    plot_sensitivity(
+        df::DataFrame,
+        factors::Vector{Symbol},
+        z::Symbol,
+        row_var::Symbol;
+        colorbar_title = string(z),
+        age,
+        z_func = mean,
+        ylabel = "",
+        colorbar = false,
+        margin = 0.3Plots.cm,
+        row_label = "",
+        grid_label_size = 13,
+        size,
+        kwargs...
+    )
+
+Generates a grid of contour plots for sensitivity analysis. The x and y coordinates of each contour plot are defined by 
+`factors`, and `z` is the primary outcome displayed as color within the contour plots. The rows of the grid correspond to 
+`row_var` and the columns corresond to time slices defined by `age`.
+
+# Arguments  
+
+- `df::DataFrame`: long form dataframe containing data for sensitivity analysis
+- `factors::Vector{Symbol}`: two factors forming the x and y dimensions of the contour plots
+- `z::Symbol`: third dimension represented as color
+- `row_var::Symbol`: variable name for the rows of the contour grid 
+
+# Keywords 
+
+- `colorbar_title = string(z)`: the title for the common color scale
+- `age = nothing`: age on which the sensitivity plot is conditioned. If no value is specified, the maximum
+    the sensitivity analysis is conditioned on the maximum age. A grid of plots is returns if a vector of ages is provided. 
+- `z_func = mean`: function applied to z-axis
+- `margin = 0.3Plots.cm`: the size of the margin between the contour plots 
+- `colorbar = false`: a color bar is displayed for each contour plot if true 
+- `ylabel = ""`: label of the y-axis for each contour plot 
+- `grid_label_size = 13`: the font size of the row and column labels of the grid 
+- `size`: the dimensions of the entire plot 
+- `kwargs...`: optional keyword arguments passed to `contour`
+"""
 function plot_sensitivity(
     df::DataFrame,
     factors::Vector{Symbol},
     z::Symbol,
     row_var::Symbol;
-    show_common_color_scale = true,
     colorbar_title,
     age,
     z_func = mean,
