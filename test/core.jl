@@ -47,28 +47,55 @@ end
 end
 
 @safetestset "make_nps" begin
-    using RetirementPlanners
-    using RetirementPlanners: make_nps
-    using DataFrames
-    using Test
-
-    np = (np1 = (a = [6, 5], b = [4, 3]), np2 = (c = [6, 5], d = 10))
-
-    dependent_values = [Pair((:np1, :a), (:np2, :c))]
-    test_vals = make_nps(np, dependent_values)
-
-    ground_truth = [
-        (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
-        (np1 = (a = 6, b = 3), np2 = (d = 10, c = 6)),
-        (np1 = (a = 5, b = 4), np2 = (d = 10, c = 5)),
-        (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5))
-    ]
-
-    for g ∈ ground_truth
-        @test g ∈ test_vals
+    @safetestset "1" begin
+        using RetirementPlanners
+        using RetirementPlanners: make_nps
+        using DataFrames
+        using Test
+    
+        np = (np1 = (a = [6, 5], b = [4, 3]), np2 = (c = [6, 5], d = 10))
+    
+        dependent_values = [Pair((:np1, :a), (:np2, :c))]
+        test_vals = make_nps(np, dependent_values)
+    
+        ground_truth = [
+            (np1 = (a = 6, b = 4), np2 = (d = 10, c = 6)),
+            (np1 = (a = 6, b = 3), np2 = (d = 10, c = 6)),
+            (np1 = (a = 5, b = 4), np2 = (d = 10, c = 5)),
+            (np1 = (a = 5, b = 3), np2 = (d = 10, c = 5))
+        ]
+    
+        for g ∈ ground_truth
+            @test g ∈ test_vals
+        end
+    
+        @test length(test_vals) == 4
     end
 
-    @test length(test_vals) == 4
+    @safetestset "2" begin
+        using RetirementPlanners
+        using RetirementPlanners: make_nps
+        using DataFrames
+        using Test
+    
+        np = (np1 = (a = [6, 5], b = [4, 3], d = [6, 5]), np2 = (c = [6, 5], d = 10))
+    
+        dependent_values = [Pair((:np1, :a), (:np2, :c)), Pair((:np1, :a), (:np1, :d))]
+        test_vals = make_nps(np, dependent_values)
+    
+        ground_truth = [
+            (np1 = (a = 6, b = 4, d = 6), np2 = (d = 10, c = 6)),
+            (np1 = (a = 6, b = 3, d = 6), np2 = (d = 10, c = 6)),
+            (np1 = (a = 5, b = 4, d = 5), np2 = (d = 10, c = 5)),
+            (np1 = (a = 5, b = 3, d = 5), np2 = (d = 10, c = 5))
+        ]
+    
+        for g ∈ ground_truth
+            @test g ∈ test_vals
+        end
+    
+        @test length(test_vals) == 4
+    end
 end
 
 @safetestset "is_event_time" begin

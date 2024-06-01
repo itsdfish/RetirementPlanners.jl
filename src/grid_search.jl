@@ -113,11 +113,11 @@ end
 function matches(config, match_pairs)
     isempty(match_pairs) ? (return true) : false
     for (k, v) ∈ match_pairs
-        if get_value(config, k) == get_value(config, v)
-            return true
+        if get_value(config, k) != get_value(config, v)
+            return false
         end
     end
-    return false
+    return true
 end
 
 # function get_value(config, k)
