@@ -386,5 +386,6 @@ function NominalAmount(; amount, adjust = true)
 end
 
 function NominalAmount(amount, adjust = true, initial_amount = amount)
+    amount, initial_amount, _ = promote(amount, initial_amount, Float32(0))
     return NominalAmount(amount, adjust, initial_amount)
 end

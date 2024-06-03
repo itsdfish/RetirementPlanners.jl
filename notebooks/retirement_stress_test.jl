@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes"
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -16,33 +23,31 @@ end
 
 # ╔═╡ 8486baa8-1572-11ef-3bf6-115dd34a73b1
 begin
-	using CommonMark
-	using Distributions
-	using DataFrames
-	using HypertextLiteral
-	using LaTeXStrings
-	using Plots
-	using PlutoExtras
-	using PlutoUI
-	using Random
-	using RetirementPlanners
-	using StatsPlots
+    using CommonMark
+    using Distributions
+    using DataFrames
+    using HypertextLiteral
+    using LaTeXStrings
+    using Plots
+    using PlutoExtras
+    using PlutoUI
+    using Random
+    using RetirementPlanners
+    using StatsPlots
 
-	Random.seed!(5023)
-	
-	html"""
-	<style>
-		@media screen {
-			main {
-				margin: 0 auto;
-				max-width: 2000px;
-	    		padding-left: max(283px, 10%);
-	    		padding-right: max(383px, 10%); 
-	            # 383px to accomodate TableOfContents(aside=true)
-			}
-		}
-	</style>
-	"""
+    html"""
+    <style>
+    	@media screen {
+    		main {
+    			margin: 0 auto;
+    			max-width: 2000px;
+        		padding-left: max(283px, 10%);
+        		padding-right: max(383px, 10%); 
+                # 383px to accomodate TableOfContents(aside=true)
+    		}
+    	}
+    </style>
+    """
 end
 
 # ╔═╡ 704efc7c-ff4a-45d8-ae7a-c1078edeab1c
@@ -50,7 +55,15 @@ md"
 
 # Overview
 
-Below, I report a series of three robustness simulations of your retirement plan based on a wide range of conditions. The purpose of a robustness simulation is not to predict the most likely set of outcomes, but rather to determine the conditions under which your plan may fail. It is important to remember that one can always engineer a scenario in which a retirement plan fails. What is important is that it does not fail under plausible conditions. 
+The purpose of this notebook is to stress test your retirement plan under a wide range of conditions to identify potential points of failure. Based on your goals and risk tolerance, the results of the stress test can help you decide when to retire and whether you should make adjustments to your plan. 
+
+This notebook features two stress tests. Both examine three important factors across time: (1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. The first stress test varies these factors and displays *portfolio surival probability* and *mean total income* as a set of contour plots. The second stress test varies the same three factors, but inserts a recession at the beginning of retirement to examine squence-of-returns risk. 
+
+# Instructions
+
+In the section *Common Design Parameters*, enter your information into the fields to customize the stress test to your circumstances. Additional details can be found by clicking on the $\blacktriangleright$ icon below each panel. After entering your information, check the box in the *Run Simulation* section to run the stress test. Once the simulation has completed, the results are plotted in the *results* subsection for Stress Test 1 and Stress Test 2. 
+
+
 
 
 "
@@ -62,27 +75,19 @@ md"
 In this section, you can modify the common design parameters used in both simulations to reflect your unique situation. Once you have entered the desired design parameters, move the slider in the *Run Simulation* subsection to the right to run the simulation. Move it back to the left to prevent the simulation from automatically running each time you change a parameter. 
 "
 
-# ╔═╡ a56e0351-5d9d-41c3-8cfa-45e949c728c4
-md"
-## Monetary Units
-
-All units are expressed in constant 2024 US dollars. 
-"
-
 # ╔═╡ 3f24d444-8eff-4957-9260-af2d4f2c5583
 md"
 ## Global Parameters
-
-The parameters below control various aspects of the simulations, including the duration of the simulation, the initial amount, and the number of times each condition is repeated. 
 
 "
 
 # ╔═╡ 8a873dad-7c41-4cba-b430-506e57ed0eb2
 @bind global_parms PlutoExtras.@NTBond "Global Parameters" begin
-	start_age = ("Start Age", NumberField(0:120, default=27))
-	end_age = ("End age", NumberField(0:120, default=85))
-	n_reps = ("Repetitions", NumberField(50:10_000, default=50))
-	start_amount = ("Initial Amount", NumberField(0:1e7, default=10_000))
+    start_amount = ("Initial Value", NumberField(0:1e7, default = 10_000))
+    start_age = ("Start Age", NumberField(0:120, default = 27))
+    end_age = ("End age", NumberField(0:120, default = 85))
+    n_reps = ("Repetitions", NumberField(50:10_000, default = 50))
+    seed = ("Seed", NumberField(0:100000000, default = rand(1:1000000)))
 end
 
 # ╔═╡ 32dbc935-ee1c-453d-b5f9-81cb9264b62e
@@ -90,254 +95,267 @@ md"
 
 ## Income Sources
 
-Below, you can configure up to three, asynchronous income sources. If you want to omit an income source, simply set the values to zero to ensure it does not have any effect on the calculations. 
 "
 
 # ╔═╡ 7e7d025a-0f66-4259-b039-2935eb942638
 @bind social_security PlutoExtras.@NTBond "Social Security" begin
-	start = (@htl("<p align='left'>Start Age</p>"), NumberField(62:70, default=67))
-	amount = (@htl("<p align='left'>Amount</p>"), NumberField(0:4000, default=2000))
+    start = (@htl("<p align='left'>Start Age</p>"), NumberField(62:70, default = 67))
+    amount = (@htl("<p align='left'>Amount</p>"), NumberField(0:4000.0, default = 2000.0))
+    adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 @bind pension PlutoExtras.@NTBond "Pension" begin
-	start = (@htl("Start Age"), NumberField(0:90, default=0))
-	end_age = (@htl("End Age"), NumberField(0:90, default=0))
-	amount = (@htl("Amount"), NumberField(0:10_000, default=0))
+    start = (@htl("Start Age"), NumberField(0:90, default = 0))
+    end_age = (@htl("End Age"), NumberField(0:90, default = 0))
+    amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
+    adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 52e1ef00-71de-4a97-886d-1276bce74d29
 @bind supplemental PlutoExtras.@NTBond "Supplemental Income" begin
-	start = (@htl("Start Age"), NumberField(0:90, default=0))
-	end_age = (@htl("End Age"), NumberField(0:90, default=0))
-	amount = (@htl("Amount"), NumberField(0:10_000, default=0))
+    start = (@htl("Start Age"), NumberField(0:90, default = 0))
+    end_age = (@htl("End Age"), NumberField(0:90, default = 0))
+    amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
+    adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
 md"""
 
-## Contributing to Investments
-
-In each simulation, a random amount of money is sampled from a normal distribution and transfered to the investment prortfolio. One reason for sampling contributions from a distribution is to capture uncertainty in expenses and bonuses, which may affect the amount you can contribute. 
+## Investing
 
 """
 
 # ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
 @bind contributions PlutoExtras.@NTBond "Contribution Amount" begin
-	mean = (@htl("Mean"), NumberField(0:10_000, default=625))
-	std = (@htl("Standard Deviation"), NumberField(0:10_000, default=150))
+    mean = (@htl("Mean"), NumberField(0:10_000, default = 625))
+    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 150))
 end
 
 # ╔═╡ 2bf35243-4a89-45a1-b562-f4854c350455
 md"""
 ## Retirement Age
 
-In the retirement stress test below, retirement age is varied across a specified range to evaluate the feasibility of retiring at different ages. Specify a range of retirement ages to evaluate below.  
+ 
 """
 
 # ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
 @bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
-	min = (@htl("Min"), NumberField(20:90, default=55))
-	max = (@htl("Max"), NumberField(20:90, default=65))
-	step = (@htl("Step"), NumberField(1:10, default=2))
+    min = (@htl("Min"), NumberField(20:90, default = 55))
+    max = (@htl("Max"), NumberField(20:90, default = 65))
+    step = (@htl("Step"), NumberField(1:10, default = 2))
 end
 
 # ╔═╡ 2b9e3b46-18f1-4d00-8a40-cb99e8bd1691
 md"
 ## Withdrawing from Investments
-
-The minimum withdraw amount is systematically varied as part of the retirement plan stress test. 
 "
 
 # ╔═╡ 50d919c6-4f86-4e4d-a08d-7f23486ff9ec
 @bind withdraw_amount PlutoExtras.@NTBond "Minimum Withdraw Amount" begin
-	min = (@htl("Min"), NumberField(0:10_000, default=2000))
-	max = (@htl("Max"), NumberField(0:10_000, default=3000))
-	step = (@htl("Step"), NumberField(1:10_000, default=200))
+    min = (@htl("Min"), NumberField(0:10_000, default = 2000))
+    max = (@htl("Max"), NumberField(0:10_000, default = 3000))
+    step = (@htl("Step"), NumberField(1:10_000, default = 200))
 end
 
 # ╔═╡ 40faa877-5477-47f2-a92a-8ddf00528311
 @bind withdraw_parms PlutoExtras.@NTBond "Withdraw Parameters" begin
-	income_adjustment = (@htl("Income Adjustment"), NumberField(0:1e-3:1, default=0))
-	percent_of_real_growth = (@htl("Percent of Real Growth"), NumberField(0:1e-3:1, default=.15))
-	volitility = (@htl(" Volility"), NumberField(0:1e-3:1, default=0.05))
+    income_adjustment = (@htl("Income Adjustment"), NumberField(0:1e-3:1, default = 0))
+    percent_of_real_growth =
+        (@htl("Percent of Real Growth"), NumberField(0:1e-3:1, default = 0.15))
+    volitility = (@htl(" Volility"), NumberField(0:1e-3:1, default = 0.05))
 end
 
 # ╔═╡ 31803b5b-3205-4d1f-b49e-98ebf7cb3eb9
 md"
 ## Economic Dynamics
 
-The dynamics of the stock market and inflation are modeled with a stochastic differential equation called Geometric Brownian Motion (GBM). The GBM has two parameters which govern its behavior. 
 
--  $\mu$: average growth rate of investments
--  $\sigma$: volitity of the investments
-
-Move the slider to the right to show 5 example trajectories of the GBM over a 30 year period.
 "
+# The dynamics of the stock market and inflation are modeled with a stochastic differential equation called Geometric Brownian Motion (GBM). The GBM has two parameters which govern its behavior. 
 
-# ╔═╡ dfb31cc3-af4c-4afa-9bcb-c7943238ff72
-@bind show_gbm Slider(false:true, default = false)
+# -  $\mu$: average growth rate of investments
+# -  $\sigma$: volitity of the investments
 
-# ╔═╡ afd6b28a-c32a-4f13-994f-3dc8c73da1c7
-let
-	if show_gbm
-		Δt = 1 / 100
-		n_years = 30
-		n_steps = Int(n_years / Δt)
-		n_reps = 5
-		times = range(0, n_years, length = n_steps + 1)
-		dist = GBM(; μ=.10, σ=.07, x0 = 1)
-		prices = rand(dist, n_steps, n_reps; Δt)
-		plot(times, prices, leg=false, xlabel = "Time (years)", ylabel = "Investment Value")
-	end
-end
+# Move the slider to the right to show 5 example trajectories of the GBM over a 30 year period.
 
 # ╔═╡ ca02fd88-b208-4492-ae31-85d5c8707af9
 md"""
 
 ### Investment Growth 
 
-In the simulations below, the parameter $\mu$ is varied according to three values. 
-
 """
 
 # ╔═╡ bda54ee1-c009-461c-b7d4-d105e340da56
 @bind investment_growth PlutoExtras.@NTBond "Investment Growth Rate" begin
-	min = (@htl("Min"), NumberField(-2:1e-5:2, default=.05))
-	max = (@htl("Max"), NumberField(-2:1e-5:2, default=.10))
-	step = (@htl("Step"), NumberField(0:1e-6:2, default=.025))
+    min = (@htl("Min"), NumberField(-2:1e-5:2, default = 0.05))
+    max = (@htl("Max"), NumberField(-2:1e-5:2, default = 0.10))
+    step = (@htl("Step"), NumberField(0:1e-6:2, default = 0.025))
 end
 
 # ╔═╡ 989bd0e5-33d5-4974-a044-bd2af180b5e4
 md"""
 ### Inflation
 
-In the field below, select an average inflation rate to use across all simulations.
-
 """
 
 # ╔═╡ cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
 @bind inflation PlutoExtras.@NTBond "Inflation" begin
-	rate = (@htl("Rate"), NumberField(-2:1e-5:2, default=.035))
+    rate = (@htl("Rate"), NumberField(-2:1e-5:2, default = 0.035))
 end
 
 # ╔═╡ 29008274-3a15-4283-98fb-7a9a10bd4a2a
 md"""
 ### Run Simulation
 
-Once the parameters are configured, check the box below to run the simulations. Note that the simulations may run for a few minutes if the number of repetitions and conditions is large.
 
 """
 
 # ╔═╡ 05f0763a-e78f-4aa6-9f3f-31015490cacb
-@bind run_simulation PlutoExtras.@NTBond "Run Simulation" begin
-	run = (@htl("Check the Box to Run"), CheckBox(default=false))
+@bind run_simulation PlutoExtras.@NTBond "" begin
+    run = (@htl("Check the Box to Run"), CheckBox(default = false))
 end
 
 # ╔═╡ e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 let
-	if run_simulation.run
-	
-	withdraws = [
-	    Transaction(;
-	        start_age = a,
-	        amount = AdaptiveWithdraw(;
-	            min_withdraw = v,
-	            percent_of_real_growth = withdraw_parms.percent_of_real_growth,
-	            income_adjustment = withdraw_parms.income_adjustment,
-	            volitility = withdraw_parms.volitility
-	        )
-	    )
-	    for a ∈ retirement_age.min:retirement_age.step:retirement_age.max for v ∈ withdraw_amount.min:withdraw_amount.step:withdraw_amount.max
-	]
-	
-	investments = [Transaction(; start_age = global_parms.start_age, end_age = a, amount = Normal(contributions.mean, contributions.std)) for a ∈ retirement_age.min:retirement_age.step:retirement_age.max]
-	
-	gbm = map(
-	    αμ -> VarGBM(;
-	        αμ,
-	        ημ = 0.010,
-	        ασ = 0.040,
-	        ησ = 0.010,
-	        αμᵣ = -0.05,
-	        ημᵣ = 0.010,
-	        ασᵣ = 0.040,
-	        ησᵣ = 0.010
-	    ),
-	    investment_growth.min:investment_growth.step:investment_growth.max
-	)
-	
-	# configuration options
-	config = (;
-	    # time step in years 
-	    Δt = 1 / 12,
-	    # start age of simulation 
-	    start_age = global_parms.start_age,
-	    # duration of simulation in years
-	    duration = global_parms.end_age - global_parms.start_age,
-	    # initial investment amount 
-	    start_amount = global_parms.start_amount,
-	    # withdraw parameters 
-	    kw_withdraw = (; withdraws),
-	    # invest parameters
-	    kw_invest = (; investments),
-	    # interest parameters
-	    kw_market = (; gbm,),
-	    # inflation parameters
-	    kw_inflation = (gbm = VarGBM(; αμ = inflation.rate, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
-	    # income parameters 
-	    kw_income = (income_sources = (
-			Transaction(; start_age = social_security.start, amount = social_security.amount),
-			Transaction(; start_age = pension.start, end_age = pension.end_age, amount = pension.amount),
-			Transaction(; start_age = supplemental.start, end_age = supplemental.end_age, amount = supplemental.amount),
-		),)
-	)
-	
-	yoked_values =
-	    [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
-	results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values);
-	df = to_dataframe(Model(; config...), results)
-	df.survived = df.net_worth .> 0
-	df.retirement_age = map(x -> x.end_age, df.invest_investments)
-	df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
-	df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
-	
-	global survival_plots1 = plot_sensitivity(
-	    df,
-	    [:retirement_age, :min_withdraw_amount],
-	    :survived,
-	    :mean_growth_rate;
-	    row_label = "growth:",
-	    xlabel = "Retirement Age",
-	    ylabel = "Min Withdraw",
-	    clims = (0, 1),
-	    colorbar_title = "Survival Probability",
-	    age = 70:5:85,
-	    size = (1200, 600)
-	)
+    Random.seed!(global_parms.seed)
+    if run_simulation.run
+        withdraws = [
+            Transaction(;
+                start_age = a,
+                amount = AdaptiveWithdraw(;
+                    min_withdraw = v,
+                    percent_of_real_growth = withdraw_parms.percent_of_real_growth,
+                    income_adjustment = withdraw_parms.income_adjustment,
+                    volitility = withdraw_parms.volitility
+                )
+            )
+            for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max) for
+            v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
+        ]
 
-	global mean_income_plots1 = plot_sensitivity(
-	    df,
-	    [:retirement_age, :min_withdraw_amount],
-	    :total_income,
-	    :mean_growth_rate;
-	    row_label = "growth:",
-	    xlabel = "Retirement Age",
-	    ylabel = "Min Withdraw",
-	    colorbar_title = "Mean Total Income",
-	    clims = (100, 7000),
-	    age = 70:5:85,
-	    size = (1200, 600),
-	)
-	end
-	nothing
+        investments = [
+            Transaction(;
+                start_age = global_parms.start_age,
+                end_age = a,
+                amount = Normal(contributions.mean, contributions.std)
+            ) for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        ]
+
+        gbm = map(
+            αμ -> VarGBM(;
+                αμ,
+                ημ = 0.010,
+                ασ = 0.040,
+                ησ = 0.010,
+                αμᵣ = -0.05,
+                ημᵣ = 0.010,
+                ασᵣ = 0.040,
+                ησᵣ = 0.010
+            ),
+            (investment_growth.min):(investment_growth.step):(investment_growth.max)
+        )
+
+        # configuration options
+        config = (;
+            # time step in years 
+            Δt = 1 / 12,
+            # start age of simulation 
+            start_age = global_parms.start_age,
+            # duration of simulation in years
+            duration = global_parms.end_age - global_parms.start_age,
+            # initial investment amount 
+            start_amount = global_parms.start_amount,
+            # withdraw parameters 
+            kw_withdraw = (; withdraws),
+            # invest parameters
+            kw_invest = (; investments),
+            # interest parameters
+            kw_market = (; gbm,),
+            # inflation parameters
+            kw_inflation = (gbm = VarGBM(;
+                αμ = inflation.rate,
+                ημ = 0.005,
+                ασ = 0.005,
+                ησ = 0.0025
+            ),),
+            # income parameters 
+            kw_income = (income_sources = (
+                Transaction(;
+                    start_age = social_security.start,
+                    amount = NominalAmount(;
+                        amount = social_security.amount,
+                        adjust = !social_security.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = pension.start,
+                    end_age = pension.end_age,
+                    amount = NominalAmount(;
+                        amount = pension.amount,
+                        adjust = !pension.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental.start,
+                    end_age = supplemental.end_age,
+                    amount = NominalAmount(;
+                        amount = supplemental.amount,
+                        adjust = !supplemental.adjust
+                    )
+                )
+            ),)
+        )
+
+        yoked_values =
+            [Pair(
+                (:kw_withdraw, :withdraws, :start_age),
+                (:kw_invest, :investments, :end_age)
+            )]
+        results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
+        df = to_dataframe(Model(; config...), results)
+        df.survived = df.net_worth .> 0
+        df.retirement_age = map(x -> x.end_age, df.invest_investments)
+        df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
+        df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
+
+        global survival_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :survived,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            clims = (0, 1),
+            colorbar_title = "Survival Probability",
+            age = 70:5:85,
+            size = (1200, 600)
+        )
+
+        global mean_income_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "Mean Total Income",
+            clims = (100, 7000),
+            age = 70:5:85,
+            size = (1200, 600)
+        )
+    end
+    nothing
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
 md"
-# Secnario 1
+# Stress Test 1
 
-Scenario 1 establishes a baseline using the parameters explained in the section *Common Design Parameters*.
+Stress Test 1 establishes a baseline using the parameters explained in the section *Common Design Parameters*.
 
 ## Results
 
@@ -358,7 +376,7 @@ One important metric for assessing the robustness of a retirement plan is the su
 
 # ╔═╡ 44c12623-53b5-4e4a-bd57-786fe6906191
 # ╠═╡ show_logs = false
- run_simulation.run ? survival_plots1 : nothing
+run_simulation.run ? survival_plots1 : nothing
 
 # ╔═╡ 55206902-2e16-4ba2-b4a7-15a2badcbd99
 md"
@@ -372,119 +390,160 @@ run_simulation.run ? mean_income_plots1 : nothing
 # ╔═╡ d5f52a46-8c0b-462a-82b7-23288c012636
 md"
 
-# Scenario 2
+# Stress Test 2
 
-The purpose of simulation 2 is to investigate sequential risk of return. What this means is that, all other things being equal, the timing of recessions have a significant impact the performance of the investments. 
+The purpose of stress test 2 is to investigate sequential risk of return. What this means is that, all other things being equal, the timing of recessions have a significant impact the performance of the investments. 
 
 
 "
 
 # ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
 @bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
-	rate = (@htl("Growth Rate"), NumberField(-2:1e-5:0, default=-.05))
-	duration = (@htl("Duration (years)"), NumberField(0:1e-3:30, default=3))
+    rate = (@htl("Growth Rate"), NumberField(-2:1e-5:0, default = -0.05))
+    duration = (@htl("Duration (years)"), NumberField(0:1e-3:30, default = 3))
 end
 
 # ╔═╡ 2358348e-6b30-4a1d-ab8c-83d6945e79c5
 let
-	if run_simulation.run
-		
-	withdraws = [
-	    Transaction(;
-	        start_age = a,
-	        amount = AdaptiveWithdraw(;
-	            min_withdraw = v,
-	            percent_of_real_growth = withdraw_parms.percent_of_real_growth,
-	            income_adjustment = withdraw_parms.income_adjustment,
-	            volitility = withdraw_parms.volitility
-	        )
-	    )
-	    for a ∈ retirement_age.min:retirement_age.step:retirement_age.max for v ∈ withdraw_amount.min:withdraw_amount.step:withdraw_amount.max
-	]
-	
-	investments = [Transaction(; start_age = global_parms.start_age, end_age = a, amount = Normal(contributions.mean, contributions.std)) for a ∈ retirement_age.min:retirement_age.step:retirement_age.max]
-		
-	gbm = map(
-	    αμ -> VarGBM(;
-	        αμ,
-	        ημ = 0.010,
-	        ασ = 0.040,
-	        ησ = 0.010,
-	        αμᵣ = recession_parms.rate,
-	        ημᵣ = 0.010,
-	        ασᵣ = 0.040,
-	        ησᵣ = 0.010
-	    ),
-	    investment_growth.min:investment_growth.step:investment_growth.max
-	)
+    if run_simulation.run
+        withdraws = [
+            Transaction(;
+                start_age = a,
+                amount = AdaptiveWithdraw(;
+                    min_withdraw = v,
+                    percent_of_real_growth = withdraw_parms.percent_of_real_growth,
+                    income_adjustment = withdraw_parms.income_adjustment,
+                    volitility = withdraw_parms.volitility
+                )
+            )
+            for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max) for
+            v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
+        ]
 
-	recessions =  [Transaction(; start_age = a, end_age = a + recession_parms.duration) for a ∈ retirement_age.min:retirement_age.step:retirement_age.max]
-	
-	# configuration options
-	config = (;
-	    # time step in years 
-	    Δt = 1 / 12,
-	    # start age of simulation 
-	    start_age = global_parms.start_age,
-	    # duration of simulation in years
-	    duration = global_parms.end_age - global_parms.start_age,
-	    # initial investment amount 
-	    start_amount = start_amount = global_parms.start_amount,
-	    # withdraw parameters 
-	    kw_withdraw = (; withdraws),
-	    # invest parameters
-	    kw_invest = (; investments),
-	    # interest parameters
-	    kw_market = (; gbm, recessions),
-	    # inflation parameters
-	    kw_inflation = (gbm = VarGBM(; αμ = inflation.rate, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
-	    # income parameters 
-	    kw_income = (income_sources = (
-			Transaction(; start_age = social_security.start, amount = social_security.amount),
-			Transaction(; start_age = pension.start, end_age = pension.end_age, amount = pension.amount),
-			Transaction(; start_age = supplemental.start, end_age = supplemental.end_age, amount = supplemental.amount),
-		),)
-	)
-	
-	yoked_values =
-	    [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age)),
-	        Pair((:kw_withdraw, :withdraws, :start_age), (:kw_market, :recessions, :start_age))]
-	results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values);
-	df = to_dataframe(Model(; config...), results)
-	df.survived = df.net_worth .> 0
-	df.retirement_age = map(x -> x.end_age, df.invest_investments)
-	df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
-	df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
-	
-	global survival_plots2 = plot_sensitivity(
-	    df,
-	    [:retirement_age, :min_withdraw_amount],
-	    :survived,
-	    :mean_growth_rate;
-	    row_label = "growth:",
-	    xlabel = "Retirement Age",
-	    ylabel = "Min Withdraw",
-	    clims = (0, 1),
-	    colorbar_title = "Survival Probability",
-	    age = 70:5:85,
-	    size = (1200, 600)
-	)
+        investments = [
+            Transaction(;
+                start_age = global_parms.start_age,
+                end_age = a,
+                amount = Normal(contributions.mean, contributions.std)
+            ) for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        ]
 
-	global mean_income_plots2 = plot_sensitivity(
-	    df,
-	    [:retirement_age, :min_withdraw_amount],
-	    :total_income,
-	    :mean_growth_rate;
-	    row_label = "growth:",
-	    xlabel = "Retirement Age",
-	    ylabel = "Min Withdraw",
-	    colorbar_title = "Mean Total Income",
-	    clims = (100, 7000),
-	    age = 70:5:85,
-	    size = (1200, 600),
-	)
-	end
-	nothing
+        gbm = map(
+            αμ -> VarGBM(;
+                αμ,
+                ημ = 0.010,
+                ασ = 0.040,
+                ησ = 0.010,
+                αμᵣ = recession_parms.rate,
+                ημᵣ = 0.010,
+                ασᵣ = 0.040,
+                ησᵣ = 0.010
+            ),
+            (investment_growth.min):(investment_growth.step):(investment_growth.max)
+        )
+
+        recessions = [
+            Transaction(; start_age = a, end_age = a + recession_parms.duration) for
+            a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        ]
+
+        # configuration options
+        config = (;
+            # time step in years 
+            Δt = 1 / 12,
+            # start age of simulation 
+            start_age = global_parms.start_age,
+            # duration of simulation in years
+            duration = global_parms.end_age - global_parms.start_age,
+            # initial investment amount 
+            start_amount = start_amount = global_parms.start_amount,
+            # withdraw parameters 
+            kw_withdraw = (; withdraws),
+            # invest parameters
+            kw_invest = (; investments),
+            # interest parameters
+            kw_market = (; gbm, recessions),
+            # inflation parameters
+            kw_inflation = (gbm = VarGBM(;
+                αμ = inflation.rate,
+                ημ = 0.005,
+                ασ = 0.005,
+                ησ = 0.0025
+            ),),
+            # income parameters 
+            kw_income = (income_sources = (
+                Transaction(;
+                    start_age = social_security.start,
+                    amount = NominalAmount(;
+                        amount = social_security.amount,
+                        adjust = !social_security.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = pension.start,
+                    end_age = pension.end_age,
+                    amount = NominalAmount(;
+                        amount = pension.amount,
+                        adjust = !pension.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental.start,
+                    end_age = supplemental.end_age,
+                    amount = NominalAmount(;
+                        amount = supplemental.amount,
+                        adjust = !supplemental.adjust
+                    )
+                )
+            ),)
+        )
+
+        yoked_values =
+            [
+                Pair(
+                    (:kw_withdraw, :withdraws, :start_age),
+                    (:kw_invest, :investments, :end_age)
+                ),
+                Pair(
+                    (:kw_withdraw, :withdraws, :start_age),
+                    (:kw_market, :recessions, :start_age)
+                )]
+        results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
+        df = to_dataframe(Model(; config...), results)
+        df.survived = df.net_worth .> 0
+        df.retirement_age = map(x -> x.end_age, df.invest_investments)
+        df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
+        df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
+
+        global survival_plots2 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :survived,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            clims = (0, 1),
+            colorbar_title = "Survival Probability",
+            age = 70:5:85,
+            size = (1200, 600)
+        )
+
+        global mean_income_plots2 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "Mean Total Income",
+            clims = (100, 7000),
+            age = 70:5:85,
+            size = (1200, 600)
+        )
+    end
+    nothing
 end
 
 # ╔═╡ c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
@@ -512,253 +571,282 @@ TableOfContents()
 
 # ╔═╡ a44775f9-c5b3-4eb6-beaf-ac5dac7c73e7
 begin
-	# allows details to be hidden/revealed
-	details(x; summary="Show more") = @htl("""
-		<details>
-			<summary>$(summary)</summary>
-			$(x)
-		</details>
-	""")
-	
-	Summary(text) = @htl("<summary>$text</summary>")
-	nothing
+    # allows details to be hidden/revealed
+    details(x; summary = "Show more") = @htl("""
+      	<details>
+      		<summary>$(summary)</summary>
+      		$(x)
+      	</details>
+      """)
+
+    Summary(text) = @htl("<summary>$text</summary>")
+    nothing
+end
+
+# ╔═╡ aaab4ae6-9775-48c3-b3b9-9b4566d3ef91
+let
+    text = md"""
+
+    A few miscellenous notes: You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. In fact, the number of simulations in one stress test is 3.7 million with the default settings below. Setting the number of reps to 100 is useful for quick exploration, but 1,000 generates plots with higher fidelity. Although the stress test configuration below will meet the needs for most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 6e8320a8-920b-4384-b3be-62682aec0e57
 let
-	text = md"""
+    text = md"""
 
-	#### Start Age
+    Global parameters control various aspects of the simulation, including timing and initial conditions. 
 
-	#### End Age
+    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-	#### Repetitions
+    * End Age: your age in years at which the simulation ends. 
 
-	#### Initial Amount 
-	
-	In each condition, the simulation will be repeated multiple times with different random outcomes. Increasing the number of repetitions will increase the accuracy of estimates in the plots below, but require a longer run time. 1,000 repetitions is the recommended default, but you may select a different number in the field below. 
-	
-	The simulations depend on several timing parameters, such as time step, start age and end age. The time step parameter controls the frequency with which the system is updated. The default time step is one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. In the fields below, enter the start age and the end age.
+    * Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. A value of 100 is sufficient for initial exploration. A value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
 
-	"""
-	details(text; summary = "Definitions")
+    * Initial Value: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
+    * Seed: initializes the random number generator in a specified state. Setting the seed to a specific value will result in a reproducible random set of on each run. By default, the seed is selected at random. You may input
+
+    ##### Additional Information
+
+    All units are expressed in constant 2024 US dollars. The simulation uses time step parameter to controls the frequency with which the system is updated. The default time step is fixed to one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. Although not typically recommended, you can modify the time step parameter in the code cell before each stress test
+
+    """
+    details(text; summary = "Additional Information")
 end
 
-# ╔═╡ 732ba75f-b5be-409e-8b59-16fe4e030760
+# ╔═╡ 8f97756b-7830-4c11-9d7a-fa5f373235ba
 let
-	text = md"""
+    text = md"""
 
-	* Start Age
+    You can specify up to three income sources with different amounts, start ages and end ages. Leave the values at zero if the income source does not apply to you.
 
-	* End Age
+    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-	* Repetitions
+    * End Age: your age in years at which the simulation ends. 
 
-	* Initial Amount 
-	
-	In each condition, the simulation will be repeated multiple times with different random outcomes. Increasing the number of repetitions will increase the accuracy of estimates in the plots below, but require a longer run time. 1,000 repetitions is the recommended default, but you may select a different number in the field below. 
-	
-	The simulations depend on several timing parameters, such as time step, start age and end age. The time step parameter controls the frequency with which the system is updated. The default time step is one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. In the fields below, enter the start age and the end age.
+    * Amount: the amount you expect to receive on a monthly basis. 
 
-	"""
-	details(text; summary = "Definitions")
+    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 1ffc8dfa-762d-46f2-9b83-46614b6f31bb
 let
-	text = md"""
+    text = md"""
+    In each simulation, a random amount of money is sampled from a normal distribution and transfered to the investment prortfolio. One reason for sampling contributions from a distribution is to capture uncertainty in expenses and bonuses, which may affect the amount you can contribute. 
 
-	#### Start Age
 
-	#### End Age
+    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-	#### Repetitions
+    * End Age: your age in years at which the simulation ends. 
 
-	#### Initial Amount 
-	
-	In each condition, the simulation will be repeated multiple times with different random outcomes. Increasing the number of repetitions will increase the accuracy of estimates in the plots below, but require a longer run time. 1,000 repetitions is the recommended default, but you may select a different number in the field below. 
-	
-	The simulations depend on several timing parameters, such as time step, start age and end age. The time step parameter controls the frequency with which the system is updated. The default time step is one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. In the fields below, enter the start age and the end age.
+    * Amount: the amount you expect to receive on a monthly basis. 
 
-	"""
-	details(text; summary = "Definitions")
+    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 5e027840-c886-409f-bda2-01a232212b88
 let
-	text = md"""
+    text = md"""
+    In the retirement stress test below, retirement age is varied across a specified range to evaluate the feasibility of retiring at different ages. Specify a range of retirement ages to evaluate below. 
 
-	#### Start Age
 
-	#### End Age
+    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-	#### Repetitions
+    * End Age: your age in years at which the simulation ends. 
 
-	#### Initial Amount 
-	
-	In each condition, the simulation will be repeated multiple times with different random outcomes. Increasing the number of repetitions will increase the accuracy of estimates in the plots below, but require a longer run time. 1,000 repetitions is the recommended default, but you may select a different number in the field below. 
-	
-	The simulations depend on several timing parameters, such as time step, start age and end age. The time step parameter controls the frequency with which the system is updated. The default time step is one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. In the fields below, enter the start age and the end age.
+    * Amount: the amount you expect to receive on a monthly basis. 
 
-	"""
-	details(text; summary = "Definitions")
+    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 9800fe86-71b2-4c64-8151-6e05bb0a83b2
 let
-	text = md"""
+    text = md"""
+    In the retirement stress test below, retirement age is varied across a specified range to evaluate the feasibility of retiring at different ages. Specify a range of retirement ages to evaluate below. 
 
-	#### Start Age
 
-	#### End Age
+    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-	#### Repetitions
+    * End Age: your age in years at which the simulation ends. 
 
-	#### Initial Amount 
-	
-	In each condition, the simulation will be repeated multiple times with different random outcomes. Increasing the number of repetitions will increase the accuracy of estimates in the plots below, but require a longer run time. 1,000 repetitions is the recommended default, but you may select a different number in the field below. 
-	
-	The simulations depend on several timing parameters, such as time step, start age and end age. The time step parameter controls the frequency with which the system is updated. The default time step is one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. In the fields below, enter the start age and the end age.
+    * Amount: the amount you expect to receive on a monthly basis. 
 
-	"""
-	details(text; summary = "Definitions")
+    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 49ae8441-8a70-4bdc-9cd3-a7d7d5437e82
 let
-	text = md"""
+    text = md"""
 
-	The GBM can be used to model unbounded growth, such as a population of bacteria, or model growth in the stock market. The concept behind GBM is quite simple: a quantity grows exponentially at an average rate $\mu$ with volitility $\sigma$. The parameter $\sigma$ is important because it captures random fluctuations commonly observed in the stock market and inflation rate. In some cases, downward fluctuations can extend over a long time frame, leading to an economic recession. 
+    The GBM can be used to model unbounded growth, such as a population of bacteria, or model growth in the stock market. The concept behind GBM is quite simple: a quantity grows exponentially at an average rate $\mu$ with volitility $\sigma$. The parameter $\sigma$ is important because it captures random fluctuations commonly observed in the stock market and inflation rate. In some cases, downward fluctuations can extend over a long time frame, leading to an economic recession. 
 
-	To make the GBM more intuitive, the plot below shows the groth trajectories of 5 simulations of GBM over a 30 year period with parameters $\mu = .10$ (i.e., $10\%$ average growth) and $\sigma=.07$. Each trajectory follows a differ path, with some growing more than others. Growth is volitile rather than smooth. The expected growith over a 30 year period is $e^{.10 \cdot 30} \approx 20$ or 20 times the initial investment amount, and the expected doubling rate is $\frac{\log(2)}{.10} \approx 7$ years. 
+    To make the GBM more intuitive, the plot below shows the groth trajectories of 5 simulations of GBM over a 30 year period with parameters $\mu = .10$ (i.e., $10\%$ average growth) and $\sigma=.07$. Each trajectory follows a differ path, with some growing more than others. Growth is volitile rather than smooth. The expected growith over a 30 year period is $e^{.10 \cdot 30} \approx 20$ or 20 times the initial investment amount, and the expected doubling rate is $\frac{\log(2)}{.10} \approx 7$ years. 
 
-	
-	One challenge in using GBM is setting the values of parameters $\mu$ and $\sigma$. The values depend primarily on two factors: the composition of your portfolio, and economic factors outside of your control. Historically, the S&P 500 has grown at rate of approximately $10\%$ per year on average. However, historical performance is not a guartee of future performance. Setting $\mu$ to $.09$ might be reasonable. However, setting $\mu$ to $.11$ might be reasonable too. We can use a similar line of reasoning for our choice of the volitlity parameter $\sigma$. 
 
-	The best way to manage uncertainty in the values of $\mu$ and $\sigma$ is to draw a random value from a distribution on each simulation. Below, I will use a normal (bell-shaped) distribution for $\mu$ and a truncated normal distribution (forced to be positive) for $\sigma$. The normal distribution has two parameters: mean and standard deviation. The mean is the arithmetic average, and the standard deviation is a measure of the width or variability of the distribution. Approximately 70% of values will be between the mean plus or minus the standard deviation, and approximately 90% of values will be between the mean plus or minus 2 times the standard deviation. 
+    One challenge in using GBM is setting the values of parameters $\mu$ and $\sigma$. The values depend primarily on two factors: the composition of your portfolio, and economic factors outside of your control. Historically, the S&P 500 has grown at rate of approximately $10\%$ per year on average. However, historical performance is not a guartee of future performance. Setting $\mu$ to $.09$ might be reasonable. However, setting $\mu$ to $.11$ might be reasonable too. We can use a similar line of reasoning for our choice of the volitlity parameter $\sigma$. 
 
-	For the stock market, we have:
-	
-	$\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
-	
-	$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-	
-	The mean or average for $\mu$ is $\mu_{\alpha}$ will be varied in the simulations below because it is one of the most important determinants of financial performance, and plotted on the y-axis of the plots below. 
-	
-	For inflation, I assume the following:
-	
-	$\mu \sim \mathrm{Normal}(.035, .005)$
-	
-	$\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
-	
-	Compared the tstock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
-	"""
-	details(text; summary = "Show Details")
+    The best way to manage uncertainty in the values of $\mu$ and $\sigma$ is to draw a random value from a distribution on each simulation. Below, I will use a normal (bell-shaped) distribution for $\mu$ and a truncated normal distribution (forced to be positive) for $\sigma$. The normal distribution has two parameters: mean and standard deviation. The mean is the arithmetic average, and the standard deviation is a measure of the width or variability of the distribution. Approximately 70% of values will be between the mean plus or minus the standard deviation, and approximately 90% of values will be between the mean plus or minus 2 times the standard deviation. 
+
+    For the stock market, we have:
+
+    $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+
+    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+
+    The mean or average for $\mu$ is $\mu_{\alpha}$ will be varied in the simulations below because it is one of the most important determinants of financial performance, and plotted on the y-axis of the plots below. 
+
+    For inflation, I assume the following:
+
+    $\mu \sim \mathrm{Normal}(.035, .005)$
+
+    $\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
+
+    Compared the tstock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
+    """
+    details(text; summary = "Additional Information")
 end
+
+# let
+# 	@bind show_gbm Slider(false:true, default = false)
+# 	if show_gbm
+# 		Δt = 1 / 100
+# 		n_years = 30
+# 		n_steps = Int(n_years / Δt)
+# 		n_reps = 5
+# 		times = range(0, n_years, length = n_steps + 1)
+# 		dist = GBM(; μ=.10, σ=.07, x0 = 1)
+# 		prices = rand(dist, n_steps, n_reps; Δt)
+# 		plot(times, prices, leg=false, xlabel = "Time (years)", ylabel = "Investment Value")
+# 	end
+# end
 
 # ╔═╡ 642254f2-c9e0-4638-a8e3-c4c6984a7b9c
 let
-	text = md"""
-	
-	Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. The three growth rate parameter values are as follows:
-	
-	-  $\mu = .05$: low sustained growth
-	-  $\mu = .075$: moderate sustained growth
-	-  $\mu = .10$: high sustained sustained growth close to the historical average of S&P 5000.
+    text = md"""
 
-	"""
-	details(text; summary = "Definitions")
+    Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. The three growth rate parameter values are as follows:
+
+    -  $\mu = .05$: low sustained growth
+    -  $\mu = .075$: moderate sustained growth
+    -  $\mu = .10$: high sustained sustained growth close to the historical average of S&P 5000.
+
+    """
+    details(text; summary = "Definitions")
 end
 
 # ╔═╡ 86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 let
-	text = md"""
+    text = md"""
 
-	Inflation---the general increase in prices---is important to consider because it can eat into the growth of your investments. During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The simulations reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices. You may enter a different value in the field below.
-	
-	In the simulations, the values for parameters $\mu$ and $\sigma$ are sample from distributions to reflect uncertainty in their actual values. For example, with the default inflation rate, the sampled rate has a mean of .035, with a standard deviation of .005, meaning approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. Click the to expand and show more details.  
+    Inflation---the general increase in prices---is important to consider because it can eat into the growth of your investments. During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The simulations reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices. You may enter a different value in the field below.
 
-	
+    In the simulations, the values for parameters $\mu$ and $\sigma$ are sample from distributions to reflect uncertainty in their actual values. For example, with the default inflation rate, the sampled rate has a mean of .035, with a standard deviation of .005, meaning approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. Click the to expand and show more details.  
 
-	"""
-	details(text; summary = "Definitions")
+
+
+    """
+    details(text; summary = "Additional Information")
+end
+
+# ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
+let
+    text = md"""
+
+    Note: that the simulations may run for a few minutes if the number of repetitions and conditions is large.
+
+    Pro tip: uncheck the box for *run simulation* to prevent the simulation from repeatedly restarting while editing the parameters.
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 63cf0c19-ef86-4a5f-8e92-6fb60a24da94
 let
-	text = md"""
+    text = md"""
 
-	#### Definition
+    #### Definition
 
-	Survival probability is defined as
-	
-	$\Pr(V > 0) = \frac{1}{n}\sum_{i=1}^n x_i,$
-	
-	where $n$ is the number of simulations, $V$ is a random value representing the value of the portfolio, $v_i$ is the value of portfolio on the $i$th simulation, and $x_i$ indcates whether the portfolio survived on the $i$th simulation:
-	
-	$x_i = \begin{cases}
-	1 \text{ if } v_i > 0,\\
-	0 \text{ otherwise}
-	\end{cases}$
+    Survival probability is defined as
 
-	"""
-	details(text; summary = "Show Details")
+    $\Pr(V > 0) = \frac{1}{n}\sum_{i=1}^n x_i,$
+
+    where $n$ is the number of simulations, $V$ is a random value representing the value of the portfolio, $v_i$ is the value of portfolio on the $i$th simulation, and $x_i$ indcates whether the portfolio survived on the $i$th simulation:
+
+    $x_i = \begin{cases}
+    1 \text{ if } v_i > 0,\\
+    0 \text{ otherwise}
+    \end{cases}$
+
+    """
+    details(text; summary = "Show Details")
 end
 
 # ╔═╡ 65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 let
-	text = md"""
+    text = md"""
 
-	#### Interpreting Contour Plots
-	
-	Each contour plot below illustrates how survival probability is affected by retirement age and minimum withdraw amount. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. Here is how we expect the variables to affect survival probability:
-	
-	- increasing the minimum withdraw will decrease survival probability once the withdraw rate exceeds the growth rate of the portfolio.
-	- increasing retirement age will increase survival probability as a result of increased investment contributions, increased growth time, and decreased time withdrawing from investments
-	
-	One way to interpret the contour plots is to examine the slope of the contour lines: vertical lines indicate retirement age is the only factor affecting survival probability, horizontal lines indicate minimum withdraw is the only factor affecting survival probability, and slanted lines indicate both variables contribute to survival probability. 
-	
-	Although retirement age and minimum withdraw amount affect survival probability, other factors affect survival as well. In the plot below, we will also examine averge growth rate of the portfolio and age. All other things being equal, surivival probability will increase with growth rate. In addition,  examining these variables at different ages or time points is important because their effects might be delayed.  
+    #### Interpreting Contour Plots
 
+    Each contour plot below illustrates how survival probability is affected by retirement age and minimum withdraw amount. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. Here is how we expect the variables to affect survival probability:
 
+    - increasing the minimum withdraw will decrease survival probability once the withdraw rate exceeds the growth rate of the portfolio.
+    - increasing retirement age will increase survival probability as a result of increased investment contributions, increased growth time, and decreased time withdrawing from investments
+
+    One way to interpret the contour plots is to examine the slope of the contour lines: vertical lines indicate retirement age is the only factor affecting survival probability, horizontal lines indicate minimum withdraw is the only factor affecting survival probability, and slanted lines indicate both variables contribute to survival probability. 
+
+    Although retirement age and minimum withdraw amount affect survival probability, other factors affect survival as well. In the plot below, we will also examine averge growth rate of the portfolio and age. All other things being equal, surivival probability will increase with growth rate. In addition,  examining these variables at different ages or time points is important because their effects might be delayed.  
 
 
-	#### Plots
-	
-	The results will be summarized in three grids of contour plots. Contour plots allow you to look at the effect of two variables on an outcome variable. The two variables are plotted on the x-and y-axes, and the outcome variable (e.g., portfolio survival probability) is plotted as a color gradient. All grids of contour plots have the same dimensions:
-	
-	- x-axis: age of retirement
-	- y-axis: minimum monthly withdraw amount 
-	- outcome variable: the outcome variable for each plot is color coded as green for *good* or *preferred* and red for *bad* or *less preferred*. 
-	- grid rows: each row of the grid corresponds to a different average investment growth rate: .05, .075, and .10
-	- grid column: the contour plots within each column correspond to results are different ages: ages 70, 75, 80, and 85
-	
-	
-	The first outcome variabile is the survival probability of the investment portfolio. This is defined as the relative frequncy of simulations (out of 1,000) in which the portfolio has more than zero dollars at the specified time point. The second outcome is the mean total income, which combines investment withdraws, and social security averaged across the 1,000 repetitions per condition. 
-
-	"""
-	
-	details(text; summary = "Show Details")
 
 
+    #### Plots
+
+    The results will be summarized in three grids of contour plots. Contour plots allow you to look at the effect of two variables on an outcome variable. The two variables are plotted on the x-and y-axes, and the outcome variable (e.g., portfolio survival probability) is plotted as a color gradient. All grids of contour plots have the same dimensions:
+
+    - x-axis: age of retirement
+    - y-axis: minimum monthly withdraw amount 
+    - outcome variable: the outcome variable for each plot is color coded as green for *good* or *preferred* and red for *bad* or *less preferred*. 
+    - grid rows: each row of the grid corresponds to a different average investment growth rate: .05, .075, and .10
+    - grid column: the contour plots within each column correspond to results are different ages: ages 70, 75, 80, and 85
+
+
+    The first outcome variabile is the survival probability of the investment portfolio. This is defined as the relative frequncy of simulations (out of 1,000) in which the portfolio has more than zero dollars at the specified time point. The second outcome is the mean total income, which combines investment withdraws, and social security averaged across the 1,000 repetitions per condition. 
+
+    """
+
+    details(text; summary = "Show Details")
 end
 
 # ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
 let
-	text = md"""
-	
-	The worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. 
-	
-	In this simulation, I will introduce a recession during the first three years of retirement. The other parameters of the simulation are otherwise the same. The GBM model for the recession is stimilar to the one described above, except the mean growth rate is -5%:
-	
-	$\mu \sim \mathrm{Normal}(-.05, .01)$
-	
-	$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-	
-	Note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below may include multiple recessions. 
+    text = md"""
 
-	"""
-	details(text; summary = "Definitions")
+    The worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. 
+
+    In this simulation, I will introduce a recession during the first three years of retirement. The other parameters of the simulation are otherwise the same. The GBM model for the recession is stimilar to the one described above, except the mean growth rate is -5%:
+
+    $\mu \sim \mathrm{Normal}(-.05, .01)$
+
+    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+
+    Note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below may include multiple recessions. 
+
+    """
+    details(text; summary = "Definitions")
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -2464,8 +2552,8 @@ version = "1.4.1+1"
 
 # ╔═╡ Cell order:
 # ╟─704efc7c-ff4a-45d8-ae7a-c1078edeab1c
+# ╟─aaab4ae6-9775-48c3-b3b9-9b4566d3ef91
 # ╟─284b603b-8e88-448b-b31a-ca0e2712054e
-# ╟─a56e0351-5d9d-41c3-8cfa-45e949c728c4
 # ╟─3f24d444-8eff-4957-9260-af2d4f2c5583
 # ╟─8a873dad-7c41-4cba-b430-506e57ed0eb2
 # ╟─6e8320a8-920b-4384-b3be-62682aec0e57
@@ -2473,7 +2561,7 @@ version = "1.4.1+1"
 # ╟─7e7d025a-0f66-4259-b039-2935eb942638
 # ╟─5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 # ╟─52e1ef00-71de-4a97-886d-1276bce74d29
-# ╟─732ba75f-b5be-409e-8b59-16fe4e030760
+# ╟─8f97756b-7830-4c11-9d7a-fa5f373235ba
 # ╟─989a8734-b0c4-4d84-bd52-b44cd1287642
 # ╟─c4398cff-af01-4ad5-a8a4-9af6c5076ab3
 # ╟─1ffc8dfa-762d-46f2-9b83-46614b6f31bb
@@ -2485,8 +2573,6 @@ version = "1.4.1+1"
 # ╟─40faa877-5477-47f2-a92a-8ddf00528311
 # ╟─9800fe86-71b2-4c64-8151-6e05bb0a83b2
 # ╟─31803b5b-3205-4d1f-b49e-98ebf7cb3eb9
-# ╟─dfb31cc3-af4c-4afa-9bcb-c7943238ff72
-# ╟─afd6b28a-c32a-4f13-994f-3dc8c73da1c7
 # ╟─49ae8441-8a70-4bdc-9cd3-a7d7d5437e82
 # ╟─ca02fd88-b208-4492-ae31-85d5c8707af9
 # ╟─bda54ee1-c009-461c-b7d4-d105e340da56
@@ -2496,6 +2582,7 @@ version = "1.4.1+1"
 # ╟─86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 # ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
 # ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
+# ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
 # ╟─e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
