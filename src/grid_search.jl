@@ -93,7 +93,6 @@ function grid_search(
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
-        #println("np_combs $np_combs")
         model = model_type(; fixed_inputs..., np_combs...)
         times = get_times(model)
         n_steps = length(times)

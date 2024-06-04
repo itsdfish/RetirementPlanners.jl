@@ -27,6 +27,7 @@ mutable struct State{T <: Real} <: AbstractState
     invest_amount::T
     withdraw_amount::T
     net_worth::T
+    log_idx::Int
 end
 
 """
@@ -65,7 +66,8 @@ function State(;
         income_amount,
         invest_amount,
         withdraw_amount,
-        net_worth
+        net_worth,
+        1
     )
 end
 
@@ -190,6 +192,7 @@ The default retirement simulation Model.
     duration::T
     start_age::T
     start_amount::T
+    log_start_age::T
     state::S
     withdraw!
     invest!
@@ -206,6 +209,7 @@ function Model(;
     duration,
     start_age,
     start_amount,
+    log_start_age = start_age,
     state = State(),
     withdraw! = withdraw!,
     invest! = invest!,
@@ -216,12 +220,14 @@ function Model(;
     log! = default_log!,
     config...
 )
-    Δt, duration, start_age, start_amount = promote(Δt, duration, start_age, start_amount)
+    Δt, duration, start_age, start_amount, log_start_age = promote(Δt, duration, start_age, start_amount, log_start_age)
+
     return Model(
         Δt,
         duration,
         start_age,
         start_amount,
+        log_start_age,
         state,
         withdraw!,
         invest!,

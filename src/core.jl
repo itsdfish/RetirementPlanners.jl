@@ -18,8 +18,8 @@ end
 
 function simulate_once!(model::AbstractModel, logger::AbstractLogger, rep)
     reset!(model)
-    for (s, t) ∈ enumerate(get_times(model))
-        update!(model, logger, s, rep, t)
+    for t ∈ get_all_times(model) 
+        update!(model, logger, rep, t)
     end
     return nothing
 end
@@ -47,8 +47,8 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 - `time_step::Int`: time step count of simulation 
 - `t`: time in years 
 """
-function update!(model::AbstractModel, logger::AbstractLogger, step, rep, t)
-    _update!(model, logger, step, rep, t; model.config...)
+function update!(model::AbstractModel, logger::AbstractLogger, rep, t)
+    _update!(model, logger, rep, t; model.config...)
     return nothing
 end
 
@@ -101,7 +101,6 @@ Each function except `log!` has the signature `my_func(model, t; kwargs...)`. Th
 function _update!(
     model::AbstractModel,
     logger::AbstractLogger,
-    step,
     rep,
     t;
     kw_income = (),
@@ -118,7 +117,7 @@ function _update!(
     model.withdraw!(model, t; kw_withdraw...)
     model.update_income!(model, t; kw_income...)
     model.update_investments!(model, t; kw_investments...)
-    model.log!(model, logger, step, rep; kw_log...)
+    model.log!(model, logger, rep, t; kw_log...)
     return nothing
 end
 
@@ -132,6 +131,12 @@ Returns the time steps used in the simulation.
 - `model::AbstractModel`: an abstract Model object 
 """
 function get_times(model::AbstractModel)
+    (; log_start_age, start_age, Δt, duration) = model
+    Δ = start_age == log_start_age ? Δt : 0
+    return (log_start_age + Δ):Δt:(start_age + duration)
+end
+
+function get_all_times(model::AbstractModel)
     (; start_age, Δt, duration) = model
     return (start_age + Δt):Δt:(start_age + duration)
 end

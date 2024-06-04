@@ -62,10 +62,6 @@ This notebook features two stress tests. Both examine three important factors ac
 # Instructions
 
 In the section *Common Design Parameters*, enter your information into the fields to customize the stress test to your circumstances. Additional details can be found by clicking on the $\blacktriangleright$ icon below each panel. After entering your information, check the box in the *Run Simulation* section to run the stress test. Once the simulation has completed, the results are plotted in the *results* subsection for Stress Test 1 and Stress Test 2. 
-
-
-
-
 "
 
 # ╔═╡ 284b603b-8e88-448b-b31a-ca0e2712054e
@@ -86,7 +82,7 @@ md"
     start_amount = ("Initial Value", NumberField(0:1e7, default = 10_000))
     start_age = ("Start Age", NumberField(0:120, default = 27))
     end_age = ("End age", NumberField(0:120, default = 85))
-    n_reps = ("Repetitions", NumberField(50:10_000, default = 50))
+    n_reps = ("Repetitions", NumberField(50:10_000, default = 100))
     seed = ("Seed", NumberField(0:100000000, default = rand(1:1000000)))
 end
 
@@ -109,7 +105,7 @@ end
     start = (@htl("Start Age"), NumberField(0:90, default = 0))
     end_age = (@htl("End Age"), NumberField(0:90, default = 0))
     amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
-    adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
+    adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = false))
 end
 
 # ╔═╡ 52e1ef00-71de-4a97-886d-1276bce74d29
@@ -182,15 +178,13 @@ md"
 
 # ╔═╡ ca02fd88-b208-4492-ae31-85d5c8707af9
 md"""
-
 ### Investment Growth 
-
 """
 
 # ╔═╡ bda54ee1-c009-461c-b7d4-d105e340da56
 @bind investment_growth PlutoExtras.@NTBond "Investment Growth Rate" begin
     min = (@htl("Min"), NumberField(-2:1e-5:2, default = 0.05))
-    max = (@htl("Max"), NumberField(-2:1e-5:2, default = 0.10))
+    max = (@htl("Max"), NumberField(-2:1e-5:2, default = 0.100))
     step = (@htl("Step"), NumberField(0:1e-6:2, default = 0.025))
 end
 
@@ -205,22 +199,37 @@ md"""
     rate = (@htl("Rate"), NumberField(-2:1e-5:2, default = 0.035))
 end
 
+# ╔═╡ 142a098f-aa0c-4b20-be35-59024367b16e
+md"""
+## Time Points
+"""
+
+# ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
+@bind time_points PlutoExtras.@NTBond "Time Points" begin
+    min = (@htl("Min"), NumberField(1:100, default = 70))
+    max = (@htl("Max"), NumberField(1:100, default = 85))
+    step = (@htl("Step"), NumberField(1:100, default = 5))
+end
+
 # ╔═╡ 29008274-3a15-4283-98fb-7a9a10bd4a2a
 md"""
-### Run Simulation
+## Run Simulation
 
 
 """
 
 # ╔═╡ 05f0763a-e78f-4aa6-9f3f-31015490cacb
 @bind run_simulation PlutoExtras.@NTBond "" begin
-    run = (@htl("Check the Box to Run"), CheckBox(default = false))
+    run = (@htl("Check the Box to Run the Simulation"), CheckBox(default = false))
 end
 
 # ╔═╡ e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 let
     Random.seed!(global_parms.seed)
     if run_simulation.run
+        retirement_age_range =
+            (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
         withdraws = [
             Transaction(;
                 start_age = a,
@@ -231,7 +240,7 @@ let
                     volitility = withdraw_parms.volitility
                 )
             )
-            for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max) for
+            for a ∈ retirement_age_range for
             v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
         ]
 
@@ -240,7 +249,7 @@ let
                 start_age = global_parms.start_age,
                 end_age = a,
                 amount = Normal(contributions.mean, contributions.std)
-            ) for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+            ) for a ∈ retirement_age_range
         ]
 
         gbm = map(
@@ -315,10 +324,18 @@ let
             )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
+        filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
         df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
+
+        global clims = extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => mean => :mean
+        ).mean
+        )
 
         global survival_plots1 = plot_sensitivity(
             df,
@@ -330,7 +347,7 @@ let
             ylabel = "Min Withdraw",
             clims = (0, 1),
             colorbar_title = "Survival Probability",
-            age = 70:5:85,
+            age = age_range,
             size = (1200, 600)
         )
 
@@ -343,8 +360,8 @@ let
             xlabel = "Retirement Age",
             ylabel = "Min Withdraw",
             colorbar_title = "Mean Total Income",
-            clims = (100, 7000),
-            age = 70:5:85,
+            clims = clims,
+            age = age_range,
             size = (1200, 600)
         )
     end
@@ -357,7 +374,6 @@ md"
 
 Stress Test 1 establishes a baseline using the parameters explained in the section *Common Design Parameters*.
 
-## Results
 
 "
 
@@ -404,8 +420,12 @@ The purpose of stress test 2 is to investigate sequential risk of return. What t
 end
 
 # ╔═╡ 2358348e-6b30-4a1d-ab8c-83d6945e79c5
+# ╠═╡ show_logs = false
 let
     if run_simulation.run
+        retirement_age_range =
+            (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
         withdraws = [
             Transaction(;
                 start_age = a,
@@ -416,7 +436,7 @@ let
                     volitility = withdraw_parms.volitility
                 )
             )
-            for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max) for
+            for a ∈ retirement_age_range for
             v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
         ]
 
@@ -425,7 +445,7 @@ let
                 start_age = global_parms.start_age,
                 end_age = a,
                 amount = Normal(contributions.mean, contributions.std)
-            ) for a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+            ) for a ∈ retirement_age_range
         ]
 
         gbm = map(
@@ -444,7 +464,7 @@ let
 
         recessions = [
             Transaction(; start_age = a, end_age = a + recession_parms.duration) for
-            a ∈ (retirement_age.min):(retirement_age.step):(retirement_age.max)
+            a ∈ retirement_age_range
         ]
 
         # configuration options
@@ -510,6 +530,7 @@ let
                 )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
+        filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
@@ -538,8 +559,8 @@ let
             xlabel = "Retirement Age",
             ylabel = "Min Withdraw",
             colorbar_title = "Mean Total Income",
-            clims = (100, 7000),
-            age = 70:5:85,
+            clims,
+            age = age_range,
             size = (1200, 600)
         )
     end
@@ -548,8 +569,6 @@ end
 
 # ╔═╡ c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
 md"
-## Results
-
 ### Portfolio Survival Probability 
 "
 
@@ -596,12 +615,11 @@ end
 # ╔═╡ 6e8320a8-920b-4384-b3be-62682aec0e57
 let
     text = md"""
-
     Global parameters control various aspects of the simulation, including timing and initial conditions. 
 
-    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+    * Start Age: your age at the beginng of the simulation. Typically, this is your current age.
 
-    * End Age: your age in years at which the simulation ends. 
+    * End Age: your age at the end of the simulation. 
 
     * Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. A value of 100 is sufficient for initial exploration. A value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
 
@@ -619,35 +637,34 @@ end
 # ╔═╡ 8f97756b-7830-4c11-9d7a-fa5f373235ba
 let
     text = md"""
+     You can specify up to three income sources with different amounts, start ages, and end ages. Leave the values at zero if the 	income source does not apply to you.
 
-    You can specify up to three income sources with different amounts, start ages and end ages. Leave the values at zero if the income source does not apply to you.
+     * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+     * End Age: your age in years at which the simulation ends. 
 
-    * End Age: your age in years at which the simulation ends. 
+     * Amount: the amount you expect to receive on a monthly basis. 
 
-    * Amount: the amount you expect to receive on a monthly basis. 
+     * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in 		value with inflation.
 
-    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
-
-    """
+     ##### Additional Information
+     The start age for social security ranges from 62 to 70, and benefits increase with start age. Cost of living adjustment is unchecked for pensions because most do not have a cost of living adjustment.
+     """
     details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 1ffc8dfa-762d-46f2-9b83-46614b6f31bb
 let
     text = md"""
-    In each simulation, a random amount of money is sampled from a normal distribution and transfered to the investment prortfolio. One reason for sampling contributions from a distribution is to capture uncertainty in expenses and bonuses, which may affect the amount you can contribute. 
+    Each month, a random amount of money is sampled from a normal (bell-shaped) distribution and transfered to the investment 	portfolio.  
 
+    * Mean: the arithmatic average contribution
 
-    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+    * Standard Deviation: controls the width of the distribution. 
 
-    * End Age: your age in years at which the simulation ends. 
+    ##### Additional Information
 
-    * Amount: the amount you expect to receive on a monthly basis. 
-
-    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
-
+    The rationale for sampling from a distribution is to incorporate into the simulation uncertainty about investment contributions, due to factors, such as variable expenses, and bonuses. Approximately 70% of outcomes fall within the mean $\pm$ standard deviation, and approximately 95% of outcomes fall withinthe mean $\pm$ 2 $\times$ the standard deviation. Note: you can set the standard deviation to zero to invest a fixed amount each month. 
     """
     details(text; summary = "Additional Information")
 end
@@ -655,17 +672,16 @@ end
 # ╔═╡ 5e027840-c886-409f-bda2-01a232212b88
 let
     text = md"""
-    In the retirement stress test below, retirement age is varied across a specified range to evaluate the feasibility of retiring at different ages. Specify a range of retirement ages to evaluate below. 
+    The stress tests vary retirement age to determine whether your retirement plan breaks down at any point. Retirement age is an important determinant of portfolio survival probability and monthly income because it delays withdraws while taking advantage of growth potential and investment contributions. 
 
+    - Min: the minimum retirement age considered 
+    - Max: the maximum retirement age considered
+    - Step: the increment between successive retirement ages
 
-    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+    !!! warning "Warning"
+        Selecting a large number of retirement ages will increase the simulation run time.
 
-    * End Age: your age in years at which the simulation ends. 
-
-    * Amount: the amount you expect to receive on a monthly basis. 
-
-    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
-
+    In many cases, specifying a range of approximately 5 retirement ages strikes a balance between speed and informativeness.
     """
     details(text; summary = "Additional Information")
 end
@@ -673,17 +689,28 @@ end
 # ╔═╡ 9800fe86-71b2-4c64-8151-6e05bb0a83b2
 let
     text = md"""
-    In the retirement stress test below, retirement age is varied across a specified range to evaluate the feasibility of retiring at different ages. Specify a range of retirement ages to evaluate below. 
+    The stress tests vary the monthly withdraw amount to determine whether your retirement plan breaks down at any point. Monthly withdraw amount is an important determinant of portfolio survival probability and monthly income because it determines how quickly your investments grow or deplete during retirement. 
+
+    The following values correspond to the range of minimum monthly withdraw amount:
+
+    - Min: the smallest minimum withdraw amount considered 
+    - Max: the largest minimum withdraw amount considered 
+    - Step: the increment between successive minimum withdraw amounts
+
+    The following module the minimum withdraw amount. 
+
+    - Income Adjustment: a number ranging between 0 and 1, which determines how much of other income sources (e.g., social security, pension, etc.) are subtracted from your investment withdraw amount. For example, setting this parameter is set to zero means no adjustment is made: total income is investment withdraw + Social Security + Pension + Supplemental Income. 
+    - Percent of Real Growth: a number between 0 and 1 representing real (inflation adjusted growth), which is multipled by the current monthly investment return. If this number is greater than the minimum withdraw amount, it is select. Otherwise the minimum withdraw amount is selected.
+    - volitility: a number between 0 and 1 which controls the standard deviation of the withdraw amount. This allows you to withdraw more than minimum withdraw amount subject to the constraint that the amount withdrawn cannot be less than the target minimum withdraw amount. The standard deviation scales with withdraw amount: standard deviation = volitlity $\times$ mean withdraw amount. Typical values range between 0 and .10. 
+
+    ##### Additional Information
 
 
-    * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
 
-    * End Age: your age in years at which the simulation ends. 
+    !!! warning "Warning"
+        Selecting a large number of withdraw amounts increase the simulation run time.
 
-    * Amount: the amount you expect to receive on a monthly basis. 
-
-    * Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in value with inflation.
-
+    In many cases, specifying a range of approximately 5 retirement ages strikes a balance between speed and informativeness.
     """
     details(text; summary = "Additional Information")
 end
@@ -692,31 +719,31 @@ end
 let
     text = md"""
 
-    The GBM can be used to model unbounded growth, such as a population of bacteria, or model growth in the stock market. The concept behind GBM is quite simple: a quantity grows exponentially at an average rate $\mu$ with volitility $\sigma$. The parameter $\sigma$ is important because it captures random fluctuations commonly observed in the stock market and inflation rate. In some cases, downward fluctuations can extend over a long time frame, leading to an economic recession. 
+     The dynamics of investments and inflation are modeled with Geometric Brownian Motion (GBM). The GBM can be used to model unbounded growth, such as a population of bacteria, or model growth in the stock market. The concept behind GBM is quite simple: a quantity grows exponentially at an average rate $\mu$ with volitility $\sigma$. The parameter $\sigma$ is important because it captures random fluctuations commonly observed in the stock market and inflation rate. In some cases, downward fluctuations can extend over a long time frame, leading to an economic recession. 
 
-    To make the GBM more intuitive, the plot below shows the groth trajectories of 5 simulations of GBM over a 30 year period with parameters $\mu = .10$ (i.e., $10\%$ average growth) and $\sigma=.07$. Each trajectory follows a differ path, with some growing more than others. Growth is volitile rather than smooth. The expected growith over a 30 year period is $e^{.10 \cdot 30} \approx 20$ or 20 times the initial investment amount, and the expected doubling rate is $\frac{\log(2)}{.10} \approx 7$ years. 
+     To make the GBM more intuitive, the plot below shows the groth trajectories of 5 simulations of GBM over a 30 year period with parameters $\mu = .10$ (i.e., $10\%$ average growth) and $\sigma=.07$. Each trajectory follows a differ path, with some growing more than others. Growth is volitile rather than smooth. The expected growith over a 30 year period is $e^{.10 \cdot 30} \approx 20$ or 20 times the initial investment amount, and the expected doubling rate is $\frac{\log(2)}{.10} \approx 7$ years. 
 
 
-    One challenge in using GBM is setting the values of parameters $\mu$ and $\sigma$. The values depend primarily on two factors: the composition of your portfolio, and economic factors outside of your control. Historically, the S&P 500 has grown at rate of approximately $10\%$ per year on average. However, historical performance is not a guartee of future performance. Setting $\mu$ to $.09$ might be reasonable. However, setting $\mu$ to $.11$ might be reasonable too. We can use a similar line of reasoning for our choice of the volitlity parameter $\sigma$. 
+     One challenge in using GBM is setting the values of parameters $\mu$ and $\sigma$. The values depend primarily on two factors: the composition of your portfolio, and economic factors outside of your control. Historically, the S&P 500 has grown at rate of approximately $10\%$ per year on average. However, historical performance is not a guartee of future performance. Setting $\mu$ to $.09$ might be reasonable. However, setting $\mu$ to $.11$ might be reasonable too. We can use a similar line of reasoning for our choice of the volitlity parameter $\sigma$. 
 
-    The best way to manage uncertainty in the values of $\mu$ and $\sigma$ is to draw a random value from a distribution on each simulation. Below, I will use a normal (bell-shaped) distribution for $\mu$ and a truncated normal distribution (forced to be positive) for $\sigma$. The normal distribution has two parameters: mean and standard deviation. The mean is the arithmetic average, and the standard deviation is a measure of the width or variability of the distribution. Approximately 70% of values will be between the mean plus or minus the standard deviation, and approximately 90% of values will be between the mean plus or minus 2 times the standard deviation. 
+     The best way to manage uncertainty in the values of $\mu$ and $\sigma$ is to draw a random value from a distribution on each simulation. Below, I will use a normal (bell-shaped) distribution for $\mu$ and a truncated normal distribution (forced to be positive) for $\sigma$. The normal distribution has two parameters: mean and standard deviation. The mean is the arithmetic average, and the standard deviation is a measure of the width or variability of the distribution. Approximately 70% of values will be between the mean plus or minus the standard deviation, and approximately 95% of values will be between the mean plus or minus 2 times the standard deviation. 
 
-    For the stock market, we have:
+     For the stock market, we have:
 
-    $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+     $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
 
-    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+     $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
 
-    The mean or average for $\mu$ is $\mu_{\alpha}$ will be varied in the simulations below because it is one of the most important determinants of financial performance, and plotted on the y-axis of the plots below. 
+     The mean or average for $\mu$ is $\mu_{\alpha}$ will be varied in the simulations below because it is one of the most important determinants of financial performance, and plotted on the y-axis of the plots below. 
 
-    For inflation, I assume the following:
+     For inflation, I assume the following:
 
-    $\mu \sim \mathrm{Normal}(.035, .005)$
+     $\mu \sim \mathrm{Normal}(.035, .005)$
 
-    $\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
+     $\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
 
-    Compared the tstock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
-    """
+     Compared the tstock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
+     """
     details(text; summary = "Additional Information")
 end
 
@@ -738,14 +765,27 @@ end
 let
     text = md"""
 
-    Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. The three growth rate parameter values are as follows:
+     Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
 
-    -  $\mu = .05$: low sustained growth
-    -  $\mu = .075$: moderate sustained growth
-    -  $\mu = .10$: high sustained sustained growth close to the historical average of S&P 5000.
+     - Min: the minimum growth rate considered
+     - Max: the naximum growth rate considered 
+     - Step: the increment between successive growth rates
 
-    """
-    details(text; summary = "Definitions")
+     #### Additional Information
+
+     Low, moderate, and high sustained growth rates are defined below as a point of reference.
+
+     -  $\mu \approx .05$: low sustained growth
+     -  $\mu \approx .075$: moderate sustained growth
+     -  $\mu \approx .10$: high sustained sustained growth close to the historical average of S&P 500.
+
+     Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
+
+
+     !!! warning "Warning"
+     	Selecting a large number of growth rates will increase the simulation run time.
+     """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 86eef8d7-a07e-44e1-8a78-a4d65ed7f474
@@ -762,6 +802,33 @@ let
     details(text; summary = "Additional Information")
 end
 
+# ╔═╡ a083653f-e469-420c-aa16-267ac9449ea7
+let
+    text = md"""
+
+     Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
+
+     - Min: the minimum growth rate considered
+     - Max: the naximum growth rate considered 
+     - Step: the increment between successive growth rates
+
+     #### Additional Information
+
+     Low, moderate, and high sustained growth rates are defined below as a point of reference.
+
+     -  $\mu \approx .05$: low sustained growth
+     -  $\mu \approx .075$: moderate sustained growth
+     -  $\mu \approx .10$: high sustained sustained growth close to the historical average of S&P 500.
+
+     Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
+
+
+     !!! warning "Warning"
+     	Selecting a large number of growth rates will increase the simulation run time.
+     """
+    details(text; summary = "Additional Information")
+end
+
 # ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
 let
     text = md"""
@@ -774,11 +841,9 @@ let
     details(text; summary = "Additional Information")
 end
 
-# ╔═╡ 63cf0c19-ef86-4a5f-8e92-6fb60a24da94
+# ╔═╡ 65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 let
     text = md"""
-
-    #### Definition
 
     Survival probability is defined as
 
@@ -791,15 +856,7 @@ let
     0 \text{ otherwise}
     \end{cases}$
 
-    """
-    details(text; summary = "Show Details")
-end
-
-# ╔═╡ 65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
-let
-    text = md"""
-
-    #### Interpreting Contour Plots
+    ##### Interpreting Contour Plots
 
     Each contour plot below illustrates how survival probability is affected by retirement age and minimum withdraw amount. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. Here is how we expect the variables to affect survival probability:
 
@@ -813,7 +870,7 @@ let
 
 
 
-    #### Plots
+    ##### Plots
 
     The results will be summarized in three grids of contour plots. Contour plots allow you to look at the effect of two variables on an outcome variable. The two variables are plotted on the x-and y-axes, and the outcome variable (e.g., portfolio survival probability) is plotted as a color gradient. All grids of contour plots have the same dimensions:
 
@@ -2580,20 +2637,22 @@ version = "1.4.1+1"
 # ╟─989bd0e5-33d5-4974-a044-bd2af180b5e4
 # ╟─cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
 # ╟─86eef8d7-a07e-44e1-8a78-a4d65ed7f474
+# ╟─142a098f-aa0c-4b20-be35-59024367b16e
+# ╟─6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
+# ╟─a083653f-e469-420c-aa16-267ac9449ea7
 # ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
 # ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
 # ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
 # ╟─e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
-# ╟─63cf0c19-ef86-4a5f-8e92-6fb60a24da94
 # ╟─65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 # ╟─44c12623-53b5-4e4a-bd57-786fe6906191
 # ╟─55206902-2e16-4ba2-b4a7-15a2badcbd99
 # ╟─61f3bb3f-70e7-4a97-bf83-ee291edd3854
-# ╟─2358348e-6b30-4a1d-ab8c-83d6945e79c5
 # ╟─d5f52a46-8c0b-462a-82b7-23288c012636
 # ╟─e437c0c7-f405-4e1f-94fc-79605774a824
+# ╟─2358348e-6b30-4a1d-ab8c-83d6945e79c5
 # ╟─f2e6ffca-782f-4c40-ad9b-32615f783f0c
 # ╟─c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
 # ╟─74e56805-8f9c-485f-89da-0392dcb44da3
