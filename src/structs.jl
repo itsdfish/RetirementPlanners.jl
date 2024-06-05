@@ -187,12 +187,12 @@ The default retirement simulation Model.
         config...
     )
 """
-@concrete mutable struct Model{S, T <: Real} <: AbstractModel
+@concrete mutable struct Model{S, R, T <: Real} <: AbstractModel
     Δt::T
     duration::T
     start_age::T
     start_amount::T
-    log_start_age::T
+    log_times::R
     state::S
     withdraw!
     invest!
@@ -209,7 +209,7 @@ function Model(;
     duration,
     start_age,
     start_amount,
-    log_start_age = start_age,
+    log_times = (start_age + Δt):Δt:(start_age + duration),
     state = State(),
     withdraw! = withdraw!,
     invest! = invest!,
@@ -220,14 +220,14 @@ function Model(;
     log! = default_log!,
     config...
 )
-    Δt, duration, start_age, start_amount, log_start_age = promote(Δt, duration, start_age, start_amount, log_start_age)
+    Δt, duration, start_age, start_amount = promote(Δt, duration, start_age, start_amount)
 
     return Model(
         Δt,
         duration,
         start_age,
         start_amount,
-        log_start_age,
+        log_times,
         state,
         withdraw!,
         invest!,

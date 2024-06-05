@@ -317,7 +317,6 @@ let
             )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
-		#filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
@@ -712,14 +711,20 @@ end
 let
 text = md"""
 
+	##### Geometric Brownian Motion
+
 	The dynamics of investments and inflation are modeled with Geometric Brownian Motion (GBM). The GBM can be used to model unbounded growth, such as a population of bacteria, or model growth in the stock market. The concept behind GBM is quite simple: a quantity grows exponentially at an average rate $\mu$ with volitility $\sigma$. The parameter $\sigma$ is important because it captures random fluctuations commonly observed in the stock market and inflation rate. In some cases, downward fluctuations can extend over a long time frame, leading to an economic recession. 
 	
 	To make the GBM more intuitive, the plot below shows the groth trajectories of 5 simulations of GBM over a 30 year period with parameters $\mu = .10$ (i.e., $10\%$ average growth) and $\sigma=.07$. Each trajectory follows a differ path, with some growing more than others. Growth is volitile rather than smooth. The expected growith over a 30 year period is $e^{.10 \cdot 30} \approx 20$ or 20 times the initial investment amount, and the expected doubling rate is $\frac{\log(2)}{.10} \approx 7$ years. 
-	
+
+
+	##### Mixture Model
 	
 	One challenge in using GBM is setting the values of parameters $\mu$ and $\sigma$. The values depend primarily on two factors: the composition of your portfolio, and economic factors outside of your control. Historically, the S&P 500 has grown at rate of approximately $10\%$ per year on average. However, historical performance is not a guartee of future performance. Setting $\mu$ to $.09$ might be reasonable. However, setting $\mu$ to $.11$ might be reasonable too. We can use a similar line of reasoning for our choice of the volitlity parameter $\sigma$. 
 	
 	The best way to manage uncertainty in the values of $\mu$ and $\sigma$ is to draw a random value from a distribution on each simulation. Below, I will use a normal (bell-shaped) distribution for $\mu$ and a truncated normal distribution (forced to be positive) for $\sigma$. The normal distribution has two parameters: mean and standard deviation. The mean is the arithmetic average, and the standard deviation is a measure of the width or variability of the distribution. Approximately 70% of values will be between the mean plus or minus the standard deviation, and approximately 95% of values will be between the mean plus or minus 2 times the standard deviation. 
+
+	###### Stock Market
 	
 	For the stock market, we have:
 	
@@ -728,14 +733,16 @@ text = md"""
 	$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
 	
 	The mean or average for $\mu$ is $\mu_{\alpha}$ will be varied in the simulations below because it is one of the most important determinants of financial performance, and plotted on the y-axis of the plots below. 
+
+	###### Inflation
 	
-	For inflation, I assume the following:
+	For inflation, the model assumes the following:
 	
 	$\mu \sim \mathrm{Normal}(.035, .005)$
 	
 	$\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
 	
-	Compared the tstock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
+	Compared to the stock market, inflation typically grows at a slower rate and with less volitility. This is reflected in the parameters I selected. The federal reserve targets a rate of about 2%, and during the past 30 years the rate has typically been between 2% and 4%. The value above of 3.5% is somewhat pessimistic. 
 	"""
 	details(text; summary = "Additional Information")
 end
@@ -764,7 +771,9 @@ text = md"""
 	- Max: the naximum growth rate considered 
 	- Step: the increment between successive growth rates
 	
-	#### Additional Information
+	##### Additional Information
+
+	###### Selecting Values
 	
 	Low, moderate, and high sustained growth rates are defined below as a point of reference.
 
@@ -774,6 +783,16 @@ text = md"""
 
 	Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
 
+	###### Model Details
+	
+	The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, we have:
+	
+	$\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+	
+	$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+	
+
+	As an example, consider the case in which $\mu_{\alpha} = .075$ and $\sigma_{\alpha} = .01$, then approximately 95% of sampled values will be $\mu = .075 \pm 2 \cdot .01$. 
 	
 	!!! warning "Warning"
 		Selecting a large number of growth rates will increase the simulation run time.
@@ -783,62 +802,63 @@ end
 
 # ╔═╡ 86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 let
-    text = md"""
+	text = md"""
+	
+	Inflation---the general increase in prices---is important to consider because it decreases purchasing power and therefore the *real* growth of your investments. 
+	
+	- Rate: the average growth rate of inflation across simulations. See details below.
+	
+	##### Additional Information
+	
+	###### Selecting a Value
+	
+	During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The stress tests reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices.
+	
+	###### Model Details
+	
+	The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, we have:
+	
+	$\mu \sim \mathrm{Normal}(\mu_{\alpha}, .005)$
+	
+	$\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
 
-    Inflation---the general increase in prices---is important to consider because it can eat into the growth of your investments. During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The simulations reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices. You may enter a different value in the field below.
-
-    In the simulations, the values for parameters $\mu$ and $\sigma$ are sample from distributions to reflect uncertainty in their actual values. For example, with the default inflation rate, the sampled rate has a mean of .035, with a standard deviation of .005, meaning approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. Click the to expand and show more details.  
-
-
-
-    """
-    details(text; summary = "Additional Information")
+	As an example, consider the case in which $\mu_{\alpha} = .035$ and $\sigma_{\alpha} = .005$, then approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. 
+	
+	"""
+	details(text; summary = "Additional Information")
 end
 
 # ╔═╡ a083653f-e469-420c-aa16-267ac9449ea7
 let
 text = md"""
 
-	Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
+	The time point parameters specify the times at which the stress test results are displayed in the columns of the plots below.  
 	
-	- Min: the minimum growth rate considered
-	- Max: the naximum growth rate considered 
-	- Step: the increment between successive growth rates
+	- Min: the minimum time point considered
+	- Max: the naximum time point considered 
+	- Step: the increment between successive time points
 	
-	#### Additional Information
-	
-	Low, moderate, and high sustained growth rates are defined below as a point of reference.
-
-	-  $\mu \approx .05$: low sustained growth
-	-  $\mu \approx .075$: moderate sustained growth
-	-  $\mu \approx .10$: high sustained sustained growth close to the historical average of S&P 500.
-
-	Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
-
-	
-	!!! warning "Warning"
-		Selecting a large number of growth rates will increase the simulation run time.
 	"""
 	details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
-let
-    text = md"""
-
-    Note: that the simulations may run for a few minutes if the number of repetitions and conditions is large.
-
-    Pro tip: uncheck the box for *run simulation* to prevent the simulation from repeatedly restarting while editing the parameters.
-
-    """
-    details(text; summary = "Additional Information")
-end
+	let
+		text = md"""
+		
+		Note: that the simulations may run for a few minutes if the number of repetitions and conditions is large.
+		
+		!!! tip "tip"
+			Uncheck the box for *run simulation* to prevent the simulation from repeatedly restarting while editing the parameters.		
+		"""
+		details(text; summary = "Additional Information")
+	end
 
 # ╔═╡ 65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 let
 	text = md"""
 
-	Survival probability is defined as
+	Surival probability is the relative frequency of simulations in which the portfolio investment is greater than zero. Formally, it is defined as
 	
 	$\Pr(V > 0) = \frac{1}{n}\sum_{i=1}^n x_i,$
 	
@@ -848,25 +868,13 @@ let
 	1 \text{ if } v_i > 0,\\
 	0 \text{ otherwise}
 	\end{cases}$
+
+	Surivival probability is computed for each time point, each retirement age, each minimum withdraw amount, and each growth rate, but the indices for those conditions are supressed in $x_i$ for berivity. 
 	
 	##### Interpreting Contour Plots
 	
-	Each contour plot below illustrates how survival probability is affected by retirement age and minimum withdraw amount. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. Here is how we expect the variables to affect survival probability:
-	
-	- increasing the minimum withdraw will decrease survival probability once the withdraw rate exceeds the growth rate of the portfolio.
-	- increasing retirement age will increase survival probability as a result of increased investment contributions, increased growth time, and decreased time withdrawing from investments
-	
-	One way to interpret the contour plots is to examine the slope of the contour lines: vertical lines indicate retirement age is the only factor affecting survival probability, horizontal lines indicate minimum withdraw is the only factor affecting survival probability, and slanted lines indicate both variables contribute to survival probability. 
-	
-	Although retirement age and minimum withdraw amount affect survival probability, other factors affect survival as well. In the plot below, we will also examine averge growth rate of the portfolio and age. All other things being equal, surivival probability will increase with growth rate. In addition,  examining these variables at different ages or time points is important because their effects might be delayed.  
-	
-	
-	
-	
-	##### Plots
-	
-	The results will be summarized in three grids of contour plots. Contour plots allow you to look at the effect of two variables on an outcome variable. The two variables are plotted on the x-and y-axes, and the outcome variable (e.g., portfolio survival probability) is plotted as a color gradient. All grids of contour plots have the same dimensions:
-	
+	Each contour plot below illustrates how survival probability is affected by retirement age represented along the x-axis and minimum withdraw amount along the y-axis. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. The effect of growth rate and time can be included arranging mutiple contour plots in a matrix where rows correspond to growth rate and columns correspond to time. The dimensions are summarized as follows:
+
 	- x-axis: age of retirement
 	- y-axis: minimum monthly withdraw amount 
 	- outcome variable: the outcome variable for each plot is color coded as green for *good* or *preferred* and red for *bad* or *less preferred*. 
@@ -874,8 +882,7 @@ let
 	- grid column: the contour plots within each column correspond to results are different ages: ages 70, 75, 80, and 85
 	
 	
-	The first outcome variabile is the survival probability of the investment portfolio. This is defined as the relative frequncy of simulations (out of 1,000) in which the portfolio has more than zero dollars at the specified time point. The second outcome is the mean total income, which combines investment withdraws, and social security averaged across the 1,000 repetitions per condition. 
-	
+	One way to interpret the contour plots is to examine the slope of the contour lines: vertical lines indicate retirement age is the only factor affecting survival probability, horizontal lines indicate minimum withdraw is the only factor affecting survival probability, and slanted lines indicate both variables contribute to survival probability (or mean total income). 	
 	"""
 
 details(text; summary = "Show Details")
@@ -923,7 +930,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.5.2"
+RetirementPlanners = "~0.5.3"
 StatsPlots = "~0.15.7"
 """
 
@@ -933,7 +940,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "1263647b269cdfa23735aaba8a776eff8bd20cd9"
+project_hash = "43e6699c1f7ed1cbf1affbef95fee1b3b190d6fa"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2007,9 +2014,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "5b89123dd717d8bc78363beda9a4d4f38d0c0873"
+git-tree-sha1 = "962e97c59c8ad88fe65b80574b8d2b890a05e2af"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.5.2"
+version = "0.5.3"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2650,7 +2657,7 @@ version = "1.4.1+1"
 # ╟─c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
 # ╟─74e56805-8f9c-485f-89da-0392dcb44da3
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
-# ╠═6637f8ea-a336-46d4-8a2e-4bc0e88de392
+# ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
 # ╟─8486baa8-1572-11ef-3bf6-115dd34a73b1
 # ╟─a71ae122-24d4-45d8-9880-4730307aa4b6
 # ╟─a44775f9-c5b3-4eb6-beaf-ac5dac7c73e7

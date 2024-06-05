@@ -130,17 +130,17 @@ Returns the time steps used in the simulation.
 
 - `model::AbstractModel`: an abstract Model object 
 """
-function get_times(model::AbstractModel)
-    (; log_start_age, start_age, Δt, duration) = model
-    Δ = start_age == log_start_age ? Δt : 0
-    return (log_start_age + Δ):Δt:(start_age + duration)
-end
+get_times(model::AbstractModel) = model.log_times
+
 
 function get_all_times(model::AbstractModel)
-    (; start_age, Δt, duration) = model
-    return (start_age + Δt):Δt:(start_age + duration)
+    (;start_age, Δt, duration) = model
+    return get_all_times(start_age, Δt, duration)
 end
 
+function get_all_times(start_age, Δt, duration)
+    return (start_age + Δt):Δt:(start_age + duration)
+end
 """
     reset!(model::AbstractModel)
 

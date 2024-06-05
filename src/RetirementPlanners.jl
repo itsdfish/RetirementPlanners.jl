@@ -41,6 +41,7 @@ export VarGBM
 
 export can_transact
 export fit
+export get_all_times
 export get_times
 export grid_search
 export increment!

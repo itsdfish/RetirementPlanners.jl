@@ -14,9 +14,10 @@ Logs the following information on each time step of each simulation repetition:
 - `logger`: a logger object
 """
 function default_log!(model::AbstractModel, logger, rep, t; _...)
-    t < model.log_start_age ? (return nothing) : nothing
     state = model.state
     idx = state.log_idx
+    log_times = model.log_times
+    (idx ≤ length(log_times)) && (t ≈ model.log_times[idx]) ? nothing : (return nothing)
     logger.net_worth[idx, rep] = state.net_worth
     logger.interest[idx, rep] = state.interest_rate
     logger.inflation[idx, rep] = state.inflation_rate
