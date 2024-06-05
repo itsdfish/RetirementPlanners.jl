@@ -260,7 +260,6 @@ let
 
         # configuration options
         config = (;
-			log_start_age = retirement_age_range[1],
             # time step in years 
             Δt = 1 / 12,
             # start age of simulation 
@@ -317,7 +316,7 @@ let
             )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
-		#filter!(x -> x.time ≥ age_range[1], df)
+		filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
@@ -461,7 +460,6 @@ let
 
         # configuration options
         config = (;
-			log_start_age = retirement_age_range[1],
             # time step in years 
             Δt = 1 / 12,
             # start age of simulation 
@@ -523,7 +521,7 @@ let
                 )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
-		#filter!(x -> x.time ≥ age_range[1], df)
+		filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
@@ -923,7 +921,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.5.2"
+RetirementPlanners = "~0.5.1"
 StatsPlots = "~0.15.7"
 """
 
@@ -933,7 +931,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "1263647b269cdfa23735aaba8a776eff8bd20cd9"
+project_hash = "a2ce0dad908c67a429a613115adda5ca364acf99"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2007,9 +2005,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "5b89123dd717d8bc78363beda9a4d4f38d0c0873"
+git-tree-sha1 = "6e128965fafba2a174d0e3837c2fd15fde87f58e"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.5.2"
+version = "0.5.1"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2650,8 +2648,8 @@ version = "1.4.1+1"
 # ╟─c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
 # ╟─74e56805-8f9c-485f-89da-0392dcb44da3
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
-# ╠═6637f8ea-a336-46d4-8a2e-4bc0e88de392
-# ╟─8486baa8-1572-11ef-3bf6-115dd34a73b1
+# ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
+# ╠═8486baa8-1572-11ef-3bf6-115dd34a73b1
 # ╟─a71ae122-24d4-45d8-9880-4730307aa4b6
 # ╟─a44775f9-c5b3-4eb6-beaf-ac5dac7c73e7
 # ╟─00000000-0000-0000-0000-000000000001
