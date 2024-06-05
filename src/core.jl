@@ -18,7 +18,7 @@ end
 
 function simulate_once!(model::AbstractModel, logger::AbstractLogger, rep)
     reset!(model)
-    for t ∈ get_all_times(model) 
+    for t ∈ get_all_times(model)
         update!(model, logger, rep, t)
     end
     return nothing
@@ -132,9 +132,8 @@ Returns the time steps used in the simulation.
 """
 get_times(model::AbstractModel) = model.log_times
 
-
 function get_all_times(model::AbstractModel)
-    (;start_age, Δt, duration) = model
+    (; start_age, Δt, duration) = model
     return get_all_times(start_age, Δt, duration)
 end
 

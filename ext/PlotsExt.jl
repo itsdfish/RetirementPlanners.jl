@@ -324,7 +324,7 @@ function to_dataframe(model::AbstractModel, data::Tuple)
     end
     for k ∈ data[1]
         col_name = make_unique_name(k[1])
-        df[!, col_name] .= k[2]
+        df[!, col_name] .= length(k[2]) == 0 ? k[2] : [k[2]]
     end
     return df
 end

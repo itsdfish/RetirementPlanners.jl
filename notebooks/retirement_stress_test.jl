@@ -36,33 +36,17 @@ begin
     			max-width: 2000px;
         		padding-left: max(283px, 10%);
         		padding-right: max(383px, 10%); 
-                # 383px to accomodate TableOfContents(aside=true)
+                #383px to accomodate TableOfContents(aside=true)
     		}
     	}
     </style>
     """
 end
 
-# ╔═╡ 704efc7c-ff4a-45d8-ae7a-c1078edeab1c
-md"
-
-# Overview
-
-The purpose of this notebook is to stress test your retirement plan under a wide range of conditions to identify potential points of failure. Based on your goals and risk tolerance, the results of the stress test can help you decide when to retire and whether you should make adjustments to your plan. 
-
-This notebook features two stress tests. Both examine three important factors across time: (1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. The first stress test varies these factors and displays *portfolio surival probability* and *mean total income* as a set of contour plots. The second stress test varies the same three factors, but inserts a recession at the beginning of retirement to examine squence-of-returns risk. 
-
-# Instructions
-
-In the section *Common Design Parameters*, enter your information into the fields to customize the stress test to your circumstances. Additional details can be found by clicking on the $\blacktriangleright$ icon below each panel. After entering your information, check the box in the *Run Simulation* section to run the stress test. Once the simulation has completed, the results are plotted in the *results* subsection for Stress Test 1 and Stress Test 2. 
-"
-
-# ╔═╡ 284b603b-8e88-448b-b31a-ca0e2712054e
-md"
-# Common Design Parameters
-
-In this section, you can modify the common design parameters used in both simulations to reflect your unique situation. Once you have entered the desired design parameters, move the slider in the *Run Simulation* subsection to the right to run the simulation. Move it back to the left to prevent the simulation from automatically running each time you change a parameter. 
-"
+# ╔═╡ cd96a4a8-faf8-4a4c-a6bd-2a84ca684597
+md"""
+# Configuration
+"""
 
 # ╔═╡ 3f24d444-8eff-4957-9260-af2d4f2c5583
 md"
@@ -75,8 +59,63 @@ md"
     start_amount = ("Initial Value", NumberField(0:1e7, default = 10_000))
     start_age = ("Start Age", NumberField(0:120, default = 27))
     end_age = ("End age", NumberField(0:120, default = 85))
-    n_reps = ("Repetitions", NumberField(50:10_000, default = 100))
+    n_reps = ("Repetitions", NumberField(50:10_000, default = 200))
     seed = ("Seed", NumberField(0:100000000, default = rand(1:1000000)))
+end
+
+# ╔═╡ 142a098f-aa0c-4b20-be35-59024367b16e
+md"""
+## Time Points
+"""
+
+# ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
+@bind time_points PlutoExtras.@NTBond "Time Points" begin
+    min = (@htl("Min"), NumberField(1:100, default = 70))
+    max = (@htl("Max"), NumberField(1:100, default = 85))
+    step = (@htl("Step"), NumberField(1:100, default = 5))
+end
+
+# ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
+md"""
+
+## Investment Schedule
+
+"""
+
+# ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
+@bind primary_investment PlutoExtras.@NTBond "Contribution Amount" begin
+    mean = (@htl("Mean"), NumberField(0:10_000, default = 625))
+    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 150))
+end
+
+# ╔═╡ 0a671048-d73a-498b-a530-56e01026ad73
+@bind supplemental_investment1 PlutoExtras.@NTBond "Supplemental Contribution" begin
+    mean = (@htl("Mean"), NumberField(0:10_000, default = 0))
+    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 0))
+	start_age = (@htl("Start Age"), NumberField(0:120, default = 0))
+end_age = (@htl("End Age"), NumberField(0:120, default = 0))
+end
+
+# ╔═╡ 6ab60779-eadd-4624-a8e5-206d153d0b43
+@bind supplemental_investment2 PlutoExtras.@NTBond "Supplemental Contribution" begin
+    mean = (@htl("Mean"), NumberField(0:10_000, default = 0))
+    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 0))
+	start_age = (@htl("Start Age"), NumberField(0:120, default = 0))
+end_age = (@htl("End Age"), NumberField(0:120, default = 0))
+end
+
+# ╔═╡ 2bf35243-4a89-45a1-b562-f4854c350455
+md"""
+## Retirement Age
+
+ 
+"""
+
+# ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
+@bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
+    min = (@htl("Min"), NumberField(20:90, default = 55))
+    max = (@htl("Max"), NumberField(20:90, default = 65))
+    step = (@htl("Step"), NumberField(1:10, default = 2))
 end
 
 # ╔═╡ 32dbc935-ee1c-453d-b5f9-81cb9264b62e
@@ -107,33 +146,6 @@ end
     end_age = (@htl("End Age"), NumberField(0:90, default = 0))
     amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
-end
-
-# ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
-md"""
-
-## Investing
-
-"""
-
-# ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
-@bind contributions PlutoExtras.@NTBond "Contribution Amount" begin
-    mean = (@htl("Mean"), NumberField(0:10_000, default = 625))
-    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 150))
-end
-
-# ╔═╡ 2bf35243-4a89-45a1-b562-f4854c350455
-md"""
-## Retirement Age
-
- 
-"""
-
-# ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
-@bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
-    min = (@htl("Min"), NumberField(20:90, default = 55))
-    max = (@htl("Max"), NumberField(20:90, default = 65))
-    step = (@htl("Step"), NumberField(1:10, default = 2))
 end
 
 # ╔═╡ 2b9e3b46-18f1-4d00-8a40-cb99e8bd1691
@@ -192,16 +204,15 @@ md"""
     rate = (@htl("Rate"), NumberField(-2:1e-5:2, default = 0.035))
 end
 
-# ╔═╡ 142a098f-aa0c-4b20-be35-59024367b16e
+# ╔═╡ 42ac4169-ec26-4882-aa64-aeed3e609ce0
 md"""
-## Time Points
+### Recession
 """
 
-# ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
-@bind time_points PlutoExtras.@NTBond "Time Points" begin
-    min = (@htl("Min"), NumberField(1:100, default = 70))
-    max = (@htl("Max"), NumberField(1:100, default = 85))
-    step = (@htl("Step"), NumberField(1:100, default = 5))
+# ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
+@bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
+    rate = (@htl("Growth Rate"), NumberField(-2:1e-5:0, default = -0.05))
+    duration = (@htl("Duration (years)"), NumberField(0:1e-3:30, default = 3))
 end
 
 # ╔═╡ 29008274-3a15-4283-98fb-7a9a10bd4a2a
@@ -236,13 +247,25 @@ let
             v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
         ]
 
-        investments = [
-            Transaction(;
-                start_age = global_parms.start_age,
-                end_age = a,
-                amount = Normal(contributions.mean, contributions.std)
-            ) for a ∈ retirement_age_range
-        ]
+		investments = [
+		    (
+		        Transaction(;
+		            start_age = global_parms.start_age,
+		            end_age = a,
+		            amount = Normal(primary_investment.mean, primary_investment.std)
+		        ),
+		        Transaction(;
+		            start_age = supplemental_investment1.start_age,
+		            end_age = supplemental_investment1.end_age,
+		            amount = Normal(supplemental_investment1.mean, supplemental_investment1.std)
+		        ),
+		        Transaction(;
+		            start_age = supplemental_investment2.start_age,
+		            end_age = supplemental_investment2.end_age,
+		            amount = Normal(supplemental_investment2.mean, supplemental_investment2.std)
+		        )
+		    ) for a ∈ retirement_age_range
+		]
 
         gbm = map(
             αμ -> VarGBM(;
@@ -260,7 +283,7 @@ let
 
         # configuration options
         config = (;
-			log_start_age = retirement_age_range[1],
+			log_times = age_range,
             # time step in years 
             Δt = 1 / 12,
             # start age of simulation 
@@ -313,7 +336,7 @@ let
         yoked_values =
             [Pair(
                 (:kw_withdraw, :withdraws, :start_age),
-                (:kw_invest, :investments, :end_age)
+                (:kw_invest, :investments, 1, :end_age)
             )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
@@ -340,7 +363,7 @@ let
             clims = (0, 1),
             colorbar_title = "Survival Probability",
             age = age_range,
-            size = (1200, 600)
+			size = (1100, 500)
         )
 
         global mean_income_plots1 = plot_sensitivity(
@@ -354,7 +377,7 @@ let
             colorbar_title = "Mean Total Income",
             clims = clims,
             age = age_range,
-            size = (1200, 600)
+			size = (1100, 500)
         )
     end
     nothing
@@ -363,30 +386,18 @@ end
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
 md"
 # Stress Test 1
-
-Stress Test 1 establishes a baseline using the parameters explained in the section *Common Design Parameters*.
-
-
 "
 
 # ╔═╡ b881055c-09ee-4869-8e36-5bf069d6bc23
 md"""
-
-## Portfolio Survival 
-
-
-One important metric for assessing the robustness of a retirement plan is the survival probability of the investment portfolio. The survival probability is defined as the relative frequency of simulations in which the value of the portfolio is greater than zero. A detailed definition is given below. 
-
-
-
-
+## Portfolio Survival
 """
 
 # ╔═╡ 44c12623-53b5-4e4a-bd57-786fe6906191
 # ╠═╡ show_logs = false
 run_simulation.run ? survival_plots1 : nothing
 
-# ╔═╡ 55206902-2e16-4ba2-b4a7-15a2badcbd99
+# ╔═╡ 86349e14-31b8-439b-bde1-8659d02eefac
 md"
 ### Mean Total Income
 "
@@ -397,19 +408,8 @@ run_simulation.run ? mean_income_plots1 : nothing
 
 # ╔═╡ d5f52a46-8c0b-462a-82b7-23288c012636
 md"
-
-# Stress Test 2
-
-The purpose of stress test 2 is to investigate sequential risk of return. What this means is that, all other things being equal, the timing of recessions have a significant impact the performance of the investments. 
-
-
+# Stress Test 2: Sequence-of-Return Risk
 "
-
-# ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
-@bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
-    rate = (@htl("Growth Rate"), NumberField(-2:1e-5:0, default = -0.05))
-    duration = (@htl("Duration (years)"), NumberField(0:1e-3:30, default = 3))
-end
 
 # ╔═╡ 2358348e-6b30-4a1d-ab8c-83d6945e79c5
 # ╠═╡ show_logs = false
@@ -431,13 +431,25 @@ let
             v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
         ]
 
-        investments = [
-            Transaction(;
-                start_age = global_parms.start_age,
-                end_age = a,
-                amount = Normal(contributions.mean, contributions.std)
-            ) for a ∈ retirement_age_range
-        ]
+		investments = [
+		    (
+		        Transaction(;
+		            start_age = global_parms.start_age,
+		            end_age = a,
+		            amount = Normal(primary_investment.mean, primary_investment.std)
+		        ),
+		        Transaction(;
+		            start_age = supplemental_investment1.start_age,
+		            end_age = supplemental_investment1.end_age,
+		            amount = Normal(supplemental_investment1.mean, supplemental_investment1.std)
+		        ),
+		        Transaction(;
+		            start_age = supplemental_investment2.start_age,
+		            end_age = supplemental_investment2.end_age,
+		            amount = Normal(supplemental_investment2.mean, supplemental_investment2.std)
+		        )
+		    ) for a ∈ retirement_age_range
+		]
 
         gbm = map(
             αμ -> VarGBM(;
@@ -460,7 +472,7 @@ let
 
         # configuration options
         config = (;
-			log_start_age = retirement_age_range[1],
+			log_times = age_range,
             # time step in years 
             Δt = 1 / 12,
             # start age of simulation 
@@ -522,7 +534,6 @@ let
                 )]
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
-		#filter!(x -> x.time ≥ age_range[1], df)
         df.survived = df.net_worth .> 0
         df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
@@ -538,8 +549,8 @@ let
             ylabel = "Min Withdraw",
             clims = (0, 1),
             colorbar_title = "Survival Probability",
-            age = 70:5:85,
-            size = (1200, 600)
+            age = age_range,
+			size = (1100, 500)
         )
 
         global mean_income_plots2 = plot_sensitivity(
@@ -553,7 +564,7 @@ let
             colorbar_title = "Mean Total Income",
             clims,
             age = age_range,
-            size = (1200, 600)
+			size = (1100, 500)
         )
     end
 	nothing
@@ -596,12 +607,24 @@ end
 
 # ╔═╡ aaab4ae6-9775-48c3-b3b9-9b4566d3ef91
 let
-    text = md"""
-
-    A few miscellenous notes: You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. In fact, the number of simulations in one stress test is 3.7 million with the default settings below. Setting the number of reps to 100 is useful for quick exploration, but 1,000 generates plots with higher fidelity. Although the stress test configuration below will meet the needs for most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
-
-    """
-    details(text; summary = "Additional Information")
+	text = md"""
+	###### Overview
+	
+	The purpose of this notebook is to stress test your retirement plan under a wide range of conditions, allowing you to identify potential points of failure. Based on your goals and risk tolerance, the results of the stress test can help you decide when to retire and whether you should make adjustments to your plan. 
+	
+	This notebook features two stress tests. Both examine three important factors across time: (1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. The first stress test varies these factors and displays *portfolio surival probability* and *mean total income* as a set of contour plots. The second stress test varies the same three factors, but inserts a recession at the beginning of retirement to examine squence-of-returns risk. 
+	
+	###### Instructions
+	
+	1. Complete each section by entering your information into the fields. Additional details can be found by clicking on the $\blacktriangleright$ icon below each panel. 
+	2. Go to the section titled *Run* and check the box to run the stress test. Depending on the number of conditions you specify, the results may take a few moments to generate. 
+	3. After the stress test completes, the results will populate a matrix of contour plots in the sections titled *Stress Test1* and *Stress Test 2*.
+	
+	##### Miscellaneous  Information
+	You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. In fact, the number of simulations in one stress test is 3.7 million with the default settings below. Setting the number of reps to 100 is useful for quick exploration, but 1,000 generates plots with higher fidelity. Although the stress test configuration below will meet the needs for most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
+	
+	"""
+	details(text; summary = "Overview and Instructions")
 end
 
 # ╔═╡ 6e8320a8-920b-4384-b3be-62682aec0e57
@@ -613,7 +636,7 @@ let
 	
 	* End Age: your age at the end of the simulation. 
 	
-	* Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. A value of 100 is sufficient for initial exploration. A value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
+	* Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. Using a value of 200 is sufficient for initial exploration. Using a value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
 	
 	* Initial Value: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
 	* Seed: initializes the random number generator in a specified state. Setting the seed to a specific value will result in a reproducible random set of on each run. By default, the seed is selected at random. You may input
@@ -626,21 +649,19 @@ let
 	details(text; summary = "Additional Information")
 end
 
-# ╔═╡ 8f97756b-7830-4c11-9d7a-fa5f373235ba
+# ╔═╡ a083653f-e469-420c-aa16-267ac9449ea7
 let
 text = md"""
-	You can specify up to three income sources with different amounts, start ages, and end ages. Leave the values at zero if the 	income source does not apply to you.
+
+	In the plots below, the time points specify snapshots in time of your retirement plan's performance. The time points correspond to the column of the matrix of contour plots.  
 	
-	* Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+	- Min: the minimum time point considered
+	- Max: the naximum time point considered 
+	- Step: the increment between successive time points
+
+	!!! warning "Warning"
+	    Selecting a large number of time points will increase the simulation run time. Four to five time points is recommended.
 	
-	* End Age: your age in years at which the simulation ends. 
-	
-	* Amount: the amount you expect to receive on a monthly basis. 
-	
-	* Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in 		value with inflation.
-	
-	##### Additional Information
-	The start age for social security ranges from 62 to 70, and benefits increase with start age. Cost of living adjustment is unchecked for pensions because most do not have a cost of living adjustment.
 	"""
 	details(text; summary = "Additional Information")
 end
@@ -664,16 +685,35 @@ end
 # ╔═╡ 5e027840-c886-409f-bda2-01a232212b88
 let
 	text = md"""
-	The stress tests vary retirement age to determine whether your retirement plan breaks down at any point. Retirement age is an important determinant of portfolio survival probability and monthly income because it delays withdraws while taking advantage of growth potential and investment contributions. 
+	Both stress tests vary retirement age to determine whether your retirement plan breaks down at any point. Retirement age is an important determinant of portfolio survival probability and monthly income because it delays withdraws while taking advantage of growth potential and investment contributions. 
 	
 	- Min: the minimum retirement age considered 
 	- Max: the maximum retirement age considered
 	- Step: the increment between successive retirement ages
 	
 	!!! warning "Warning"
-	    Selecting a large number of retirement ages will increase the simulation run time.
+	    Selecting a large number of retirement ages will increase the simulation run time. Typically, A range of approximately 5 retirement ages strikes the right balance between speed and informativeness.
 	
-	In many cases, specifying a range of approximately 5 retirement ages strikes a balance between speed and informativeness.
+	
+	"""
+	details(text; summary = "Additional Information")
+end
+
+# ╔═╡ 8f97756b-7830-4c11-9d7a-fa5f373235ba
+let
+text = md"""
+	You can specify up to three income sources with different amounts, start ages, and end ages. Leave the values at zero if the 	income source does not apply to you.
+	
+	* Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+	
+	* End Age: your age in years at the simulation ends. 
+	
+	* Amount: the amount you expect to receive on a monthly basis. 
+	
+	* Cost of Living Adjustment: if checked, the amount increases with inflation. Otherwise, the specified amount decreases in 		value with inflation.
+	
+	##### Additional Information
+	The start age for social security ranges from 62 to 70, and benefits increase with start age. Cost of living adjustment is unchecked for pensions because most do not have a cost of living adjustment.
 	"""
 	details(text; summary = "Additional Information")
 end
@@ -681,23 +721,23 @@ end
 # ╔═╡ 9800fe86-71b2-4c64-8151-6e05bb0a83b2
 let
 	text = md"""
-	The stress tests vary the monthly withdraw amount to determine whether your retirement plan breaks down at any point. Monthly withdraw amount is an important determinant of portfolio survival probability and monthly income because it determines how quickly your investments grow or deplete during retirement. 
+	The stress tests vary the monthly withdraw amount to determine whether your retirement plan breaks down at any point. Monthly withdraw amount is an important determinant of portfolio survival probability and monthly total income because it determines how quickly your investments grow or deplete during retirement. 
 
-	The following values correspond to the range of minimum monthly withdraw amount:
+	The following parameters correspond to the range of minimum monthly withdraw amount:
 	
 	- Min: the smallest minimum withdraw amount considered 
 	- Max: the largest minimum withdraw amount considered 
 	- Step: the increment between successive minimum withdraw amounts
 
-	The following module the minimum withdraw amount. 
+	The following parameters modulate the withdraw amount. 
 	
 	- Income Adjustment: a number ranging between 0 and 1, which determines how much of other income sources (e.g., social security, pension, etc.) are subtracted from your investment withdraw amount. For example, setting this parameter is set to zero means no adjustment is made: total income is investment withdraw + Social Security + Pension + Supplemental Income. 
-	- Percent of Real Growth: a number between 0 and 1 representing real (inflation adjusted growth), which is multipled by the current monthly investment return. If this number is greater than the minimum withdraw amount, it is select. Otherwise the minimum withdraw amount is selected.
+	- Percent of Real Growth: a number between 0 and 1 representing real (i.e., inflation adjusted) growth, which is multipled by the investment return of the current month. If this number is greater than the minimum withdraw amount, it is selected. Otherwise the minimum withdraw amount is selected.
 	- volitility: a number between 0 and 1 which controls the standard deviation of the withdraw amount. This allows you to withdraw more than minimum withdraw amount subject to the constraint that the amount withdrawn cannot be less than the target minimum withdraw amount. The standard deviation scales with withdraw amount: standard deviation = volitlity $\times$ mean withdraw amount. Typical values range between 0 and .10. 
 
-	##### Additional Information
+	##### Overview of Withdraw Strategy.
 
-	
+	The withdraw strategy assumes there is a bare minimum amount needed to sustain one's lifestyle. The minimum amount will be withdrawn unless there are insufficient funds, in which case the non-zero amount in the investment prortfolio will be withdrawn. However, the amount withdrawn can exceed the minimum if growth investments exceeds a specified threshold determined by the parameter *percent of real growth*. 
 	
 	!!! warning "Warning"
 	    Selecting a large number of withdraw amounts increase the simulation run time.
@@ -828,18 +868,22 @@ let
 	details(text; summary = "Additional Information")
 end
 
-# ╔═╡ a083653f-e469-420c-aa16-267ac9449ea7
+# ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
 let
-text = md"""
+    text = md"""
 
-	The time point parameters specify the times at which the stress test results are displayed in the columns of the plots below.  
-	
-	- Min: the minimum time point considered
-	- Max: the naximum time point considered 
-	- Step: the increment between successive time points
-	
-	"""
-	details(text; summary = "Additional Information")
+    The worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. 
+
+    In this simulation, I will introduce a recession during the first three years of retirement. The other parameters of the simulation are otherwise the same. The GBM model for the recession is stimilar to the one described above, except the mean growth rate is -5%:
+
+    $\mu \sim \mathrm{Normal}(-.05, .01)$
+
+    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+
+    Note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below may include multiple recessions. 
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
@@ -848,7 +892,7 @@ end
 		
 		Note: that the simulations may run for a few minutes if the number of repetitions and conditions is large.
 		
-		!!! tip "tip"
+		!!! tip "Tip"
 			Uncheck the box for *run simulation* to prevent the simulation from repeatedly restarting while editing the parameters.		
 		"""
 		details(text; summary = "Additional Information")
@@ -888,24 +932,6 @@ let
 details(text; summary = "Show Details")
 end
 
-# ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
-let
-    text = md"""
-
-    The worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. 
-
-    In this simulation, I will introduce a recession during the first three years of retirement. The other parameters of the simulation are otherwise the same. The GBM model for the recession is stimilar to the one described above, except the mean growth rate is -5%:
-
-    $\mu \sim \mathrm{Normal}(-.05, .01)$
-
-    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-
-    Note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below may include multiple recessions. 
-
-    """
-    details(text; summary = "Definitions")
-end
-
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -930,7 +956,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.5.3"
+RetirementPlanners = "~0.6.0"
 StatsPlots = "~0.15.7"
 """
 
@@ -938,9 +964,9 @@ StatsPlots = "~0.15.7"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "43e6699c1f7ed1cbf1affbef95fee1b3b190d6fa"
+project_hash = "71e305864a75d406049ebad8de84abd5ce1375c2"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2014,9 +2040,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "962e97c59c8ad88fe65b80574b8d2b890a05e2af"
+git-tree-sha1 = "03f49f59ef97313aba626bbd7e15320265dacb0b"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.5.3"
+version = "0.6.0"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2608,23 +2634,27 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
-# ╟─704efc7c-ff4a-45d8-ae7a-c1078edeab1c
+# ╟─cd96a4a8-faf8-4a4c-a6bd-2a84ca684597
 # ╟─aaab4ae6-9775-48c3-b3b9-9b4566d3ef91
-# ╟─284b603b-8e88-448b-b31a-ca0e2712054e
 # ╟─3f24d444-8eff-4957-9260-af2d4f2c5583
 # ╟─8a873dad-7c41-4cba-b430-506e57ed0eb2
 # ╟─6e8320a8-920b-4384-b3be-62682aec0e57
+# ╟─142a098f-aa0c-4b20-be35-59024367b16e
+# ╟─6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
+# ╟─a083653f-e469-420c-aa16-267ac9449ea7
+# ╟─989a8734-b0c4-4d84-bd52-b44cd1287642
+# ╟─c4398cff-af01-4ad5-a8a4-9af6c5076ab3
+# ╟─0a671048-d73a-498b-a530-56e01026ad73
+# ╟─6ab60779-eadd-4624-a8e5-206d153d0b43
+# ╟─1ffc8dfa-762d-46f2-9b83-46614b6f31bb
+# ╟─2bf35243-4a89-45a1-b562-f4854c350455
+# ╟─4e6823e4-6542-4099-9834-f00b06953258
+# ╟─5e027840-c886-409f-bda2-01a232212b88
 # ╟─32dbc935-ee1c-453d-b5f9-81cb9264b62e
 # ╟─7e7d025a-0f66-4259-b039-2935eb942638
 # ╟─5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 # ╟─52e1ef00-71de-4a97-886d-1276bce74d29
 # ╟─8f97756b-7830-4c11-9d7a-fa5f373235ba
-# ╟─989a8734-b0c4-4d84-bd52-b44cd1287642
-# ╟─c4398cff-af01-4ad5-a8a4-9af6c5076ab3
-# ╟─1ffc8dfa-762d-46f2-9b83-46614b6f31bb
-# ╟─2bf35243-4a89-45a1-b562-f4854c350455
-# ╟─4e6823e4-6542-4099-9834-f00b06953258
-# ╟─5e027840-c886-409f-bda2-01a232212b88
 # ╟─2b9e3b46-18f1-4d00-8a40-cb99e8bd1691
 # ╟─50d919c6-4f86-4e4d-a08d-7f23486ff9ec
 # ╟─40faa877-5477-47f2-a92a-8ddf00528311
@@ -2637,28 +2667,26 @@ version = "1.4.1+1"
 # ╟─989bd0e5-33d5-4974-a044-bd2af180b5e4
 # ╟─cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
 # ╟─86eef8d7-a07e-44e1-8a78-a4d65ed7f474
-# ╟─142a098f-aa0c-4b20-be35-59024367b16e
-# ╟─6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
-# ╟─a083653f-e469-420c-aa16-267ac9449ea7
+# ╟─42ac4169-ec26-4882-aa64-aeed3e609ce0
+# ╟─e437c0c7-f405-4e1f-94fc-79605774a824
+# ╟─f2e6ffca-782f-4c40-ad9b-32615f783f0c
 # ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
 # ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
 # ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
-# ╟─e3ce441b-0da5-4d8d-85ab-1c1f7442501f
+# ╠═e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
 # ╟─65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 # ╟─44c12623-53b5-4e4a-bd57-786fe6906191
-# ╟─55206902-2e16-4ba2-b4a7-15a2badcbd99
+# ╟─86349e14-31b8-439b-bde1-8659d02eefac
 # ╟─61f3bb3f-70e7-4a97-bf83-ee291edd3854
 # ╟─d5f52a46-8c0b-462a-82b7-23288c012636
-# ╟─e437c0c7-f405-4e1f-94fc-79605774a824
 # ╟─2358348e-6b30-4a1d-ab8c-83d6945e79c5
-# ╟─f2e6ffca-782f-4c40-ad9b-32615f783f0c
 # ╟─c7c4dee5-9b6c-4dbe-a8ed-a7c1d1cfc0ba
 # ╟─74e56805-8f9c-485f-89da-0392dcb44da3
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
 # ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
-# ╟─8486baa8-1572-11ef-3bf6-115dd34a73b1
+# ╠═8486baa8-1572-11ef-3bf6-115dd34a73b1
 # ╟─a71ae122-24d4-45d8-9880-4730307aa4b6
 # ╟─a44775f9-c5b3-4eb6-beaf-ac5dac7c73e7
 # ╟─00000000-0000-0000-0000-000000000001

@@ -119,17 +119,16 @@ function matches(config, match_pairs)
     return true
 end
 
-# function get_value(config, k)
-#     println("k $k")
-#     return config[k[1]][k[2]]
-# end
+get_value(data::NamedTuple, k::Symbol) = getproperty(data, k)
+get_value(data::AbstractVector, k::Int) = getindex(data, k)
+get_value(data::AbstractTransaction, k::Symbol) = getfield(data, k)
+get_value(data::Tuple, k::Int) = getindex(data, k)
 
-function get_value(config, k::Tuple)
-    _v = config
-    for i ∈ 1:length(k)
-        _v = getfield(_v, k[i])
+function get_value(data, ks)
+    for k in ks
+        data = get_value(data, k)
     end
-    return return _v
+    return data
 end
 
 function make_nps(config, dependent_values)

@@ -247,6 +247,9 @@ An abstract type for scheduling transactions.
 """
 abstract type AbstractTransaction{T, D} end
 
+import Base: length
+length(::AbstractTransaction) = 0
+
 """
     Transaction{T, D} <: AbstractTransaction{T, D}
 
