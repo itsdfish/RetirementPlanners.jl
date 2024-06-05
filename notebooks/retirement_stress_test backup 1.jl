@@ -83,7 +83,7 @@ md"""
 """
 
 # ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
-@bind primary_investment PlutoExtras.@NTBond "Primary Contribution" begin
+@bind primary_investment PlutoExtras.@NTBond "Contribution Amount" begin
     mean = (@htl("Mean"), NumberField(0:10_000, default = 625))
     std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 150))
 end
@@ -341,7 +341,7 @@ let
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
         df.survived = df.net_worth .> 0
-        df.retirement_age = map(x -> x[1].end_age, df.invest_investments)
+        df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
         df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
 
@@ -526,7 +526,7 @@ let
             [
                 Pair(
                     (:kw_withdraw, :withdraws, :start_age),
-                    (:kw_invest, :investments, 1, :end_age)
+                    (:kw_invest, :investments, :end_age)
                 ),
                 Pair(
                     (:kw_withdraw, :withdraws, :start_age),
@@ -535,7 +535,7 @@ let
         results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
         df = to_dataframe(Model(; config...), results)
         df.survived = df.net_worth .> 0
-        df.retirement_age = map(x -> x[1].end_age, df.invest_investments)
+        df.retirement_age = map(x -> x.end_age, df.invest_investments)
         df.min_withdraw_amount = map(x -> x.amount.min_withdraw, df.withdraw_withdraws)
         df.mean_growth_rate = map(x -> x.αμ, df.market_gbm)
 
@@ -669,17 +669,11 @@ end
 # ╔═╡ 1ffc8dfa-762d-46f2-9b83-46614b6f31bb
 let
 	text = md"""
-	In the *Investment Schedule* panel, you can configure up to three investment schedules. Note that the contributions are made on a monthly basis within the specified time range. The parameters for the contributions are as follows:   
+	Each month, a random amount of money is sampled from a normal (bell-shaped) distribution and transfered to the investment 	portfolio.  
 	
 	* Mean: the arithmatic average contribution
 	
-	* Standard Deviation: controls the width of the distribution
-
-	* Start Age: the age at which the contributions begin
-	
-	##### Contributions
-
-	At the top, the primary contribution represents a job or standard income source. The primary contribution starts at *start age* defined in *Global Parameters* and ends at the specified retirement age. The two supplemental contributions may represent income from rental properties, a side hustle, or an inheritence (configured by setting start age equal to end age). By default, the two supplemental contributions are inactive. In addition, the supplemental income has no constraints on the start and end ages.  
+	* Standard Deviation: controls the width of the distribution. 
 	
 	##### Additional Information
 	
@@ -962,7 +956,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.6.1"
+RetirementPlanners = "~0.6.0"
 StatsPlots = "~0.15.7"
 """
 
@@ -972,7 +966,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "1ca0d5e4e0044bb1d2f6b2a2c73d22be9004a51b"
+project_hash = "71e305864a75d406049ebad8de84abd5ce1375c2"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1772,10 +1766,10 @@ uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2023.1.10"
 
 [[deps.MultivariateStats]]
-deps = ["Arpack", "Distributions", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
-git-tree-sha1 = "816620e3aac93e5b5359e4fdaf23ca4525b00ddf"
+deps = ["Arpack", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
+git-tree-sha1 = "68bf5103e002c44adfd71fea6bd770b3f0586843"
 uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
-version = "0.10.3"
+version = "0.10.2"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -2046,9 +2040,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "a87c1cf741742c64db423cba490e01b6966c24fb"
+git-tree-sha1 = "03f49f59ef97313aba626bbd7e15320265dacb0b"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.1"
+version = "0.6.0"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2679,7 +2673,7 @@ version = "1.4.1+1"
 # ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
 # ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
 # ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
-# ╟─e3ce441b-0da5-4d8d-85ab-1c1f7442501f
+# ╠═e3ce441b-0da5-4d8d-85ab-1c1f7442501f
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
 # ╟─65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
@@ -2692,7 +2686,7 @@ version = "1.4.1+1"
 # ╟─74e56805-8f9c-485f-89da-0392dcb44da3
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
 # ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
-# ╟─8486baa8-1572-11ef-3bf6-115dd34a73b1
+# ╠═8486baa8-1572-11ef-3bf6-115dd34a73b1
 # ╟─a71ae122-24d4-45d8-9880-4730307aa4b6
 # ╟─a44775f9-c5b3-4eb6-beaf-ac5dac7c73e7
 # ╟─00000000-0000-0000-0000-000000000001
