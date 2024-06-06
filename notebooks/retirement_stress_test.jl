@@ -1058,7 +1058,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.6.1"
+RetirementPlanners = "~0.6.2"
 StatsPlots = "~0.15.7"
 """
 
@@ -1068,7 +1068,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "1ca0d5e4e0044bb1d2f6b2a2c73d22be9004a51b"
+project_hash = "ef5c1aaa8afb70be32a6d878c88eef69729376ff"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2142,9 +2142,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "a87c1cf741742c64db423cba490e01b6966c24fb"
+git-tree-sha1 = "b66b904bf5478b2f6df6def6c1b779dfc4d36c94"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.1"
+version = "0.6.2"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
