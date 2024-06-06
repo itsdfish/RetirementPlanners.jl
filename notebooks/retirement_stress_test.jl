@@ -356,7 +356,7 @@ let
             Logger,
             global_parms.n_reps,
             config;
-            threaded = false,
+            threaded = true,
             yoked_values
         )
         global df1 = to_dataframe(Model(; config...), results)
@@ -563,7 +563,14 @@ let
                     (:kw_withdraw, :withdraws, :start_age),
                     (:kw_market, :recessions, :start_age)
                 )]
-        results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
+        results = grid_search(
+            Model,
+            Logger,
+            global_parms.n_reps,
+            config;
+            threaded = true,
+            yoked_values
+        )
         global df2 = to_dataframe(Model(; config...), results)
         df2.survived = df2.net_worth .> 0
         df2.retirement_age = map(x -> x[1].end_age, df2.invest_investments)
@@ -1049,7 +1056,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.6.3"
+RetirementPlanners = "~0.6.4"
 StatsPlots = "~0.15.7"
 """
 
@@ -1059,7 +1066,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "8face257f9bf39aac2dd35b2de818603d5f6decf"
+project_hash = "75ba4d699f92bcca59b31de6d20fd60b4f5600c2"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2133,9 +2140,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "17e056e7f6031bba39a98cd13d25344acd93e23f"
+git-tree-sha1 = "f82ef0409c0052e19f6cd23ee2afe29fa58ff5fe"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.3"
+version = "0.6.4"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
