@@ -1,7 +1,7 @@
 name = "RetirementPlanners"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
 authors = ["itsdfish"]
-version = "0.6.3"
+version = "0.6.4"
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"

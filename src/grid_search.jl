@@ -92,6 +92,7 @@ function grid_search(
     mapfun = threaded ? ThreadsX.map : map
 
     all_data = ProgressMeter.progress_map(np_combs; mapfun, progress) do np_combs
+        np_combs = threaded ? deepcopy(np_combs) : np_combs
         var_vals = map(x -> Pair(x, get_value(np_combs, x)), var_parms)
         model = model_type(; fixed_inputs..., np_combs...)
         times = get_times(model)
@@ -205,4 +206,8 @@ function separate_np_non_np_inputs(
     return non_np, NamedTuple(config)
 end
 
-ncalls(::typeof(ThreadsX.map), ::Function, args...) = ncalls_map(args...)
+function ncalls(::typeof(ThreadsX.map), ::Function, args...)
+    #println("args $args") 
+    ncalls_map(args...)
+end
+ncalls(::typeof(ThreadsX.map), ::Function, ::Int, args...) = ncalls_map(args...)
