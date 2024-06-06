@@ -223,6 +223,10 @@ function Model(;
     log! = default_log!,
     config...
 )
+    if start_age ∈ log_times
+        error("start_age cannot be in log_times because logging happens after the first step at start_time + Δt")
+    end
+
     Δt, duration, start_age, start_amount = promote(Δt, duration, start_age, start_amount)
 
     return Model(

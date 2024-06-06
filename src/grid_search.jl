@@ -204,3 +204,5 @@ function separate_np_non_np_inputs(
 
     return non_np, NamedTuple(config)
 end
+
+ncalls(::typeof(ThreadsX.map), ::Function, args...) = ncalls_map(args...)

@@ -9,6 +9,7 @@ using Distributions: truncated
 using NamedTupleTools
 using PrettyTables
 using ProgressMeter
+using ProgressMeter: ncalls_map
 using StatsBase: cor2cov
 using StatsBase: sample
 using StatsBase: Weights
@@ -19,6 +20,7 @@ import Distributions: mean
 import Distributions: rand
 import Distributions: std
 import Distributions: var
+import ProgressMeter: ncalls
 
 export AbstractGBM
 export AbstractVarGBM

@@ -64,8 +64,8 @@ md"
 # ╔═╡ 8a873dad-7c41-4cba-b430-506e57ed0eb2
 @bind global_parms PlutoExtras.@NTBond "Global Parameters" begin
     start_amount = ("Initial Value", NumberField(0:1e7, default = 10_000))
-    start_age = ("Start Age", NumberField(0:120, default = 27))
-    end_age = ("End age", NumberField(0:120, default = 85))
+    start_age = ("Start Age", NumberField(0.0:120, default = 27))
+    end_age = ("End age", NumberField(0.0:120, default = 85))
     n_reps = ("Repetitions", NumberField(50:10_000, default = 200))
     seed = ("Seed", NumberField(0:100000000, default = rand(1:1000000)))
 end
@@ -77,9 +77,9 @@ md"""
 
 # ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
 @bind time_points PlutoExtras.@NTBond "Time Points" begin
-    min = (@htl("Min"), NumberField(1:100, default = 70))
-    max = (@htl("Max"), NumberField(1:100, default = 85))
-    step = (@htl("Step"), NumberField(1:100, default = 5))
+    min = (@htl("Min"), NumberField(1:0.01:100, default = 70.0))
+    max = (@htl("Max"), NumberField(1:0.01:100, default = 85.0))
+    step = (@htl("Step"), NumberField(1:0.01:100, default = 5.0))
 end
 
 # ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
@@ -91,8 +91,8 @@ md"""
 
 # ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
 @bind primary_investment PlutoExtras.@NTBond "Primary Contribution" begin
-    mean = (@htl("Mean"), NumberField(0:10_000, default = 625))
-    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 150))
+    mean = (@htl("Mean"), NumberField(0:0.01:10_000, default = 625.0))
+    std = (@htl("Standard Deviation"), NumberField(0:0.01:10_000, default = 150.0))
 end
 
 # ╔═╡ 0a671048-d73a-498b-a530-56e01026ad73
@@ -118,9 +118,9 @@ md"""
 
 # ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
 @bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
-    min = (@htl("Min"), NumberField(20:90, default = 55))
-    max = (@htl("Max"), NumberField(20:90, default = 65))
-    step = (@htl("Step"), NumberField(1:10, default = 2))
+    min = (@htl("Min"), NumberField(20:0.01:90, default = 55.0))
+    max = (@htl("Max"), NumberField(20:0.01:90, default = 65.0))
+    step = (@htl("Step"), NumberField(1:0.01:10, default = 2.0))
 end
 
 # ╔═╡ 32dbc935-ee1c-453d-b5f9-81cb9264b62e
@@ -132,23 +132,25 @@ md"
 
 # ╔═╡ 7e7d025a-0f66-4259-b039-2935eb942638
 @bind social_security PlutoExtras.@NTBond "Social Security" begin
-    start = (@htl("<p align='left'>Start Age</p>"), NumberField(62:70, default = 67))
-    amount = (@htl("<p align='left'>Amount</p>"), NumberField(0:4000.0, default = 2000.0))
+    start =
+        (@htl("<p align='left'>Start Age</p>"), NumberField(62:0.01:70, default = 67.00))
+    amount =
+        (@htl("<p align='left'>Amount</p>"), NumberField(0:0.01:4000.0, default = 2000.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 @bind pension PlutoExtras.@NTBond "Pension" begin
-    start = (@htl("Start Age"), NumberField(0:90, default = 0))
-    end_age = (@htl("End Age"), NumberField(0:90, default = 0))
-    amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
+    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
+    amount = (@htl("Amount"), NumberField(0:0.01:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = false))
 end
 
 # ╔═╡ 52e1ef00-71de-4a97-886d-1276bce74d29
 @bind supplemental PlutoExtras.@NTBond "Supplemental Income" begin
-    start = (@htl("Start Age"), NumberField(0:90, default = 0))
-    end_age = (@htl("End Age"), NumberField(0:90, default = 0))
+    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
     amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
@@ -160,14 +162,14 @@ md"
 
 # ╔═╡ 50d919c6-4f86-4e4d-a08d-7f23486ff9ec
 @bind withdraw_amount PlutoExtras.@NTBond "Minimum Withdraw Amount" begin
-    min = (@htl("Min"), NumberField(0:10_000, default = 2000))
-    max = (@htl("Max"), NumberField(0:10_000, default = 3000))
-    step = (@htl("Step"), NumberField(1:10_000, default = 200))
+    min = (@htl("Min"), NumberField(0:0.01:10_000, default = 2000.0))
+    max = (@htl("Max"), NumberField(0:0.01:10_000, default = 3000.0))
+    step = (@htl("Step"), NumberField(1:0.01:10_000, default = 200.0))
 end
 
 # ╔═╡ 40faa877-5477-47f2-a92a-8ddf00528311
 @bind withdraw_parms PlutoExtras.@NTBond "Withdraw Parameters" begin
-    income_adjustment = (@htl("Income Adjustment"), NumberField(0:1e-3:1, default = 0))
+    income_adjustment = (@htl("Income Adjustment"), NumberField(0:1e-3:1, default = 0.0))
     percent_of_real_growth =
         (@htl("Percent of Real Growth"), NumberField(0:1e-3:1, default = 0.15))
     volitility = (@htl(" Volility"), NumberField(0:1e-3:1, default = 0.05))
@@ -349,7 +351,14 @@ let
                 (:kw_withdraw, :withdraws, :start_age),
                 (:kw_invest, :investments, 1, :end_age)
             )]
-        results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
+        results = grid_search(
+            Model,
+            Logger,
+            global_parms.n_reps,
+            config;
+            threaded = true,
+            yoked_values
+        )
         global df1 = to_dataframe(Model(; config...), results)
         df1.survived = df1.net_worth .> 0
         df1.retirement_age = map(x -> x[1].end_age, df1.invest_investments)
