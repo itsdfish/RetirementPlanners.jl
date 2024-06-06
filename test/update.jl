@@ -615,4 +615,78 @@
             @test model.state.invest_amount ≈ 1000 * 1.02^20 atol = 1e-10
         end
     end
+
+    @safetestset "logging" begin
+        using RetirementPlanners
+        using Distributions
+        using Test
+
+        config1 = (
+            # time step in years
+            Δt = 1 / 12,
+            # starting age of simulation
+            start_age = 25,
+            # duration of simulation
+            duration = 10,
+            # initial investment amount 
+            start_amount = 10_000,
+            # function for simulating growth in the market
+            update_market! = fixed_market,
+            # interest parameters
+            kw_market = (interest_rate = 0.07,),
+            # function for updating inflation
+            update_inflation! = fixed_inflation,
+            # inflation parameters
+            kw_inflation = (inflation_rate = 0.035,),
+            # invest parameters
+            kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
+            # withdraw parameters 
+            kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
+        )
+
+        model1 = Model(; config1...)
+        times1 = get_times(model1)
+        n_steps = length(times1)
+        n_reps = 1
+        logger1 = Logger(; n_reps, n_steps)
+        simulate!(model1, logger1, n_reps)
+
+        config2 = (
+            log_times = [30, 35],
+            # time step in years
+            Δt = 1 / 12,
+            # starting age of simulation
+            start_age = 25,
+            # duration of simulation
+            duration = 10,
+            # initial investment amount 
+            start_amount = 10_000,
+            # function for simulating growth in the market
+            update_market! = fixed_market,
+            # interest parameters
+            kw_market = (interest_rate = 0.07,),
+            # function for updating inflation
+            update_inflation! = fixed_inflation,
+            # inflation parameters
+            kw_inflation = (inflation_rate = 0.035,),
+            # invest parameters
+            kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
+            # withdraw parameters 
+            kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
+        )
+
+        model2 = Model(; config2...)
+        times2 = get_times(model2)
+        n_steps = length(times2)
+        n_reps = 1
+        logger2 = Logger(; n_reps, n_steps)
+        simulate!(model2, logger2, n_reps)
+
+        @test size(logger2.net_worth) == (2, 1)
+        idx = findfirst(x -> x == 30, times1)
+        @test logger2.net_worth[1, :] == logger1.net_worth[idx, :]
+
+        idx = findfirst(x -> x == 35, times1)
+        @test logger2.net_worth[2, :] == logger1.net_worth[idx, :]
+    end
 end

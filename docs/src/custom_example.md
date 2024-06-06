@@ -5,7 +5,6 @@ using Random
 using RetirementPlanners
 ```
 
-
 # Overview
 
 The purpose of this example is to illustrate how to customize update functions in `RetirementPlanners.jl`. The general process of creating a custom update function involves the following steps:

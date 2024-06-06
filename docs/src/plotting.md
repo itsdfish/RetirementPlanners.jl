@@ -132,6 +132,7 @@ investments = [
 
 # configuration options
 config = (
+    log_times = 70:5:85,
     # time step in years 
     Δt = 1 / 12,
     # start age of simulation 
@@ -189,6 +190,7 @@ investments = [
 
 # configuration options
 config = (
+    log_times = 70:5:85,
     # time step in years 
     Δt = 1 / 12,
     # start age of simulation 

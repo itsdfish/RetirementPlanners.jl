@@ -27,6 +27,7 @@ makedocs(
             "Custom Example" => "custom_example.md"
         ],
         "Plotting" => "plotting.md",
+        "Notebook" => "notebook.md",
         "API" => "api.md"
     ]
 )

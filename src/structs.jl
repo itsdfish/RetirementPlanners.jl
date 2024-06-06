@@ -19,6 +19,7 @@ Represents the state of the model, which is updated on each iteration.
 - `invest_amount::T`: the amount invested during the current time period 
 - `withdraw_amount::T`: the amount deducted from investments during the current time period 
 - `net_worth::T`: total value of the investment during the current time period 
+- `log_idx::Int`: the index of the current time step to be logged
 """
 mutable struct State{T <: Real} <: AbstractState
     interest_rate::T
@@ -150,7 +151,7 @@ An abstract model type for simulating retirement investments.
 abstract type AbstractModel end
 
 """
-    Model{S, T<:Real} <: AbstractModel
+    Model{S, R, T <: Real} <: AbstractModel
 
 The default retirement simulation Model. 
 
@@ -160,6 +161,7 @@ The default retirement simulation Model.
 - `duration::T`: the duration of the simulation in years
 - `start_age::T`: age at the beginning of the simulation
 - `start_amount::T`: initial investment amount 
+- `log_times::R`: a collection of ordered times to log data 
 - `state::S`: the current state of the system 
 - `withdraw!`: a function called on each time step to withdraw from investments 
 - `invest!`: a function called on each time step to invest money into investments 
@@ -176,6 +178,7 @@ The default retirement simulation Model.
         duration,
         start_age,
         start_amount,
+        log_times,
         state = State(),
         withdraw! = withdraw!,
         invest! = invest!,

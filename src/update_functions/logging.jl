@@ -1,5 +1,5 @@
 """
-    default_log!(model::AbstractModel, logger, step, rep; _...)
+    default_log!(model::AbstractModel, logger, rep, t; _...)
 
 Logs the following information on each time step of each simulation repetition:
 
@@ -12,6 +12,12 @@ Logs the following information on each time step of each simulation repetition:
 
 - `model::AbstractModel`: an abstract Model object 
 - `logger`: a logger object
+- `rep`: indexes the repetition of the simulation
+- `t`: current time in years 
+
+# Keywords
+
+- `_...`: optional keyword arguments which are not used 
 """
 function default_log!(model::AbstractModel, logger, rep, t; _...)
     state = model.state
