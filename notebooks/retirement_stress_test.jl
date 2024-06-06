@@ -7,14 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(
-                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                "AbstractPlutoDingetjes"
-            )].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -77,9 +70,9 @@ md"""
 
 # ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
 @bind time_points PlutoExtras.@NTBond "Time Points" begin
-    min = (@htl("Min"), NumberField(1:0.01:100, default = 70.0))
-    max = (@htl("Max"), NumberField(1:0.01:100, default = 85.0))
-    step = (@htl("Step"), NumberField(1:0.01:100, default = 5.0))
+    min = (@htl("Min"), NumberField(1:.01:100, default = 70.0))
+    max = (@htl("Max"), NumberField(1:.01:100, default = 85.0))
+    step = (@htl("Step"), NumberField(1:.01:100, default = 5.0))
 end
 
 # ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
@@ -91,8 +84,8 @@ md"""
 
 # ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
 @bind primary_investment PlutoExtras.@NTBond "Primary Contribution" begin
-    mean = (@htl("Mean"), NumberField(0:0.01:10_000, default = 625.0))
-    std = (@htl("Standard Deviation"), NumberField(0:0.01:10_000, default = 150.0))
+    mean = (@htl("Mean"), NumberField(0:.01:10_000, default = 625.0))
+    std = (@htl("Standard Deviation"), NumberField(0:.01:10_000, default = 150.0))
 end
 
 # ╔═╡ 0a671048-d73a-498b-a530-56e01026ad73
@@ -118,9 +111,9 @@ md"""
 
 # ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
 @bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
-    min = (@htl("Min"), NumberField(20:0.01:90, default = 55.0))
-    max = (@htl("Max"), NumberField(20:0.01:90, default = 65.0))
-    step = (@htl("Step"), NumberField(1:0.01:10, default = 2.0))
+    min = (@htl("Min"), NumberField(20:.01:90, default = 55.0))
+    max = (@htl("Max"), NumberField(20:.01:90, default = 65.0))
+    step = (@htl("Step"), NumberField(1:.01:10, default = 2.0))
 end
 
 # ╔═╡ 32dbc935-ee1c-453d-b5f9-81cb9264b62e
@@ -132,25 +125,23 @@ md"
 
 # ╔═╡ 7e7d025a-0f66-4259-b039-2935eb942638
 @bind social_security PlutoExtras.@NTBond "Social Security" begin
-    start =
-        (@htl("<p align='left'>Start Age</p>"), NumberField(62:0.01:70, default = 67.00))
-    amount =
-        (@htl("<p align='left'>Amount</p>"), NumberField(0:0.01:4000.0, default = 2000.0))
+    start = (@htl("<p align='left'>Start Age</p>"), NumberField(62:.01:70, default = 67.00))
+    amount = (@htl("<p align='left'>Amount</p>"), NumberField(0:.01:4000.0, default = 2000.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 @bind pension PlutoExtras.@NTBond "Pension" begin
-    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
-    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
-    amount = (@htl("Amount"), NumberField(0:0.01:10_000.0, default = 0.0))
+    start = (@htl("Start Age"), NumberField(0:.01:90, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:.01:90, default = 0.0))
+    amount = (@htl("Amount"), NumberField(0:.01:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = false))
 end
 
 # ╔═╡ 52e1ef00-71de-4a97-886d-1276bce74d29
 @bind supplemental PlutoExtras.@NTBond "Supplemental Income" begin
-    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
-    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
+    start = (@htl("Start Age"), NumberField(0:.01:90, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:.01:90, default = 0.0))
     amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
@@ -162,9 +153,9 @@ md"
 
 # ╔═╡ 50d919c6-4f86-4e4d-a08d-7f23486ff9ec
 @bind withdraw_amount PlutoExtras.@NTBond "Minimum Withdraw Amount" begin
-    min = (@htl("Min"), NumberField(0:0.01:10_000, default = 2000.0))
-    max = (@htl("Max"), NumberField(0:0.01:10_000, default = 3000.0))
-    step = (@htl("Step"), NumberField(1:0.01:10_000, default = 200.0))
+    min = (@htl("Min"), NumberField(0:.01:10_000, default = 2000.0))
+    max = (@htl("Max"), NumberField(0:.01:10_000, default = 3000.0))
+    step = (@htl("Step"), NumberField(1:.01:10_000, default = 200.0))
 end
 
 # ╔═╡ 40faa877-5477-47f2-a92a-8ddf00528311
@@ -351,14 +342,7 @@ let
                 (:kw_withdraw, :withdraws, :start_age),
                 (:kw_invest, :investments, 1, :end_age)
             )]
-        results = grid_search(
-            Model,
-            Logger,
-            global_parms.n_reps,
-            config;
-            threaded = true,
-            yoked_values
-        )
+        results = grid_search(Model, Logger, global_parms.n_reps, config; threaded = false, yoked_values)
         global df1 = to_dataframe(Model(; config...), results)
         df1.survived = df1.net_worth .> 0
         df1.retirement_age = map(x -> x[1].end_age, df1.invest_investments)
@@ -563,7 +547,7 @@ let
                     (:kw_withdraw, :withdraws, :start_age),
                     (:kw_market, :recessions, :start_age)
                 )]
-        results = grid_search(Model, Logger, global_parms.n_reps, config; yoked_values)
+        results = grid_search(Model, Logger, global_parms.n_reps, config;  yoked_values)
         global df2 = to_dataframe(Model(; config...), results)
         df2.survived = df2.net_worth .> 0
         df2.retirement_age = map(x -> x[1].end_age, df2.invest_investments)
@@ -594,24 +578,6 @@ let
             yaxis = font(9),
             size = (1200, 450)
         )
-
-        #      mean_income_plots2 = plot_sensitivity(
-        #          df2,
-        #          [:retirement_age, :min_withdraw_amount],
-        #          :total_income,
-        #          :mean_growth_rate;
-        #          row_label = "growth:",
-        #          xlabel = "Retirement Age",
-        #          ylabel = "Min Withdraw",
-        #          colorbar_title = "Mean Total Income",
-        #          clims,
-        #          age = age_range,
-        # grid_label_size = 12,
-        # margin = 0.35Plots.cm,
-        # xaxis = font(9),
-        # yaxis = font(9),
-        #          size = (1200, 450)
-        #      )
     end
     nothing
 end
@@ -1067,7 +1033,7 @@ LaTeXStrings = "~1.3.1"
 Plots = "~1.40.4"
 PlutoExtras = "~0.7.12"
 PlutoUI = "~0.7.59"
-RetirementPlanners = "~0.6.2"
+RetirementPlanners = "~0.6.3"
 StatsPlots = "~0.15.7"
 """
 
@@ -1077,7 +1043,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.10.4"
 manifest_format = "2.0"
-project_hash = "ef5c1aaa8afb70be32a6d878c88eef69729376ff"
+project_hash = "8face257f9bf39aac2dd35b2de818603d5f6decf"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2151,9 +2117,9 @@ version = "1.3.0"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SafeTestsets", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "b66b904bf5478b2f6df6def6c1b779dfc4d36c94"
+git-tree-sha1 = "17e056e7f6031bba39a98cd13d25344acd93e23f"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.2"
+version = "0.6.3"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2254,9 +2220,9 @@ version = "0.1.15"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "9ae599cd7529cfce7fea36cf00a62cfc56f0f37c"
+git-tree-sha1 = "6e00379a24597be4ae1ee6b2d882e15392040132"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.4"
+version = "1.9.5"
 weakdeps = ["ChainRulesCore", "Statistics"]
 
     [deps.StaticArrays.extensions]
