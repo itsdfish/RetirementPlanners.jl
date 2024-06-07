@@ -63,7 +63,7 @@ md"
 
 # ╔═╡ 8a873dad-7c41-4cba-b430-506e57ed0eb2
 @bind global_parms PlutoExtras.@NTBond "Global Parameters" begin
-    start_amount = ("Initial Value", NumberField(0:1e7, default = 10_000))
+    start_amount = ("Portfolio Value", NumberField(0:1e7, default = 10_000))
     start_age = ("Start Age", NumberField(0.0:120, default = 27))
     end_age = ("End age", NumberField(0.0:120, default = 85))
     n_reps = ("Repetitions", NumberField(50:10_000, default = 200))
@@ -77,9 +77,9 @@ md"""
 
 # ╔═╡ 6ac4883c-974b-4cee-a0d0-d064ac4d1cc8
 @bind time_points PlutoExtras.@NTBond "Time Points" begin
-    min = (@htl("Min"), NumberField(1:0.01:100, default = 70.0))
-    max = (@htl("Max"), NumberField(1:0.01:100, default = 85.0))
-    step = (@htl("Step"), NumberField(1:0.01:100, default = 5.0))
+    min = (@htl("Min"), NumberField(1:1:100.0, default = 70.0))
+    max = (@htl("Max"), NumberField(1:1:100.0, default = 85.0))
+    step = (@htl("Step"), NumberField(1:1:100.0, default = 5.0))
 end
 
 # ╔═╡ 989a8734-b0c4-4d84-bd52-b44cd1287642
@@ -91,24 +91,24 @@ md"""
 
 # ╔═╡ c4398cff-af01-4ad5-a8a4-9af6c5076ab3
 @bind primary_investment PlutoExtras.@NTBond "Primary Contribution" begin
-    mean = (@htl("Mean"), NumberField(0:0.01:10_000, default = 625.0))
-    std = (@htl("Standard Deviation"), NumberField(0:0.01:10_000, default = 150.0))
+    mean = (@htl("Mean"), NumberField(0:5:10_000.0, default = 625.0))
+    std = (@htl("Standard Deviation"), NumberField(0:10:10_000.0, default = 150.0))
 end
 
 # ╔═╡ 0a671048-d73a-498b-a530-56e01026ad73
 @bind supplemental_investment1 PlutoExtras.@NTBond "Supplemental Contribution" begin
-    mean = (@htl("Mean"), NumberField(0:10_000, default = 0))
-    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 0))
-    start_age = (@htl("Start Age"), NumberField(0:120, default = 0))
-    end_age = (@htl("End Age"), NumberField(0:120, default = 0))
+    mean = (@htl("Mean"), NumberField(0:50:10_000.0, default = 0.0))
+    std = (@htl("Standard Deviation"), NumberField(0:10:10_000.0, default = 0.0))
+    start_age = (@htl("Start Age"), NumberField(0:120.0, default = 0))
+    end_age = (@htl("End Age"), NumberField(0:120.0, default = 0))
 end
 
 # ╔═╡ 6ab60779-eadd-4624-a8e5-206d153d0b43
 @bind supplemental_investment2 PlutoExtras.@NTBond "Supplemental Contribution" begin
-    mean = (@htl("Mean"), NumberField(0:10_000, default = 0))
-    std = (@htl("Standard Deviation"), NumberField(0:10_000, default = 0))
-    start_age = (@htl("Start Age"), NumberField(0:120, default = 0))
-    end_age = (@htl("End Age"), NumberField(0:120, default = 0))
+    mean = (@htl("Mean"), NumberField(0:50:10_000.0, default = 0.0))
+    std = (@htl("Standard Deviation"), NumberField(0:10:10_000.0, default = 0.0))
+    start_age = (@htl("Start Age"), NumberField(0:120.0, default = 0))
+    end_age = (@htl("End Age"), NumberField(0:120.0, default = 0))
 end
 
 # ╔═╡ 2bf35243-4a89-45a1-b562-f4854c350455
@@ -118,9 +118,9 @@ md"""
 
 # ╔═╡ 4e6823e4-6542-4099-9834-f00b06953258
 @bind retirement_age PlutoExtras.@NTBond "Retirement Age" begin
-    min = (@htl("Min"), NumberField(20:0.01:90, default = 55.0))
-    max = (@htl("Max"), NumberField(20:0.01:90, default = 65.0))
-    step = (@htl("Step"), NumberField(1:0.01:10, default = 2.0))
+    min = (@htl("Min"), NumberField(20:1:90.0, default = 55.0))
+    max = (@htl("Max"), NumberField(20:1:90.0, default = 65.0))
+    step = (@htl("Step"), NumberField(1:01:10.0, default = 2.0))
 end
 
 # ╔═╡ 32dbc935-ee1c-453d-b5f9-81cb9264b62e
@@ -133,25 +133,25 @@ md"
 # ╔═╡ 7e7d025a-0f66-4259-b039-2935eb942638
 @bind social_security PlutoExtras.@NTBond "Social Security" begin
     start =
-        (@htl("<p align='left'>Start Age</p>"), NumberField(62:0.01:70, default = 67.00))
+        (@htl("<p align='left'>Start Age</p>"), NumberField(62:1:70.0, default = 67.00))
     amount =
-        (@htl("<p align='left'>Amount</p>"), NumberField(0:0.01:4000.0, default = 2000.0))
+        (@htl("<p align='left'>Amount</p>"), NumberField(0:100:4000.0, default = 2000.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
 # ╔═╡ 5452bfb7-1809-4cf5-a1c4-8fb19db0fdda
 @bind pension PlutoExtras.@NTBond "Pension" begin
-    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
-    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
-    amount = (@htl("Amount"), NumberField(0:0.01:10_000.0, default = 0.0))
+    start = (@htl("Start Age"), NumberField(0:1:90, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:1:90, default = 0.0))
+    amount = (@htl("Amount"), NumberField(0:100:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = false))
 end
 
 # ╔═╡ 52e1ef00-71de-4a97-886d-1276bce74d29
 @bind supplemental PlutoExtras.@NTBond "Supplemental Income" begin
-    start = (@htl("Start Age"), NumberField(0:0.01:90, default = 0.0))
-    end_age = (@htl("End Age"), NumberField(0:0.01:90, default = 0.0))
-    amount = (@htl("Amount"), NumberField(0:10_000.0, default = 0.0))
+    start = (@htl("Start Age"), NumberField(0:1:90.0, default = 0.0))
+    end_age = (@htl("End Age"), NumberField(0:1:90.0, default = 0.0))
+    amount = (@htl("Amount"), NumberField(0:100:10_000.0, default = 0.0))
     adjust = (@htl("Cost of Living Adjustment"), CheckBox(default = true))
 end
 
@@ -435,6 +435,41 @@ md"
 #### Mean Total Income Recession at Retirement
 "
 
+# ╔═╡ c167ff47-f85d-4fe4-b69c-91dcc975923c
+@bind show_growth_dist PlutoExtras.@NTBond "Growth Rate Distribution" begin
+    show = (@htl("Show"), CheckBox(default = false))
+end
+
+# ╔═╡ 40897f3d-6a68-4058-95fc-762aef7c7268
+let
+    if show_growth_dist.show
+        n_rates =
+            length((investment_growth.min):(investment_growth.step):(investment_growth.max))
+        @df df1 histogram(
+            :interest,
+            norm = true,
+            leg = true,
+            grid = false,
+            group = :mean_growth_rate,
+            xlabel = "Investment Growth Rate",
+            ylabel = "Density",
+            xlims = (-0.6, 0.9),
+            color = RGB(148 / 255, 173 / 255, 144 / 255),
+            layout = n_rates,
+            legendtitle = "rate",
+            legendtitlefontsize = 9
+            #size = (900, 400)
+        )
+        vline!(
+            fill(0, 1, n_rates),
+            color = :black,
+            linestyle = :dash,
+            linewidth = 2,
+            label = ""
+        )
+    end
+end
+
 # ╔═╡ 2358348e-6b30-4a1d-ab8c-83d6945e79c5
 # ╠═╡ show_logs = false
 let
@@ -697,13 +732,13 @@ let
 
     The purpose of this notebook is to stress test your retirement plan under a wide range of conditions, allowing you to identify potential points of failure. Based on your goals and risk tolerance, the results of the stress test can help you decide when to retire and whether you should make adjustments to your plan. 
 
-    This notebook features two stress tests. Both examine three important factors across time: (1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. The first stress test varies these factors and displays *portfolio surival probability* and *mean total income* as a set of contour plots. The second stress test varies the same three factors, but inserts a recession at the beginning of retirement to examine squence-of-returns risk. 
+    The stress test evaluates your retirement plan in terms of survival probability and mean total income while varying your retirement plan along three important dimensions---(1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. In addition, the stress test examines the robustness of your retirement plan to sequence-of-return risk by evaluating your plan under two conditions: (1) no rececssion upon retirement, and (2) a recession upon retirement. The results are conviniently displayed as a matrix of contour plots, allowing you to analyze the effect of these important variables across time. 
 
     ###### Instructions
 
     1. Complete each section by entering your information into the fields. Additional details can be found by clicking on the $\blacktriangleright$ icon below each panel. 
     2. Go to the section titled *Run* and check the box to run the stress test. Depending on the number of conditions you specify, the results may take a few moments to generate. 
-    3. After the stress test completes, the results will populate a matrix of contour plots in the sections titled *Stress Test1* and *Stress Test 2*.
+    3. After the stress test completes, the results will populate a matrix of contour plots in the *results* section.
 
     ##### Miscellaneous  Information
     You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. The default number of reps (200) is useful for quick exploration, but 1,000 generates plots with higher fidelity. Although the stress test below  is sufficiently flexible to meet the needs of most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
@@ -717,18 +752,18 @@ let
     text = md"""
     Global parameters control various aspects of the simulation, including timing and initial conditions. 
 
-    * Start Age: your age at the beginng of the simulation. Typically, this is your current age.
+    * Start Age: your age at the beginng of the simulation, typically corresponding to your current age.
 
     * End Age: your age at the end of the simulation. 
 
     * Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. Using a value of 200 is sufficient for initial exploration. Using a value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
 
-    * Initial Value: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
+    * Portfolio Value: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
     * Seed: initializes the random number generator in a specified state. Setting the seed to a specific value will result in a reproducible random set of on each run. By default, the seed is selected at random. You may input
 
     ##### Additional Information
 
-    All units are expressed in constant 2024 US dollars. The simulation uses time step parameter to controls the frequency with which the system is updated. The default time step is fixed to one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. Although not typically recommended, you can modify the time step parameter in the code cell before each stress test
+    All units are expressed in constant, inflation-adjusted US dollars. The simulation uses time step parameter to controls the frequency with which the system is updated. The default time step is fixed to one month, which is an ideal value because it corresponds to a typical billing cycle, and strikes a good balance between speed and accuracy. Although not typically recommended, you can modify the time step parameter in the code cell before each stress test
 
     """
     details(text; summary = "Additional Information")
@@ -738,7 +773,7 @@ end
 let
     text = md"""
 
-     In the plots below, the time points specify snapshots in time of your retirement plan's performance. The time points correspond to the column of the matrix of contour plots.  
+     The *Time Points* parameters specify snapshots in time of your retirement plan's performance. The time points correspond to the column of the matrix of contour plots.  
 
      - Min: the minimum time point considered
      - Max: the naximum time point considered 
@@ -766,7 +801,7 @@ let
 
     ##### Contributions
 
-    At the top, the primary contribution represents a job or standard income source. The primary contribution starts at *start age* defined in *Global Parameters* and ends at the specified retirement age. The two supplemental contributions may represent income from rental properties, a side hustle, or an inheritence (configured by setting start age equal to end age). By default, the two supplemental contributions are inactive. In addition, the supplemental income has no constraints on the start and end ages.  
+    At the top, the primary contribution represents a job or standard income source. Unlike the other contributions, the schedule for the primary contribution is yoked to retirement: it starts at *start age* defined in *Global Parameters* and ends at the specified retirement age. The two supplemental contributions represent income from rental properties, a side hustle, or an inheritence (configured by setting start age equal to end age). By default, the two supplemental contributions are inactive, and have no constraints on the start and end ages.  
 
     ##### Additional Information
 
@@ -795,9 +830,9 @@ end
 # ╔═╡ 8f97756b-7830-4c11-9d7a-fa5f373235ba
 let
     text = md"""
-     You can specify up to three income sources with different amounts, start ages, and end ages. Leave the values at zero if the 	income source does not apply to you.
+     You can specify up to three income sources with different amounts, start ages, and end ages. Leave the values at zero if the income source does not apply to you.
 
-     * Start Age: your age in years at the beginng of the simulation. Typically, this is your current age.
+     * Start Age: your age in years at the beginng of the simulation, typically corresponding to your current age.
 
      * End Age: your age in years at the simulation ends. 
 
@@ -963,7 +998,7 @@ end
 let
     text = md"""
 
-    Parameters in this panel control the recession in Stress Test 2. To maximize its effect, the recession begins concurrently with retirement. The two parameters are:
+    The parameters in this panel control the magnitude and duration of the recession in the recession condition. To maximize its effect, the recession begins concurrently with retirement. The two parameters are:
 
     * Growth Rate: a negative number reflecting the rate of decrease of your investment porfolio
 
@@ -2785,6 +2820,8 @@ version = "1.4.1+1"
 # ╟─967d7765-ecdf-4ae2-8197-12e69f274104
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
 # ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
+# ╟─c167ff47-f85d-4fe4-b69c-91dcc975923c
+# ╟─40897f3d-6a68-4058-95fc-762aef7c7268
 # ╟─2358348e-6b30-4a1d-ab8c-83d6945e79c5
 # ╟─0b67cbb2-c79a-48dc-a877-4e69a2e6a04e
 # ╟─8486baa8-1572-11ef-3bf6-115dd34a73b1
