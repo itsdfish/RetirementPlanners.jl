@@ -7,14 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(
-                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                "AbstractPlutoDingetjes"
-            )].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -371,24 +364,6 @@ let
             :total_income => mean => :mean
         ).mean
         )
-
-        global survival_plots1 = plot_sensitivity(
-            df1,
-            [:retirement_age, :min_withdraw_amount],
-            :survived,
-            :mean_growth_rate;
-            row_label = "growth:",
-            xlabel = "Retirement Age",
-            ylabel = "Min Withdraw",
-            clims = (0, 1),
-            colorbar_title = "Survival Probability",
-            age = age_range,
-            grid_label_size = 12,
-            margin = 0.35Plots.cm,
-            xaxis = font(9),
-            yaxis = font(9),
-            size = (1200, 450)
-        )
     end
     nothing
 end
@@ -399,41 +374,120 @@ md"
 "
 
 # ╔═╡ 78f67a39-6b55-46e6-83e1-d444aa2b7cb5
-@bind switch_plot_view PlutoExtras.@NTBond "Plot View" begin
+@bind plot_settings PlutoExtras.@NTBond "Plot Settings" begin
+	survival_probability = (@htl("Survival Probability"), CheckBox(default = true))
+	mean_total_income = (@htl("Mean Total Income"), CheckBox(default = true))
+	std_total_income = (@htl("St. Dev. Total Income"), CheckBox(default = false))
+	mean_portfolio_value = (@htl("Mean Portfolio Value"), CheckBox(default = false))
+	std_portfolio_value = (@htl("St. Dev. Portfolio Value"), CheckBox(default = false))
     switch = (@htl("Switch View"), CheckBox(default = false))
 end
 
 # ╔═╡ b881055c-09ee-4869-8e36-5bf069d6bc23
-md"""
-#### Portfolio Survival: No Recession at Retirement
-"""
-
-# ╔═╡ 44c12623-53b5-4e4a-bd57-786fe6906191
-# ╠═╡ show_logs = false
-run_simulation.run ? survival_plots1 : nothing
-
-# ╔═╡ 86349e14-31b8-439b-bde1-8659d02eefac
 let
-    label = md"""#### Mean Total Income: No Recession at Retirement"""
-    if switch_plot_view.switch
+    label = nothing 
+	if run_simulation.run && plot_settings.survival_probability
+		label = md"""#### Portfolio Survival: No Recession at Retirement"""
+	end
+	label
+end
+
+# ╔═╡ 86d0d664-4bef-49a1-abe6-cb038d2a25eb
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_total_income
+		label = md"""#### Mean Total Income: No Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.survival_probability
         label = md"""#### Portfolio Survival Probability: Recession at Retirement"""
     end
     label
 end
 
-# ╔═╡ 1c5e5260-4972-4bfb-aa85-0ecae2fcb6fd
+# ╔═╡ e1f769ec-a8f4-4786-9970-49badbe5c1b9
 let
-    label = md"""#### Portfolio Survival Probability: Recession at Retirement"""
-    if switch_plot_view.switch
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_total_income
+		label = md"""#### Stadard Deviation Total Income: No Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_total_income
         label = md"""#### Mean Total Income: No Recession at Retirement"""
     end
     label
 end
 
-# ╔═╡ 9e5b896b-16ad-495c-8d62-ccdaf318993a
-md"
-#### Mean Total Income Recession at Retirement
-"
+# ╔═╡ 16db993b-b9c5-4177-aa74-44c04d464a80
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_portfolio_value
+		label = md"""#### Mean Portfolio Value: No Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_total_income
+		label = md"""#### Mean Total Income: Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ ee89c542-b300-4de6-920a-d9507d078cb0
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_portfolio_value
+		label = md"""#### Standard Deviation Portfolio Value: No Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_total_income
+		label = md"""#### Standard Deviation Total Income: No Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ c90be860-d038-42e5-92dd-8cd13ad46325
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.survival_probability
+		label = md"""#### Portfolio Value Survival Probability: Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_total_income
+		label = md"""#### Standard Deviation Total Income: Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ 3feaf829-6015-4d4d-bee1-1921e7f2985b
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_total_income
+		label = md"""#### Mean Total Income: Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_portfolio_value
+		label = md"""#### Mean Portfolio Value: No Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ cf2868a0-fed5-4e77-8b88-cbb29dd141d3
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_total_income
+		label = md"""#### Standard Deviation Total Income: Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_portfolio_value
+		label = md"""#### Mean Portfolio Value: Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ 0e3fdf13-1df1-468b-9278-603f8cc0da1d
+let
+    label = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_portfolio_value
+		label = md"""#### Mean Portfolio Value: Recession at Retirement"""
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_portfolio_value
+		label = md"""#### Standard Deviation Portfolio Value: No Recession at Retirement"""
+    end
+    label
+end
+
+# ╔═╡ 4c3adc0a-e80f-42d0-b7f1-cb92a67035dd
+let
+    label = nothing 
+	if run_simulation.run && plot_settings.std_portfolio_value
+		label = md"""#### Standard Deviation Portfolio Value: Recession at Retirement"""
+	end
+	label
+end
 
 # ╔═╡ c167ff47-f85d-4fe4-b69c-91dcc975923c
 @bind show_growth_dist PlutoExtras.@NTBond "Growth Rate Distribution" begin
@@ -619,23 +673,7 @@ let
         ).mean
         )
 
-        global survival_plots2 = plot_sensitivity(
-            df2,
-            [:retirement_age, :min_withdraw_amount],
-            :survived,
-            :mean_growth_rate;
-            row_label = "growth:",
-            xlabel = "Retirement Age",
-            ylabel = "Min Withdraw",
-            clims = (0, 1),
-            colorbar_title = "Survival Probability",
-            age = age_range,
-            grid_label_size = 12,
-            margin = 0.35Plots.cm,
-            xaxis = font(9),
-            yaxis = font(9),
-            size = (1200, 450)
-        )
+
     end
     nothing
 end
@@ -645,68 +683,315 @@ end
 begin
     if run_simulation.run
         age_range = (time_points.min):(time_points.step):(time_points.max)
-        mean_income_plots1 = plot_sensitivity(
-            df1,
-            [:retirement_age, :min_withdraw_amount],
-            :total_income,
-            :mean_growth_rate;
-            row_label = "growth:",
-            xlabel = "Retirement Age",
-            ylabel = "Min Withdraw",
-            colorbar_title = "Mean Total Income",
-            clims = (clims_min, clims_max),
-            age = age_range,
-            grid_label_size = 12,
-            margin = 0.35Plots.cm,
-            xaxis = font(9),
-            yaxis = font(9),
-            size = (1200, 450)
-        )
+		if plot_settings.survival_probability
+			survival_plots1 = plot_sensitivity(
+	            df1,
+	            [:retirement_age, :min_withdraw_amount],
+	            :survived,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            clims = (0, 1),
+	            colorbar_title = "Survival Probability",
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
 
-        mean_income_plots2 = plot_sensitivity(
-            df2,
-            [:retirement_age, :min_withdraw_amount],
-            :total_income,
-            :mean_growth_rate;
-            row_label = "growth:",
-            xlabel = "Retirement Age",
-            ylabel = "Min Withdraw",
-            colorbar_title = "Mean Total Income",
-            clims = (clims_min, clims_max),
-            age = age_range,
-            grid_label_size = 12,
-            margin = 0.35Plots.cm,
-            xaxis = font(9),
-            yaxis = font(9),
-            size = (1200, 450)
-        )
+			survival_plots2 = plot_sensitivity(
+	            df2,
+	            [:retirement_age, :min_withdraw_amount],
+	            :survived,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            clims = (0, 1),
+	            colorbar_title = "Survival Probability",
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+		end
+		
+		if plot_settings.mean_total_income
+	        mean_income_plots1 = plot_sensitivity(
+	            df1,
+	            [:retirement_age, :min_withdraw_amount],
+	            :total_income,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "Mean Total Income",
+	            clims = (clims_min, clims_max),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+
+			mean_income_plots2 = plot_sensitivity(
+	            df2,
+	            [:retirement_age, :min_withdraw_amount],
+	            :total_income,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "Mean Total Income",
+	            clims = (clims_min, clims_max),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+		end
+
+		if plot_settings.std_total_income
+	        std_income_plots1 = plot_sensitivity(
+	            df1,
+	            [:retirement_age, :min_withdraw_amount],
+	            :total_income,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "St Dev Total Income",
+				z_func = std,
+	            clims = (0, clims_max),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+
+	        std_income_plots2 = plot_sensitivity(
+	            df2,
+	            [:retirement_age, :min_withdraw_amount],
+	            :total_income,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "St Dev Total Income",
+				z_func = std,
+	            clims = (0, clims_max),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+		end
+
+
+		if  plot_settings.mean_portfolio_value
+
+			mean_portfolio_value_plots1 = plot_sensitivity(
+	            df1,
+	            [:retirement_age, :min_withdraw_amount],
+	            :net_worth,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "Mean Portfolio Value",
+	            #clims = (clims_min, clims_max),
+				clims = (0, 1_500_000),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+
+			mean_portfolio_value_plots2 = plot_sensitivity(
+	            df2,
+	            [:retirement_age, :min_withdraw_amount],
+	            :net_worth,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "Mean Portfolio Value",
+	            #clims = (clims_min, clims_max),
+				clims = (0, 1_500_000),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+		end
+
+		if  plot_settings.std_portfolio_value
+
+			std_portfolio_value_plots1 = plot_sensitivity(
+	            df1,
+	            [:retirement_age, :min_withdraw_amount],
+	            :net_worth,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "St Dev Portfolio Value",
+				z_func = std,
+	            #clims = (clims_min, clims_max),
+				clims = (0, 1_500_000),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+
+			std_portfolio_value_plots2 = plot_sensitivity(
+	            df2,
+	            [:retirement_age, :min_withdraw_amount],
+	            :net_worth,
+	            :mean_growth_rate;
+	            row_label = "growth:",
+	            xlabel = "Retirement Age",
+	            ylabel = "Min Withdraw",
+	            colorbar_title = "St Dev Portfolio Value",
+				z_func = std,
+	            #clims = (clims_min, clims_max),
+				clims = (0, 1_500_000),
+	            age = age_range,
+	            grid_label_size = 12,
+	            margin = 0.35Plots.cm,
+	            xaxis = font(9),
+	            yaxis = font(9),
+	            size = (1200, 450)
+	        )
+		end
         nothing
     end
 end
 
-# ╔═╡ e32a80ee-5c0a-4d57-8d94-a38c43a5a24b
+# ╔═╡ 44c12623-53b5-4e4a-bd57-786fe6906191
+# ╠═╡ show_logs = false
+run_simulation.run  && plot_settings.survival_probability ? survival_plots1 : nothing
+
+# ╔═╡ 69b3b701-9026-45ae-9865-a89243385bf9
 # ╠═╡ show_logs = false
 let
-    plot = run_simulation.run ? mean_income_plots1 : nothing
-    if switch_plot_view.switch
-        plot = run_simulation.run ? survival_plots2 : nothing
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_total_income
+		plot = mean_income_plots1
+	elseif run_simulation.run && plot_settings.switch && plot_settings.survival_probability
+		plot = survival_plots2
     end
     plot
 end
 
-# ╔═╡ 967d7765-ecdf-4ae2-8197-12e69f274104
+# ╔═╡ 88435265-dbd5-4d7f-b7e2-8bf6e6c830f6
 # ╠═╡ show_logs = false
 let
-    plot = run_simulation.run ? survival_plots2 : nothing
-    if switch_plot_view.switch
-        plot = run_simulation.run ? mean_income_plots1 : nothing
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_total_income
+		plot = std_income_plots1
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_total_income
+        plot = mean_income_plots1
     end
     plot
 end
 
-# ╔═╡ 6637f8ea-a336-46d4-8a2e-4bc0e88de392
+# ╔═╡ c2387350-04c5-4a97-be1a-d4cca3660a20
 # ╠═╡ show_logs = false
-run_simulation.run ? mean_income_plots2 : nothing
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_portfolio_value
+		plot = mean_portfolio_value_plots1
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_total_income
+		plot = mean_income_plots2
+    end
+    plot
+end
+
+# ╔═╡ c67ae47f-6974-4eae-911c-854580f8133d
+# ╠═╡ show_logs = false
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_portfolio_value
+		plot = std_portfolio_value_plots1
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_total_income
+		plot = std_income_plots1
+    end
+    plot
+end
+
+# ╔═╡ e8dc228c-67ba-455e-b5d7-cf64ae9c5685
+# ╠═╡ show_logs = false
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.survival_probability
+		plot = survival_plots2
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_total_income
+		plot = std_income_plots2
+    end
+    plot
+end
+
+# ╔═╡ 459ef4d5-92ee-4892-a2c9-484a7126927e
+# ╠═╡ show_logs = false
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_total_income
+		plot = mean_income_plots2
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_portfolio_value
+		plot = mean_portfolio_value_plots1
+    end
+    plot
+end
+
+# ╔═╡ 5c90bca5-756d-4ea5-b331-6b68759d8855
+# ╠═╡ show_logs = false
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.std_total_income
+		plot = std_income_plots2
+	elseif run_simulation.run && plot_settings.switch && plot_settings.mean_portfolio_value
+		plot = mean_portfolio_value_plots2
+    end
+    plot
+end
+
+# ╔═╡ d659df47-852d-4eb2-b63d-cba2f8f5f7f0
+# ╠═╡ show_logs = false
+let
+    plot = nothing 
+	if run_simulation.run && !plot_settings.switch && plot_settings.mean_portfolio_value
+		plot = mean_portfolio_value_plots2
+	elseif run_simulation.run && plot_settings.switch && plot_settings.std_portfolio_value
+		plot = std_portfolio_value_plots1
+    end
+    plot
+end
+
+# ╔═╡ 8311554e-e173-461e-9f7c-2ad60c352ea0
+# ╠═╡ show_logs = false
+let
+	run_simulation.run  && plot_settings.std_portfolio_value ? std_portfolio_value_plots2 : nothing
+end
 
 # ╔═╡ a71ae122-24d4-45d8-9880-4730307aa4b6
 TableOfContents()
@@ -2814,12 +3099,24 @@ version = "1.4.1+1"
 # ╟─78f67a39-6b55-46e6-83e1-d444aa2b7cb5
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
 # ╟─44c12623-53b5-4e4a-bd57-786fe6906191
-# ╟─86349e14-31b8-439b-bde1-8659d02eefac
-# ╟─e32a80ee-5c0a-4d57-8d94-a38c43a5a24b
-# ╟─1c5e5260-4972-4bfb-aa85-0ecae2fcb6fd
-# ╟─967d7765-ecdf-4ae2-8197-12e69f274104
-# ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
-# ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
+# ╟─86d0d664-4bef-49a1-abe6-cb038d2a25eb
+# ╟─69b3b701-9026-45ae-9865-a89243385bf9
+# ╟─e1f769ec-a8f4-4786-9970-49badbe5c1b9
+# ╟─88435265-dbd5-4d7f-b7e2-8bf6e6c830f6
+# ╟─16db993b-b9c5-4177-aa74-44c04d464a80
+# ╟─c2387350-04c5-4a97-be1a-d4cca3660a20
+# ╟─ee89c542-b300-4de6-920a-d9507d078cb0
+# ╟─c67ae47f-6974-4eae-911c-854580f8133d
+# ╟─c90be860-d038-42e5-92dd-8cd13ad46325
+# ╟─e8dc228c-67ba-455e-b5d7-cf64ae9c5685
+# ╟─3feaf829-6015-4d4d-bee1-1921e7f2985b
+# ╟─459ef4d5-92ee-4892-a2c9-484a7126927e
+# ╟─cf2868a0-fed5-4e77-8b88-cbb29dd141d3
+# ╟─5c90bca5-756d-4ea5-b331-6b68759d8855
+# ╟─0e3fdf13-1df1-468b-9278-603f8cc0da1d
+# ╟─d659df47-852d-4eb2-b63d-cba2f8f5f7f0
+# ╟─4c3adc0a-e80f-42d0-b7f1-cb92a67035dd
+# ╟─8311554e-e173-461e-9f7c-2ad60c352ea0
 # ╟─c167ff47-f85d-4fe4-b69c-91dcc975923c
 # ╟─40897f3d-6a68-4058-95fc-762aef7c7268
 # ╟─2358348e-6b30-4a1d-ab8c-83d6945e79c5
