@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes"
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -228,15 +235,21 @@ end
 
 # ╔═╡ 2075ba63-a576-4df5-a1d6-8be2f27c2d41
 @bind plot_menu PlutoExtras.@NTBond "Plot Settings" begin
-    plot1 = (@htl("Plot 1"), Select(["survival probability", "mean income"], default = "survival probability"))
-    plot2 = (@htl("Plot 2"), Select(["survival probability", "mean income"], default = "mean income"))
-	show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
-	#switch = (@htl("Switch View"), CheckBox(default = false))
+    plot1 = (
+        @htl("Plot 1"),
+        Select(["survival probability", "mean income"], default = "survival probability")
+    )
+    plot2 = (
+        @htl("Plot 2"),
+        Select(["survival probability", "mean income"], default = "mean income")
+    )
+    show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
+    #switch = (@htl("Switch View"), CheckBox(default = false))
 end
 
 # ╔═╡ bc85326b-60c3-4cd4-bc3a-70ce83800110
 @bind switch_view PlutoExtras.@NTBond "" begin
-	switch = (@htl("Switch View"), CheckBox(default = false))
+    switch = (@htl("Switch View"), CheckBox(default = false))
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
@@ -246,386 +259,386 @@ md"
 
 # ╔═╡ 1d89b285-07b2-400b-804f-88f52b0b96dd
 begin
-	function simulate_nonrecession()
-		retirement_age_range =
-			(retirement_age.min):(retirement_age.step):(retirement_age.max)
-		age_range = (time_points.min):(time_points.step):(time_points.max)
-		withdraws = [
-			Transaction(;
-				start_age = a,
-				amount = AdaptiveWithdraw(;
-					min_withdraw = v,
-					percent_of_real_growth = withdraw_parms.percent_of_real_growth,
-					income_adjustment = withdraw_parms.income_adjustment,
-					volitility = withdraw_parms.volitility
-				)
-			)
-			for a ∈ retirement_age_range for
-			v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
-		]
-		
-		investments = [
-			(
-				Transaction(;
-					start_age = global_parms.start_age,
-					end_age = a,
-					amount = Normal(primary_investment.mean, primary_investment.std)
-				),
-				Transaction(;
-					start_age = supplemental_investment1.start_age,
-					end_age = supplemental_investment1.end_age,
-					amount = Normal(
-						supplemental_investment1.mean,
-						supplemental_investment1.std
-					)
-				),
-				Transaction(;
-					start_age = supplemental_investment2.start_age,
-					end_age = supplemental_investment2.end_age,
-					amount = Normal(
-						supplemental_investment2.mean,
-						supplemental_investment2.std
-					)
-				)
-			) for a ∈ retirement_age_range
-		]
-		
-		gbm = map(
-			αμ -> VarGBM(;
-				αμ,
-				ημ = 0.010,
-				ασ = 0.040,
-				ησ = 0.010,
-				αμᵣ = -0.05,
-				ημᵣ = 0.010,
-				ασᵣ = 0.040,
-				ησᵣ = 0.010
-			),
-			(investment_growth.min):(investment_growth.step):(investment_growth.max)
-		)
-		
-		# configuration options
-		config = (;
-			log_times = age_range,
-			# time step in years 
-			Δt = 1 / 12,
-			# start age of simulation 
-			start_age = global_parms.start_age,
-			# duration of simulation in years
-			duration = global_parms.end_age - global_parms.start_age,
-			# initial investment amount 
-			start_amount = global_parms.start_amount,
-			# withdraw parameters 
-			kw_withdraw = (; withdraws),
-			# invest parameters
-			kw_invest = (; investments),
-			# interest parameters
-			kw_market = (; gbm,),
-			# inflation parameters
-			kw_inflation = (gbm = VarGBM(;
-				αμ = inflation.rate,
-				ημ = 0.005,
-				ασ = 0.005,
-				ησ = 0.0025
-			),),
-			# income parameters 
-			kw_income = (income_sources = (
-				Transaction(;
-					start_age = social_security.start,
-					amount = NominalAmount(;
-						amount = social_security.amount,
-						adjust = !social_security.adjust
-					)
-				),
-				Transaction(;
-					start_age = pension.start,
-					end_age = pension.end_age,
-					amount = NominalAmount(;
-						amount = pension.amount,
-						adjust = !pension.adjust
-					)
-				),
-				Transaction(;
-					start_age = supplemental.start,
-					end_age = supplemental.end_age,
-					amount = NominalAmount(;
-						amount = supplemental.amount,
-						adjust = !supplemental.adjust
-					)
-				)
-			),)
-		)
-		
-		yoked_values =
-			[Pair(
-				(:kw_withdraw, :withdraws, :start_age),
-				(:kw_invest, :investments, 1, :end_age)
-			)]
-		results = grid_search(
-			Model,
-			Logger,
-			global_parms.n_reps,
-			config;
-			threaded = true,
-			yoked_values
-		)
-		df1 = to_dataframe(Model(; config...), results)
-		df1.survived = df1.net_worth .> 0
-		df1.retirement_age = map(x -> x[1].end_age, df1.invest_investments)
-		df1.min_withdraw_amount = map(x -> x.amount.min_withdraw, df1.withdraw_withdraws)
-		df1.mean_growth_rate = map(x -> x.αμ, df1.market_gbm)
-		return df1
-	end
-	
-	function simulate_recession()
-		retirement_age_range =
-			(retirement_age.min):(retirement_age.step):(retirement_age.max)
-		age_range = (time_points.min):(time_points.step):(time_points.max)
-		withdraws = [
-			Transaction(;
-				start_age = a,
-				amount = AdaptiveWithdraw(;
-					min_withdraw = v,
-					percent_of_real_growth = withdraw_parms.percent_of_real_growth,
-					income_adjustment = withdraw_parms.income_adjustment,
-					volitility = withdraw_parms.volitility
-				)
-			)
-			for a ∈ retirement_age_range for
-			v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
-		]
-		
-		investments = [
-			(
-				Transaction(;
-					start_age = global_parms.start_age,
-					end_age = a,
-					amount = Normal(primary_investment.mean, primary_investment.std)
-				),
-				Transaction(;
-					start_age = supplemental_investment1.start_age,
-					end_age = supplemental_investment1.end_age,
-					amount = Normal(
-						supplemental_investment1.mean,
-						supplemental_investment1.std
-					)
-				),
-				Transaction(;
-					start_age = supplemental_investment2.start_age,
-					end_age = supplemental_investment2.end_age,
-					amount = Normal(
-						supplemental_investment2.mean,
-						supplemental_investment2.std
-					)
-				)
-			) for a ∈ retirement_age_range
-		]
-	
-		gbm = map(
-			αμ -> VarGBM(;
-				αμ,
-				ημ = 0.010,
-				ασ = 0.040,
-				ησ = 0.010,
-				αμᵣ = recession_parms.rate,
-				ημᵣ = 0.010,
-				ασᵣ = 0.040,
-				ησᵣ = 0.010
-			),
-			(investment_growth.min):(investment_growth.step):(investment_growth.max)
-		)
-	
-		recessions = [
-			Transaction(; start_age = a, end_age = a + recession_parms.duration) for
-			a ∈ retirement_age_range
-		]
-		
-		# configuration options
-		config = (;
-			log_times = age_range,
-			# time step in years 
-			Δt = 1 / 12,
-			# start age of simulation 
-			start_age = global_parms.start_age,
-			# duration of simulation in years
-			duration = global_parms.end_age - global_parms.start_age,
-			# initial investment amount 
-			start_amount = start_amount = global_parms.start_amount,
-			# withdraw parameters 
-			kw_withdraw = (; withdraws),
-			# invest parameters
-			kw_invest = (; investments),
-			# interest parameters
-			kw_market = (; gbm, recessions),
-			# inflation parameters
-			kw_inflation = (gbm = VarGBM(;
-				αμ = inflation.rate,
-				ημ = 0.005,
-				ασ = 0.005,
-				ησ = 0.0025
-			),),
-			# income parameters 
-			kw_income = (income_sources = (
-				Transaction(;
-					start_age = social_security.start,
-					amount = NominalAmount(;
-						amount = social_security.amount,
-						adjust = !social_security.adjust
-					)
-				),
-				Transaction(;
-					start_age = pension.start,
-					end_age = pension.end_age,
-					amount = NominalAmount(;
-						amount = pension.amount,
-						adjust = !pension.adjust
-					)
-				),
-				Transaction(;
-					start_age = supplemental.start,
-					end_age = supplemental.end_age,
-					amount = NominalAmount(;
-						amount = supplemental.amount,
-						adjust = !supplemental.adjust
-					)
-				)
-			),)
-		)
-	
-		yoked_values =
-			[
-				Pair(
-					(:kw_withdraw, :withdraws, :start_age),
-					(:kw_invest, :investments, 1, :end_age)
-				),
-				Pair(
-					(:kw_withdraw, :withdraws, :start_age),
-					(:kw_market, :recessions, :start_age)
-				)]
-		results = grid_search(
-			Model,
-			Logger,
-			global_parms.n_reps,
-			config;
-			threaded = true,
-			yoked_values
-		)
-		df2 = to_dataframe(Model(; config...), results)
-		df2.survived = df2.net_worth .> 0
-		df2.retirement_age = map(x -> x[1].end_age, df2.invest_investments)
-		df2.min_withdraw_amount = map(x -> x.amount.min_withdraw, df2.withdraw_withdraws)
-		df2.mean_growth_rate = map(x -> x.αμ, df2.market_gbm)
-		return df2
-	end
-	nothing
+    function simulate_nonrecession()
+        retirement_age_range =
+            (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        withdraws = [
+            Transaction(;
+                start_age = a,
+                amount = AdaptiveWithdraw(;
+                    min_withdraw = v,
+                    percent_of_real_growth = withdraw_parms.percent_of_real_growth,
+                    income_adjustment = withdraw_parms.income_adjustment,
+                    volitility = withdraw_parms.volitility
+                )
+            )
+            for a ∈ retirement_age_range for
+            v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
+        ]
+
+        investments = [
+            (
+                Transaction(;
+                    start_age = global_parms.start_age,
+                    end_age = a,
+                    amount = Normal(primary_investment.mean, primary_investment.std)
+                ),
+                Transaction(;
+                    start_age = supplemental_investment1.start_age,
+                    end_age = supplemental_investment1.end_age,
+                    amount = Normal(
+                        supplemental_investment1.mean,
+                        supplemental_investment1.std
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental_investment2.start_age,
+                    end_age = supplemental_investment2.end_age,
+                    amount = Normal(
+                        supplemental_investment2.mean,
+                        supplemental_investment2.std
+                    )
+                )
+            ) for a ∈ retirement_age_range
+        ]
+
+        gbm = map(
+            αμ -> VarGBM(;
+                αμ,
+                ημ = 0.010,
+                ασ = 0.040,
+                ησ = 0.010,
+                αμᵣ = -0.05,
+                ημᵣ = 0.010,
+                ασᵣ = 0.040,
+                ησᵣ = 0.010
+            ),
+            (investment_growth.min):(investment_growth.step):(investment_growth.max)
+        )
+
+        # configuration options
+        config = (;
+            log_times = age_range,
+            # time step in years 
+            Δt = 1 / 12,
+            # start age of simulation 
+            start_age = global_parms.start_age,
+            # duration of simulation in years
+            duration = global_parms.end_age - global_parms.start_age,
+            # initial investment amount 
+            start_amount = global_parms.start_amount,
+            # withdraw parameters 
+            kw_withdraw = (; withdraws),
+            # invest parameters
+            kw_invest = (; investments),
+            # interest parameters
+            kw_market = (; gbm,),
+            # inflation parameters
+            kw_inflation = (gbm = VarGBM(;
+                αμ = inflation.rate,
+                ημ = 0.005,
+                ασ = 0.005,
+                ησ = 0.0025
+            ),),
+            # income parameters 
+            kw_income = (income_sources = (
+                Transaction(;
+                    start_age = social_security.start,
+                    amount = NominalAmount(;
+                        amount = social_security.amount,
+                        adjust = !social_security.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = pension.start,
+                    end_age = pension.end_age,
+                    amount = NominalAmount(;
+                        amount = pension.amount,
+                        adjust = !pension.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental.start,
+                    end_age = supplemental.end_age,
+                    amount = NominalAmount(;
+                        amount = supplemental.amount,
+                        adjust = !supplemental.adjust
+                    )
+                )
+            ),)
+        )
+
+        yoked_values =
+            [Pair(
+                (:kw_withdraw, :withdraws, :start_age),
+                (:kw_invest, :investments, 1, :end_age)
+            )]
+        results = grid_search(
+            Model,
+            Logger,
+            global_parms.n_reps,
+            config;
+            threaded = true,
+            yoked_values
+        )
+        df1 = to_dataframe(Model(; config...), results)
+        df1.survived = df1.net_worth .> 0
+        df1.retirement_age = map(x -> x[1].end_age, df1.invest_investments)
+        df1.min_withdraw_amount = map(x -> x.amount.min_withdraw, df1.withdraw_withdraws)
+        df1.mean_growth_rate = map(x -> x.αμ, df1.market_gbm)
+        return df1
+    end
+
+    function simulate_recession()
+        retirement_age_range =
+            (retirement_age.min):(retirement_age.step):(retirement_age.max)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        withdraws = [
+            Transaction(;
+                start_age = a,
+                amount = AdaptiveWithdraw(;
+                    min_withdraw = v,
+                    percent_of_real_growth = withdraw_parms.percent_of_real_growth,
+                    income_adjustment = withdraw_parms.income_adjustment,
+                    volitility = withdraw_parms.volitility
+                )
+            )
+            for a ∈ retirement_age_range for
+            v ∈ (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
+        ]
+
+        investments = [
+            (
+                Transaction(;
+                    start_age = global_parms.start_age,
+                    end_age = a,
+                    amount = Normal(primary_investment.mean, primary_investment.std)
+                ),
+                Transaction(;
+                    start_age = supplemental_investment1.start_age,
+                    end_age = supplemental_investment1.end_age,
+                    amount = Normal(
+                        supplemental_investment1.mean,
+                        supplemental_investment1.std
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental_investment2.start_age,
+                    end_age = supplemental_investment2.end_age,
+                    amount = Normal(
+                        supplemental_investment2.mean,
+                        supplemental_investment2.std
+                    )
+                )
+            ) for a ∈ retirement_age_range
+        ]
+
+        gbm = map(
+            αμ -> VarGBM(;
+                αμ,
+                ημ = 0.010,
+                ασ = 0.040,
+                ησ = 0.010,
+                αμᵣ = recession_parms.rate,
+                ημᵣ = 0.010,
+                ασᵣ = 0.040,
+                ησᵣ = 0.010
+            ),
+            (investment_growth.min):(investment_growth.step):(investment_growth.max)
+        )
+
+        recessions = [
+            Transaction(; start_age = a, end_age = a + recession_parms.duration) for
+            a ∈ retirement_age_range
+        ]
+
+        # configuration options
+        config = (;
+            log_times = age_range,
+            # time step in years 
+            Δt = 1 / 12,
+            # start age of simulation 
+            start_age = global_parms.start_age,
+            # duration of simulation in years
+            duration = global_parms.end_age - global_parms.start_age,
+            # initial investment amount 
+            start_amount = start_amount = global_parms.start_amount,
+            # withdraw parameters 
+            kw_withdraw = (; withdraws),
+            # invest parameters
+            kw_invest = (; investments),
+            # interest parameters
+            kw_market = (; gbm, recessions),
+            # inflation parameters
+            kw_inflation = (gbm = VarGBM(;
+                αμ = inflation.rate,
+                ημ = 0.005,
+                ασ = 0.005,
+                ησ = 0.0025
+            ),),
+            # income parameters 
+            kw_income = (income_sources = (
+                Transaction(;
+                    start_age = social_security.start,
+                    amount = NominalAmount(;
+                        amount = social_security.amount,
+                        adjust = !social_security.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = pension.start,
+                    end_age = pension.end_age,
+                    amount = NominalAmount(;
+                        amount = pension.amount,
+                        adjust = !pension.adjust
+                    )
+                ),
+                Transaction(;
+                    start_age = supplemental.start,
+                    end_age = supplemental.end_age,
+                    amount = NominalAmount(;
+                        amount = supplemental.amount,
+                        adjust = !supplemental.adjust
+                    )
+                )
+            ),)
+        )
+
+        yoked_values =
+            [
+                Pair(
+                    (:kw_withdraw, :withdraws, :start_age),
+                    (:kw_invest, :investments, 1, :end_age)
+                ),
+                Pair(
+                    (:kw_withdraw, :withdraws, :start_age),
+                    (:kw_market, :recessions, :start_age)
+                )]
+        results = grid_search(
+            Model,
+            Logger,
+            global_parms.n_reps,
+            config;
+            threaded = true,
+            yoked_values
+        )
+        df2 = to_dataframe(Model(; config...), results)
+        df2.survived = df2.net_worth .> 0
+        df2.retirement_age = map(x -> x[1].end_age, df2.invest_investments)
+        df2.min_withdraw_amount = map(x -> x.amount.min_withdraw, df2.withdraw_withdraws)
+        df2.mean_growth_rate = map(x -> x.αμ, df2.market_gbm)
+        return df2
+    end
+    nothing
 end
 
 # ╔═╡ 441f980e-3d6b-445a-ad04-ec0db72a5bfe
 begin
-	function plot_mean_income(df, clims)
-		age_range = (time_points.min):(time_points.step):(time_points.max)
-		mean_income_plots1 = plot_sensitivity(
-			df,
-			[:retirement_age, :min_withdraw_amount],
-			:total_income,
-			:mean_growth_rate;
-			row_label = "growth:",
-			xlabel = "Retirement Age",
-			ylabel = "Min Withdraw",
-			colorbar_title = "Mean Total Income",
-			clims,
-			age = age_range,
-			grid_label_size = 12,
-			margin = 0.35Plots.cm,
-			xaxis = font(9),
-			yaxis = font(9),
-			size = (1200, 450)
-		)
-	end
-	
-	function get_mean_income_extrema(df)
-		return extrema(
-				combine(
-				groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
-				:total_income => mean => :mean
-			).mean
-		)
-	end
+    function plot_mean_income(df, clims)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        mean_income_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "Mean Total Income",
+            clims,
+            age = age_range,
+            grid_label_size = 12,
+            margin = 0.35Plots.cm,
+            xaxis = font(9),
+            yaxis = font(9),
+            size = (1200, 450)
+        )
+    end
 
+    function get_mean_income_extrema(df)
+        return extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => mean => :mean
+        ).mean
+        )
+    end
 
+    function plot_survival_probability(df)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        return plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :survived,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            clims = (0, 1),
+            colorbar_title = "Survival Probability",
+            age = age_range,
+            grid_label_size = 12,
+            margin = 0.35Plots.cm,
+            xaxis = font(9),
+            yaxis = font(9),
+            size = (1200, 450)
+        )
+    end
 
-
-	function plot_survival_probability(df)
-	    age_range = (time_points.min):(time_points.step):(time_points.max)
-		return plot_sensitivity(
-			df,
-			[:retirement_age, :min_withdraw_amount],
-			:survived,
-			:mean_growth_rate;
-			row_label = "growth:",
-			xlabel = "Retirement Age",
-			ylabel = "Min Withdraw",
-			clims = (0, 1),
-			colorbar_title = "Survival Probability",
-			age = age_range,
-			grid_label_size = 12,
-			margin = 0.35Plots.cm,
-			xaxis = font(9),
-			yaxis = font(9),
-			size = (1200, 450)
-		)
-	end
-
-	function get_survival_prob_extrema(df)
-		return extrema(
-			combine(
-				groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
-				:total_income => mean => :mean
-			).mean
-		)
-	end
-	nothing
+    function get_survival_prob_extrema(df)
+        return extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => mean => :mean
+        ).mean
+        )
+    end
+    nothing
 end
 
 # ╔═╡ f1276ea5-1a18-4309-8eca-e47da653f924
 # ╠═╡ show_logs = false
 begin
-	Random.seed!(global_parms.seed)
-	if run_simulation.run 
-		df_nonrecession = simulate_nonrecession()
-		df_recession = simulate_recession()
-		if plot_menu.plot1 == "survival probability"
-			plot_non_recession1 = plot_survival_probability(df_nonrecession)
-			plot_recession1 = plot_survival_probability(df_recession)
-			header_non_recession1 = md"""#### Portfolio Survival: No Recession at Retirement"""
-			header_recession1 = md"""#### Portfolio Survival: Recession at Retirement"""
-		elseif plot_menu.plot1 == "mean income"
-			local _c1 = get_mean_income_extrema(df_nonrecession)
-			local _c2 = get_mean_income_extrema(df_recession)
-			local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
-			plot_non_recession1 = plot_mean_income(df_nonrecession, clims)
-			plot_recession1 = plot_mean_income(df_recession, clims)
-			header_non_recession1 = md"""#### Mean Total Income: No Recession at Retirement"""
-			header_recession1 = md"""#### Mean Total Income: Recession at Retirement"""
-		end
+    Random.seed!(global_parms.seed)
+    if run_simulation.run
+        df_nonrecession = simulate_nonrecession()
+        df_recession = simulate_recession()
+        if plot_menu.plot1 == "survival probability"
+            plot_non_recession1 = plot_survival_probability(df_nonrecession)
+            plot_recession1 = plot_survival_probability(df_recession)
+            header_non_recession1 =
+                md"""#### Portfolio Survival: No Recession at Retirement"""
+            header_recession1 = md"""#### Portfolio Survival: Recession at Retirement"""
+        elseif plot_menu.plot1 == "mean income"
+            local _c1 = get_mean_income_extrema(df_nonrecession)
+            local _c2 = get_mean_income_extrema(df_recession)
+            local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
+            plot_non_recession1 = plot_mean_income(df_nonrecession, clims)
+            plot_recession1 = plot_mean_income(df_recession, clims)
+            header_non_recession1 =
+                md"""#### Mean Total Income: No Recession at Retirement"""
+            header_recession1 = md"""#### Mean Total Income: Recession at Retirement"""
+        end
 
-		
-		if plot_menu.plot2 == "survival probability"
-			plot_non_recession2 = plot_survival_probability(df_nonrecession)
-			plot_recession2 = plot_survival_probability(df_recession)
-			header_non_recession2 = md"""#### Portfolio Survival: No Recession at Retirement"""
-			header_recession2 = md"""#### Portfolio Survival: Recession at Retirement"""
-		elseif plot_menu.plot2 == "mean income"
-			local _c1 = get_mean_income_extrema(df_nonrecession)
-			local _c2 = get_mean_income_extrema(df_recession)
-			local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
-			plot_non_recession2 = plot_mean_income(df_nonrecession, clims)
-			plot_recession2 = plot_mean_income(df_recession, clims)
-			header_non_recession2 = md"""#### Mean Total Income: No Recession at Retirement"""
-			header_recession2 = md"""#### Mean Total Income: Recession at Retirement"""
-		end
-	end
-	nothing
+        if plot_menu.plot2 == "survival probability"
+            plot_non_recession2 = plot_survival_probability(df_nonrecession)
+            plot_recession2 = plot_survival_probability(df_recession)
+            header_non_recession2 =
+                md"""#### Portfolio Survival: No Recession at Retirement"""
+            header_recession2 = md"""#### Portfolio Survival: Recession at Retirement"""
+        elseif plot_menu.plot2 == "mean income"
+            local _c1 = get_mean_income_extrema(df_nonrecession)
+            local _c2 = get_mean_income_extrema(df_recession)
+            local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
+            plot_non_recession2 = plot_mean_income(df_nonrecession, clims)
+            plot_recession2 = plot_mean_income(df_recession, clims)
+            header_non_recession2 =
+                md"""#### Mean Total Income: No Recession at Retirement"""
+            header_recession2 = md"""#### Mean Total Income: Recession at Retirement"""
+        end
+    end
+    nothing
 end
 
 # ╔═╡ b881055c-09ee-4869-8e36-5bf069d6bc23
@@ -633,17 +646,17 @@ run_simulation.run ? header_non_recession1 : nothing
 
 # ╔═╡ 44c12623-53b5-4e4a-bd57-786fe6906191
 # ╠═╡ show_logs = false
-run_simulation.run ? plot_non_recession1  : nothing
+run_simulation.run ? plot_non_recession1 : nothing
 
 # ╔═╡ 86349e14-31b8-439b-bde1-8659d02eefac
-let 
-	label = nothing 
-	if run_simulation.run
-	    label = header_non_recession2
-	    if switch_view.switch
-	        label = header_recession2
-	    end
-	end
+let
+    label = nothing
+    if run_simulation.run
+        label = header_non_recession2
+        if switch_view.switch
+            label = header_recession2
+        end
+    end
     label
 end
 
@@ -652,20 +665,20 @@ end
 let
     plot = run_simulation.run ? plot_non_recession2 : nothing
     if switch_view.switch
-        plot = run_simulation.run ? plot_recession1  : nothing
+        plot = run_simulation.run ? plot_recession1 : nothing
     end
     plot
 end
 
 # ╔═╡ 1c5e5260-4972-4bfb-aa85-0ecae2fcb6fd
 let
-	label = nothing 
-		if run_simulation.run
-	    label = header_recession1
-	    if switch_view.switch
-	        label = header_non_recession2
-	    end
-	end
+    label = nothing
+    if run_simulation.run
+        label = header_recession1
+        if switch_view.switch
+            label = header_non_recession2
+        end
+    end
     label
 end
 
