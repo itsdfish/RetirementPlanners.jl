@@ -194,10 +194,18 @@ md"""
 """
 
 # ╔═╡ bda54ee1-c009-461c-b7d4-d105e340da56
-@bind investment_growth PlutoExtras.@NTBond "Investment Growth Rate" begin
+@bind investment_growth PlutoExtras.@NTBond "Mean Growth Rate" begin
     min = (@htl("Min"), NumberField(-2:1e-5:2, default = 0.05))
     max = (@htl("Max"), NumberField(-2:1e-5:2, default = 0.100))
     step = (@htl("Step"), NumberField(0:1e-6:2, default = 0.025))
+end
+
+# ╔═╡ 7e4cbe2a-dd08-4298-b9a4-32f0f659efa8
+@bind investment_parms PlutoExtras.@NTBond "Growth Parameters" begin
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
 end
 
 # ╔═╡ 989bd0e5-33d5-4974-a044-bd2af180b5e4
@@ -207,7 +215,11 @@ md"""
 
 # ╔═╡ cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
 @bind inflation PlutoExtras.@NTBond "Inflation" begin
-    rate = (@htl("Rate"), NumberField(-2:1e-5:2, default = 0.035))
+    mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:2, default = 0.035))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.005))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.005))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.0025))
 end
 
 # ╔═╡ 42ac4169-ec26-4882-aa64-aeed3e609ce0
@@ -217,7 +229,11 @@ md"""
 
 # ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
 @bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
-    rate = (@htl("Growth Rate"), NumberField(-2:1e-5:0, default = -0.05))
+    mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:0, default = -0.05))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
     duration = (@htl("Duration"), NumberField(0:1e-3:30, default = 3))
 end
 
@@ -237,19 +253,36 @@ end
 @bind plot_menu PlutoExtras.@NTBond "Plot Settings" begin
     plot1 = (
         @htl("Plot 1"),
-        Select(["survival probability", "mean income"], default = "survival probability")
+        Select(
+            [
+                "survival probability",
+                "mean income",
+                "standard deviation income",
+                "10th quantile income",
+                "90th quantile income"
+            ],
+            default = "survival probability"
+        )
     )
     plot2 = (
         @htl("Plot 2"),
-        Select(["survival probability", "mean income"], default = "mean income")
+        Select(
+            [
+                "survival probability",
+                "mean income",
+                "standard deviation income",
+                "10th quantile income",
+                "90th quantile income"
+            ],
+            default = "mean income"
+        )
     )
-    show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
-    #switch = (@htl("Switch View"), CheckBox(default = false))
 end
 
 # ╔═╡ bc85326b-60c3-4cd4-bc3a-70ce83800110
 @bind switch_view PlutoExtras.@NTBond "" begin
     switch = (@htl("Switch View"), CheckBox(default = false))
+    show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
@@ -306,9 +339,9 @@ begin
         gbm = map(
             αμ -> VarGBM(;
                 αμ,
-                ημ = 0.010,
-                ασ = 0.040,
-                ησ = 0.010,
+                ημ = investment_parms.std_rate,
+                ασ = investment_parms.mean_volitility,
+                ησ = investment_parms.std_volitility,
                 αμᵣ = -0.05,
                 ημᵣ = 0.010,
                 ασᵣ = 0.040,
@@ -336,10 +369,10 @@ begin
             kw_market = (; gbm,),
             # inflation parameters
             kw_inflation = (gbm = VarGBM(;
-                αμ = inflation.rate,
-                ημ = 0.005,
-                ασ = 0.005,
-                ησ = 0.0025
+                αμ = inflation.mean_rate,
+                ημ = inflation.std_rate,
+                ασ = inflation.mean_volitility,
+                ησ = inflation.std_volitility
             ),),
             # income parameters 
             kw_income = (income_sources = (
@@ -437,13 +470,13 @@ begin
         gbm = map(
             αμ -> VarGBM(;
                 αμ,
-                ημ = 0.010,
-                ασ = 0.040,
-                ησ = 0.010,
-                αμᵣ = recession_parms.rate,
-                ημᵣ = 0.010,
-                ασᵣ = 0.040,
-                ησᵣ = 0.010
+                ημ = investment_parms.std_rate,
+                ασ = investment_parms.mean_volitility,
+                ησ = investment_parms.std_volitility,
+                αμᵣ = recession_parms.mean_rate,
+                ημᵣ = recession_parms.std_rate,
+                ασᵣ = recession_parms.mean_volitility,
+                ησᵣ = recession_parms.std_volitility
             ),
             (investment_growth.min):(investment_growth.step):(investment_growth.max)
         )
@@ -472,10 +505,10 @@ begin
             kw_market = (; gbm, recessions),
             # inflation parameters
             kw_inflation = (gbm = VarGBM(;
-                αμ = inflation.rate,
-                ημ = 0.005,
-                ασ = 0.005,
-                ησ = 0.0025
+                αμ = inflation.mean_rate,
+                ημ = inflation.std_rate,
+                ασ = inflation.mean_volitility,
+                ησ = inflation.std_volitility
             ),),
             # income parameters 
             kw_income = (income_sources = (
@@ -535,6 +568,99 @@ end
 
 # ╔═╡ 441f980e-3d6b-445a-ad04-ec0db72a5bfe
 begin
+    function plot_std_income(df, clims)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        mean_income_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "STD Total Income",
+            z_func = std,
+            clims,
+            age = age_range,
+            grid_label_size = 12,
+            margin = 0.35Plots.cm,
+            xaxis = font(9),
+            yaxis = font(9),
+            size = (1200, 450)
+        )
+    end
+
+    function get_std_income_extrema(df)
+        return extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => std => :std
+        ).std
+        )
+    end
+
+    function plot_90_quantile_income(df, clims)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        mean_income_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "90th Quantile Total Income",
+            z_func = x -> quantile(x, 0.90),
+            clims,
+            age = age_range,
+            grid_label_size = 12,
+            margin = 0.35Plots.cm,
+            xaxis = font(9),
+            yaxis = font(9),
+            size = (1200, 450)
+        )
+    end
+
+    function get_90_quantile_income_extrema(df)
+        return extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => (x -> quantile(x, 0.90)) => :x
+        ).x
+        )
+    end
+
+    function plot_10_quantile_income(df, clims)
+        age_range = (time_points.min):(time_points.step):(time_points.max)
+        mean_income_plots1 = plot_sensitivity(
+            df,
+            [:retirement_age, :min_withdraw_amount],
+            :total_income,
+            :mean_growth_rate;
+            row_label = "growth:",
+            xlabel = "Retirement Age",
+            ylabel = "Min Withdraw",
+            colorbar_title = "10th Quantile Total Income",
+            z_func = x -> quantile(x, 0.10),
+            clims,
+            age = age_range,
+            grid_label_size = 12,
+            margin = 0.35Plots.cm,
+            xaxis = font(9),
+            yaxis = font(9),
+            size = (1200, 450)
+        )
+    end
+
+    function get_10_quantile_income_extrema(df)
+        return extrema(
+            combine(
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => (x -> quantile(x, 0.10)) => :x
+        ).x
+        )
+    end
+
     function plot_mean_income(df, clims)
         age_range = (time_points.min):(time_points.step):(time_points.max)
         mean_income_plots1 = plot_sensitivity(
@@ -602,8 +728,41 @@ end
 begin
     Random.seed!(global_parms.seed)
     if run_simulation.run
+        # run the simulations
         df_nonrecession = simulate_nonrecession()
         df_recession = simulate_recession()
+
+        # compute clims for contour plot
+        local vals = Float64[]
+        if plot_menu.plot1 == "mean income"
+            push!(vals, get_mean_income_extrema(df_nonrecession)...)
+            push!(vals, get_mean_income_extrema(df_recession)...)
+        elseif plot_menu.plot1 == "standard deviation income"
+            push!(vals, get_std_income_extrema(df_nonrecession)...)
+            push!(vals, get_std_income_extrema(df_recession)...)
+        elseif plot_menu.plot1 == "90th quantile income"
+            push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_90_quantile_income_extrema(df_recession)...)
+        elseif plot_menu.plot1 == "10th quantile income"
+            push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_10_quantile_income_extrema(df_recession)...)
+        end
+
+        if plot_menu.plot2 == "mean income"
+            push!(vals, get_mean_income_extrema(df_nonrecession)...)
+            push!(vals, get_mean_income_extrema(df_recession)...)
+        elseif plot_menu.plot2 == "standard deviation income"
+            push!(vals, get_std_income_extrema(df_nonrecession)...)
+            push!(vals, get_std_income_extrema(df_recession)...)
+        elseif plot_menu.plot2 == "90th quantile income"
+            push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_90_quantile_income_extrema(df_recession)...)
+        elseif plot_menu.plot2 == "10th quantile income"
+            push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_10_quantile_income_extrema(df_recession)...)
+        end
+        local clims = extrema(vals)
+        # make plots
         if plot_menu.plot1 == "survival probability"
             plot_non_recession1 = plot_survival_probability(df_nonrecession)
             plot_recession1 = plot_survival_probability(df_recession)
@@ -611,14 +770,32 @@ begin
                 md"""#### Portfolio Survival: No Recession at Retirement"""
             header_recession1 = md"""#### Portfolio Survival: Recession at Retirement"""
         elseif plot_menu.plot1 == "mean income"
-            local _c1 = get_mean_income_extrema(df_nonrecession)
-            local _c2 = get_mean_income_extrema(df_recession)
-            local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
             plot_non_recession1 = plot_mean_income(df_nonrecession, clims)
             plot_recession1 = plot_mean_income(df_recession, clims)
             header_non_recession1 =
                 md"""#### Mean Total Income: No Recession at Retirement"""
             header_recession1 = md"""#### Mean Total Income: Recession at Retirement"""
+        elseif plot_menu.plot1 == "standard deviation income"
+            plot_non_recession1 = plot_std_income(df_nonrecession, clims)
+            plot_recession1 = plot_std_income(df_recession, clims)
+            header_non_recession1 =
+                md"""#### Standard Deviation Total Income: No Recession at Retirement"""
+            header_recession1 =
+                md"""#### Standard Deviation Total Income: Recession at Retirement"""
+        elseif plot_menu.plot1 == "90th quantile income"
+            plot_non_recession1 = plot_90_quantile_income(df_nonrecession, clims)
+            plot_recession1 = plot_90_quantile_income(df_recession, clims)
+            header_non_recession1 =
+                md"""#### 90th Quantile Total Income: No Recession at Retirement"""
+            header_recession1 =
+                md"""#### 90th Quantile Total Income: Recession at Retirement"""
+        elseif plot_menu.plot1 == "10th quantile income"
+            plot_non_recession1 = plot_10_quantile_income(df_nonrecession, clims)
+            plot_recession1 = plot_10_quantile_income(df_recession, clims)
+            header_non_recession1 =
+                md"""#### 10th Quantile Total Income: No Recession at Retirement"""
+            header_recession1 =
+                md"""#### 10th Quantile Total Income: Recession at Retirement"""
         end
 
         if plot_menu.plot2 == "survival probability"
@@ -628,14 +805,32 @@ begin
                 md"""#### Portfolio Survival: No Recession at Retirement"""
             header_recession2 = md"""#### Portfolio Survival: Recession at Retirement"""
         elseif plot_menu.plot2 == "mean income"
-            local _c1 = get_mean_income_extrema(df_nonrecession)
-            local _c2 = get_mean_income_extrema(df_recession)
-            local clims = (min(_c1[1], _c2[1]), max(_c1[2], _c2[2]))
             plot_non_recession2 = plot_mean_income(df_nonrecession, clims)
             plot_recession2 = plot_mean_income(df_recession, clims)
             header_non_recession2 =
                 md"""#### Mean Total Income: No Recession at Retirement"""
             header_recession2 = md"""#### Mean Total Income: Recession at Retirement"""
+        elseif plot_menu.plot2 == "standard deviation income"
+            plot_non_recession2 = plot_std_income(df_nonrecession, clims)
+            plot_recession2 = plot_std_income(df_recession, clims)
+            header_non_recession2 =
+                md"""#### Standard Deviation Total Income: No Recession at Retirement"""
+            header_recession2 =
+                md"""#### Standard Deviation Total Income: Recession at Retirement"""
+        elseif plot_menu.plot2 == "90th quantile income"
+            plot_non_recession2 = plot_90_quantile_income(df_nonrecession, clims)
+            plot_recession2 = plot_90_quantile_income(df_recession, clims)
+            header_non_recession2 =
+                md"""#### 90th Quantile Total Income: No Recession at Retirement"""
+            header_recession2 =
+                md"""#### 90th Quantile Total Income: Recession at Retirement"""
+        elseif plot_menu.plot2 == "10th quantile income"
+            plot_non_recession2 = plot_10_quantile_income(df_nonrecession, clims)
+            plot_recession2 = plot_10_quantile_income(df_recession, clims)
+            header_non_recession2 =
+                md"""#### 10th Quantile Total Income: No Recession at Retirement"""
+            header_recession2 =
+                md"""#### 10th Quantile Total Income: Recession at Retirement"""
         end
     end
     nothing
@@ -654,7 +849,7 @@ let
     if run_simulation.run
         label = header_non_recession2
         if switch_view.switch
-            label = header_recession2
+            label = header_recession1
         end
     end
     label
@@ -701,31 +896,33 @@ run_simulation.run ? plot_recession2 : nothing
 
 # ╔═╡ 40897f3d-6a68-4058-95fc-762aef7c7268
 let
-    if plot_menu.show_growth_rate
-        n_rates =
-            length((investment_growth.min):(investment_growth.step):(investment_growth.max))
-        @df df_recession histogram(
-            :interest,
-            norm = true,
-            leg = true,
-            grid = false,
-            group = :mean_growth_rate,
-            xlabel = "Investment Growth Rate",
-            ylabel = "Density",
-            xlims = (-0.6, 0.9),
-            color = RGB(148 / 255, 173 / 255, 144 / 255),
-            layout = n_rates,
-            legendtitle = "rate",
-            legendtitlefontsize = 9
-            #size = (900, 400)
-        )
-        vline!(
-            fill(0, 1, n_rates),
-            color = :black,
-            linestyle = :dash,
-            linewidth = 2,
-            label = ""
-        )
+    if run_simulation.run
+        if switch_view.show_growth_rate
+            n_rates =
+                length((investment_growth.min):(investment_growth.step):(investment_growth.max))
+            @df df_recession histogram(
+                :interest,
+                norm = true,
+                leg = true,
+                grid = false,
+                group = :mean_growth_rate,
+                xlabel = "Investment Growth Rate",
+                ylabel = "Density",
+                xlims = (-0.6, 0.9),
+                color = RGB(148 / 255, 173 / 255, 144 / 255),
+                layout = n_rates,
+                legendtitle = "rate",
+                legendtitlefontsize = 9
+                #size = (900, 400)
+            )
+            vline!(
+                fill(0, 1, n_rates),
+                color = :black,
+                linestyle = :dash,
+                linewidth = 2,
+                label = ""
+            )
+        end
     end
 end
 
@@ -958,6 +1155,10 @@ let
      - Max: the naximum growth rate considered 
      - Step: the increment between successive growth rates
 
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+
      ##### Additional Information
 
      ###### Selecting Values
@@ -972,17 +1173,17 @@ let
 
      ###### Model Details
 
-     The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, we have:
+     The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
 
-     $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
 
-     $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
 
      As an example, consider the case in which $\mu_{\alpha} = .075$ and $\sigma_{\alpha} = .01$, then approximately 95% of sampled values will be $\mu = .075 \pm 2 \cdot .01$. 
 
-     !!! warning "Warning"
-     	Selecting a large number of growth rates will increase the simulation run time.
+     
+    !!! warning "Warning"
+    	Selecting a large number of growth rates will increase the simulation run time.
      """
     details(text; summary = "Additional Information")
 end
@@ -993,7 +1194,10 @@ let
 
     Inflation---the general increase in prices---is important to consider because it decreases purchasing power and therefore the *real* growth of your investments. 
 
-    - Rate: the average growth rate of inflation across simulations. See details below.
+    - Mean Rate: the average growth rate of inflation across simulations.
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
 
     ##### Additional Information
 
@@ -1003,11 +1207,11 @@ let
 
     ###### Model Details
 
-    The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, we have:
+    The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
 
-    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, .005)$
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
 
-    $\sigma \sim \mathrm{TNormal}(.005, .0025)_{0}^{\infty}$
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
 
     As an example, consider the case in which $\mu_{\alpha} = .035$ and $\sigma_{\alpha} = .005$, then approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. 
 
@@ -1025,9 +1229,17 @@ let
 
     * Duration: the duration of the recession in years
 
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+
     ##### Additional Information
 
-    As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. The GBM is defined as follows, where $\mu_\alpha < 0$ corresponds to the adjustable growth rate parameter above. 
+    As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. Letting $\mu_{\alpha} < 0$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
+
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
+
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
 
     $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
 
@@ -2825,6 +3037,7 @@ version = "1.4.1+1"
 # ╟─49ae8441-8a70-4bdc-9cd3-a7d7d5437e82
 # ╟─ca02fd88-b208-4492-ae31-85d5c8707af9
 # ╟─bda54ee1-c009-461c-b7d4-d105e340da56
+# ╟─7e4cbe2a-dd08-4298-b9a4-32f0f659efa8
 # ╟─642254f2-c9e0-4638-a8e3-c4c6984a7b9c
 # ╟─989bd0e5-33d5-4974-a044-bd2af180b5e4
 # ╟─cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
