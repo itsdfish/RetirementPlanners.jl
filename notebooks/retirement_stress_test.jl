@@ -7,7 +7,14 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(
+                Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                "AbstractPlutoDingetjes"
+            )].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -195,9 +202,10 @@ end
 
 # ╔═╡ 7e4cbe2a-dd08-4298-b9a4-32f0f659efa8
 @bind investment_parms PlutoExtras.@NTBond "Growth Parameters" begin
-	std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
-	mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
-	std_volitility = (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
 end
 
 # ╔═╡ 989bd0e5-33d5-4974-a044-bd2af180b5e4
@@ -208,9 +216,10 @@ md"""
 # ╔═╡ cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
 @bind inflation PlutoExtras.@NTBond "Inflation" begin
     mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:2, default = 0.035))
-	std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.005))
-	mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.005))
-	std_volitility = (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.0025))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.005))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.005))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.0025))
 end
 
 # ╔═╡ 42ac4169-ec26-4882-aa64-aeed3e609ce0
@@ -221,9 +230,10 @@ md"""
 # ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
 @bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
     mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:0, default = -0.05))
-	std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
-	mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
-	std_volitility = (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    std_volitility =
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
     duration = (@htl("Duration"), NumberField(0:1e-3:30, default = 3))
 end
 
@@ -243,18 +253,36 @@ end
 @bind plot_menu PlutoExtras.@NTBond "Plot Settings" begin
     plot1 = (
         @htl("Plot 1"),
-        Select(["survival probability", "mean income", "standard deviation income", "10th quantile income", "90th quantile income"], default = "survival probability")
+        Select(
+            [
+                "survival probability",
+                "mean income",
+                "standard deviation income",
+                "10th quantile income",
+                "90th quantile income"
+            ],
+            default = "survival probability"
+        )
     )
     plot2 = (
         @htl("Plot 2"),
-        Select(["survival probability", "mean income", "standard deviation income", "10th quantile income", "90th quantile income"], default = "mean income")
+        Select(
+            [
+                "survival probability",
+                "mean income",
+                "standard deviation income",
+                "10th quantile income",
+                "90th quantile income"
+            ],
+            default = "mean income"
+        )
     )
 end
 
 # ╔═╡ bc85326b-60c3-4cd4-bc3a-70ce83800110
 @bind switch_view PlutoExtras.@NTBond "" begin
     switch = (@htl("Switch View"), CheckBox(default = false))
-	show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
+    show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
@@ -311,9 +339,9 @@ begin
         gbm = map(
             αμ -> VarGBM(;
                 αμ,
-				ημ = investment_parms.std_rate,
-				ασ = investment_parms.mean_volitility,
-				ησ = investment_parms.std_volitility,
+                ημ = investment_parms.std_rate,
+                ασ = investment_parms.mean_volitility,
+                ησ = investment_parms.std_volitility,
                 αμᵣ = -0.05,
                 ημᵣ = 0.010,
                 ασᵣ = 0.040,
@@ -442,9 +470,9 @@ begin
         gbm = map(
             αμ -> VarGBM(;
                 αμ,
-				ημ = investment_parms.std_rate,
-				ασ = investment_parms.mean_volitility,
-				ησ = investment_parms.std_volitility,
+                ημ = investment_parms.std_rate,
+                ασ = investment_parms.mean_volitility,
+                ησ = investment_parms.std_volitility,
                 αμᵣ = recession_parms.mean_rate,
                 ημᵣ = recession_parms.std_rate,
                 ασᵣ = recession_parms.mean_volitility,
@@ -551,7 +579,7 @@ begin
             xlabel = "Retirement Age",
             ylabel = "Min Withdraw",
             colorbar_title = "STD Total Income",
-			z_func = std,
+            z_func = std,
             clims,
             age = age_range,
             grid_label_size = 12,
@@ -571,7 +599,7 @@ begin
         )
     end
 
-	function plot_90_quantile_income(df, clims)
+    function plot_90_quantile_income(df, clims)
         age_range = (time_points.min):(time_points.step):(time_points.max)
         mean_income_plots1 = plot_sensitivity(
             df,
@@ -582,7 +610,7 @@ begin
             xlabel = "Retirement Age",
             ylabel = "Min Withdraw",
             colorbar_title = "90th Quantile Total Income",
-			z_func = x -> quantile(x, .90),
+            z_func = x -> quantile(x, 0.90),
             clims,
             age = age_range,
             grid_label_size = 12,
@@ -596,13 +624,13 @@ begin
     function get_90_quantile_income_extrema(df)
         return extrema(
             combine(
-            	groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
-            	:total_income => (x -> quantile(x, .90)) => :x
-        	).x
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => (x -> quantile(x, 0.90)) => :x
+        ).x
         )
     end
 
-	function plot_10_quantile_income(df, clims)
+    function plot_10_quantile_income(df, clims)
         age_range = (time_points.min):(time_points.step):(time_points.max)
         mean_income_plots1 = plot_sensitivity(
             df,
@@ -613,7 +641,7 @@ begin
             xlabel = "Retirement Age",
             ylabel = "Min Withdraw",
             colorbar_title = "10th Quantile Total Income",
-			z_func = x -> quantile(x, .10),
+            z_func = x -> quantile(x, 0.10),
             clims,
             age = age_range,
             grid_label_size = 12,
@@ -627,12 +655,12 @@ begin
     function get_10_quantile_income_extrema(df)
         return extrema(
             combine(
-            	groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
-            	:total_income => (x -> quantile(x, .10)) => :x
-        	).x
+            groupby(df, [:retirement_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            :total_income => (x -> quantile(x, 0.10)) => :x
+        ).x
         )
     end
-	
+
     function plot_mean_income(df, clims)
         age_range = (time_points.min):(time_points.step):(time_points.max)
         mean_income_plots1 = plot_sensitivity(
@@ -700,41 +728,41 @@ end
 begin
     Random.seed!(global_parms.seed)
     if run_simulation.run
-		# run the simulations
+        # run the simulations
         df_nonrecession = simulate_nonrecession()
         df_recession = simulate_recession()
 
-		# compute clims for contour plot
-		local vals = Float64[]
+        # compute clims for contour plot
+        local vals = Float64[]
         if plot_menu.plot1 == "mean income"
             push!(vals, get_mean_income_extrema(df_nonrecession)...)
-			push!(vals, get_mean_income_extrema(df_recession)...)
+            push!(vals, get_mean_income_extrema(df_recession)...)
         elseif plot_menu.plot1 == "standard deviation income"
-			push!(vals, get_std_income_extrema(df_nonrecession)...)
-			push!(vals, get_std_income_extrema(df_recession)...)
+            push!(vals, get_std_income_extrema(df_nonrecession)...)
+            push!(vals, get_std_income_extrema(df_recession)...)
         elseif plot_menu.plot1 == "90th quantile income"
-			push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
-			push!(vals, get_90_quantile_income_extrema(df_recession)...)
+            push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_90_quantile_income_extrema(df_recession)...)
         elseif plot_menu.plot1 == "10th quantile income"
-			push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
-			push!(vals, get_10_quantile_income_extrema(df_recession)...)
+            push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_10_quantile_income_extrema(df_recession)...)
         end
-		
+
         if plot_menu.plot2 == "mean income"
-			push!(vals, get_mean_income_extrema(df_nonrecession)...)
-			push!(vals, get_mean_income_extrema(df_recession)...)
+            push!(vals, get_mean_income_extrema(df_nonrecession)...)
+            push!(vals, get_mean_income_extrema(df_recession)...)
         elseif plot_menu.plot2 == "standard deviation income"
-			push!(vals, get_std_income_extrema(df_nonrecession)...)
-			push!(vals, get_std_income_extrema(df_recession)...)
+            push!(vals, get_std_income_extrema(df_nonrecession)...)
+            push!(vals, get_std_income_extrema(df_recession)...)
         elseif plot_menu.plot2 == "90th quantile income"
-			push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
-			push!(vals, get_90_quantile_income_extrema(df_recession)...)
+            push!(vals, get_90_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_90_quantile_income_extrema(df_recession)...)
         elseif plot_menu.plot2 == "10th quantile income"
-			push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
-			push!(vals, get_10_quantile_income_extrema(df_recession)...)
+            push!(vals, get_10_quantile_income_extrema(df_nonrecession)...)
+            push!(vals, get_10_quantile_income_extrema(df_recession)...)
         end
-		local clims = extrema(vals)
-		# make plots
+        local clims = extrema(vals)
+        # make plots
         if plot_menu.plot1 == "survival probability"
             plot_non_recession1 = plot_survival_probability(df_nonrecession)
             plot_recession1 = plot_survival_probability(df_recession)
@@ -769,7 +797,7 @@ begin
             header_recession1 =
                 md"""#### 10th Quantile Total Income: Recession at Retirement"""
         end
-		
+
         if plot_menu.plot2 == "survival probability"
             plot_non_recession2 = plot_survival_probability(df_nonrecession)
             plot_recession2 = plot_survival_probability(df_recession)
@@ -868,34 +896,34 @@ run_simulation.run ? plot_recession2 : nothing
 
 # ╔═╡ 40897f3d-6a68-4058-95fc-762aef7c7268
 let
-	if run_simulation.run
-	    if switch_view.show_growth_rate
-	        n_rates =
-	            length((investment_growth.min):(investment_growth.step):(investment_growth.max))
-	        @df df_recession histogram(
-	            :interest,
-	            norm = true,
-	            leg = true,
-	            grid = false,
-	            group = :mean_growth_rate,
-	            xlabel = "Investment Growth Rate",
-	            ylabel = "Density",
-	            xlims = (-0.6, 0.9),
-	            color = RGB(148 / 255, 173 / 255, 144 / 255),
-	            layout = n_rates,
-	            legendtitle = "rate",
-	            legendtitlefontsize = 9
-	            #size = (900, 400)
-	        )
-	        vline!(
-	            fill(0, 1, n_rates),
-	            color = :black,
-	            linestyle = :dash,
-	            linewidth = 2,
-	            label = ""
-	        )
-	    end
-	end
+    if run_simulation.run
+        if switch_view.show_growth_rate
+            n_rates =
+                length((investment_growth.min):(investment_growth.step):(investment_growth.max))
+            @df df_recession histogram(
+                :interest,
+                norm = true,
+                leg = true,
+                grid = false,
+                group = :mean_growth_rate,
+                xlabel = "Investment Growth Rate",
+                ylabel = "Density",
+                xlims = (-0.6, 0.9),
+                color = RGB(148 / 255, 173 / 255, 144 / 255),
+                layout = n_rates,
+                legendtitle = "rate",
+                legendtitlefontsize = 9
+                #size = (900, 400)
+            )
+            vline!(
+                fill(0, 1, n_rates),
+                color = :black,
+                linestyle = :dash,
+                linewidth = 2,
+                label = ""
+            )
+        end
+    end
 end
 
 # ╔═╡ a71ae122-24d4-45d8-9880-4730307aa4b6
@@ -1119,108 +1147,108 @@ end
 
 # ╔═╡ 642254f2-c9e0-4638-a8e3-c4c6984a7b9c
 let
-	text = md"""
-	
-	 Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
-	
-	 - Min: the minimum growth rate considered
-	 - Max: the naximum growth rate considered 
-	 - Step: the increment between successive growth rates
-	
-	- Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
-	- Mean Volitility: the average volitility across simulations
-	- Standard Deviation Volitility: the standard deviation of volitility across simulations
-	
-	 ##### Additional Information
-	
-	 ###### Selecting Values
-	
-	 Low, moderate, and high sustained growth rates are defined below as a point of reference.
-	
-	 -  $\mu \approx .05$: low sustained growth
-	 -  $\mu \approx .075$: moderate sustained growth
-	 -  $\mu \approx .10$: high sustained sustained growth close to the historical average of S&P 500.
-	
-	 Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
-	
-	 ###### Model Details
-	
-	 The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
-	
-	$\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
-	
-	$\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
-	
-	 As an example, consider the case in which $\mu_{\alpha} = .075$ and $\sigma_{\alpha} = .01$, then approximately 95% of sampled values will be $\mu = .075 \pm 2 \cdot .01$. 
-	
-	 
-	!!! warning "Warning"
-		Selecting a large number of growth rates will increase the simulation run time.
-	 """
-	details(text; summary = "Additional Information")
+    text = md"""
+
+     Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
+
+     - Min: the minimum growth rate considered
+     - Max: the naximum growth rate considered 
+     - Step: the increment between successive growth rates
+
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+
+     ##### Additional Information
+
+     ###### Selecting Values
+
+     Low, moderate, and high sustained growth rates are defined below as a point of reference.
+
+     -  $\mu \approx .05$: low sustained growth
+     -  $\mu \approx .075$: moderate sustained growth
+     -  $\mu \approx .10$: high sustained sustained growth close to the historical average of S&P 500.
+
+     Note: the growth rate depends partially on economic forces outside your control and the composition of your investment portfolio. For example, in an economy with an average growth rate, you could have low sustained growth if a large portion of your portfolio is invested in bonds. 
+
+     ###### Model Details
+
+     The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
+
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
+
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
+
+     As an example, consider the case in which $\mu_{\alpha} = .075$ and $\sigma_{\alpha} = .01$, then approximately 95% of sampled values will be $\mu = .075 \pm 2 \cdot .01$. 
+
+     
+    !!! warning "Warning"
+    	Selecting a large number of growth rates will increase the simulation run time.
+     """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 let
-	text = md"""
-	
-	Inflation---the general increase in prices---is important to consider because it decreases purchasing power and therefore the *real* growth of your investments. 
-	
-	- Mean Rate: the average growth rate of inflation across simulations.
-	- Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
-	- Mean Volitility: the average volitility across simulations
-	- Standard Deviation Volitility: the standard deviation of volitility across simulations
-	
-	##### Additional Information
-	
-	###### Selecting a Value
-	
-	During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The stress tests reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices.
-	
-	###### Model Details
-	
-	The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
-	
-	$\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
-	
-	$\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
-	
-	As an example, consider the case in which $\mu_{\alpha} = .035$ and $\sigma_{\alpha} = .005$, then approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. 
-	
-	"""
-	details(text; summary = "Additional Information")
+    text = md"""
+
+    Inflation---the general increase in prices---is important to consider because it decreases purchasing power and therefore the *real* growth of your investments. 
+
+    - Mean Rate: the average growth rate of inflation across simulations.
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+
+    ##### Additional Information
+
+    ###### Selecting a Value
+
+    During the past 25 years, inflation has varied between 2% and 4%, with the current inflation rate at approximately 3.5%. The stress tests reported below use $\mu=.035$ (i.e., 3.5%) as the default growth rate of consumer prices.
+
+    ###### Model Details
+
+    The values for parameters $\mu$ (growth rate) and $\sigma$ (volitility) are sampled from distributions to reflect uncertainty in their actual values. Letting $\mu_{\alpha}$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
+
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
+
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
+
+    As an example, consider the case in which $\mu_{\alpha} = .035$ and $\sigma_{\alpha} = .005$, then approximately 95% of sampled values will be $\mu = .035 \pm 2 \cdot .005$. 
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
 let
-	text = md"""
-	
-	The parameters in this panel control the magnitude and duration of the recession in the recession condition. To maximize its effect, the recession begins concurrently with retirement. The two parameters are:
-	
-	* Growth Rate: a negative number reflecting the rate of decrease of your investment porfolio
-	
-	* Duration: the duration of the recession in years
-	
-	- Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
-	- Mean Volitility: the average volitility across simulations
-	- Standard Deviation Volitility: the standard deviation of volitility across simulations
-	
-	##### Additional Information
-	
-	As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. Letting $\mu_{\alpha} < 0$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
-	
-	$\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
-	
-	$\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
-	
-	$\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
-	
-	$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-	
-	In sequence-of-return risk, the worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. Therefore, your retirement plan is considered robust if performance remains satisfactory after an early recession. Also, note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below reflect a mixture of recessions occuring at different times. 
-	
-	"""
-	details(text; summary = "Additional Information")
+    text = md"""
+
+    The parameters in this panel control the magnitude and duration of the recession in the recession condition. To maximize its effect, the recession begins concurrently with retirement. The two parameters are:
+
+    * Growth Rate: a negative number reflecting the rate of decrease of your investment porfolio
+
+    * Duration: the duration of the recession in years
+
+    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
+    - Mean Volitility: the average volitility across simulations
+    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+
+    ##### Additional Information
+
+    As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. Letting $\mu_{\alpha} < 0$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
+
+    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
+
+    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
+
+    $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+
+    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+
+    In sequence-of-return risk, the worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. Therefore, your retirement plan is considered robust if performance remains satisfactory after an early recession. Also, note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below reflect a mixture of recessions occuring at different times. 
+
+    """
+    details(text; summary = "Additional Information")
 end
 
 # ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
