@@ -496,7 +496,7 @@ begin
             # duration of simulation in years
             duration = global_parms.end_age - global_parms.start_age,
             # initial investment amount 
-            start_amount = start_amount = global_parms.start_amount,
+            start_amount =  start_amount = global_parms.start_amount ,
             # withdraw parameters 
             kw_withdraw = (; withdraws),
             # invest parameters

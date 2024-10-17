@@ -138,7 +138,7 @@ function get_all_times(model::AbstractModel)
 end
 
 function get_all_times(start_age, Δt, duration)
-    return (start_age + Δt):Δt:(start_age + duration)
+    return (start_age+Δt):Δt:(start_age+duration)
 end
 """
     reset!(model::AbstractModel)

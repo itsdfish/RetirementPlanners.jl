@@ -179,7 +179,7 @@ function separate_np_non_np_inputs(
     duration,
     start_age,
     start_amount,
-    log_times = (start_age + Δt):Δt:(start_age + duration),
+    log_times = (start_age+Δt):Δt:(start_age+duration),
     withdraw! = withdraw!,
     invest! = invest!,
     update_income! = update_income!,

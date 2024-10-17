@@ -130,7 +130,7 @@ function rand(dist::AbstractGBM, n_steps; Δt, kwargs...)
     reset!(dist)
     prices = fill(0.0, n_steps + 1)
     prices[1] = dist.x
-    for i ∈ 2:(n_steps + 1)
+    for i ∈ 2:(n_steps+1)
         increment!(dist; Δt, kwargs...)
         prices[i] = dist.x
     end
@@ -157,7 +157,7 @@ function fit(dist::Type{<:AbstractGBM}, ts; Δt)
 end
 
 function estimate_μ(dist::Type{<:AbstractGBM}, ts; Δt)
-    x = Δt:Δt:(length(ts) * Δt)
+    x = Δt:Δt:(length(ts)*Δt)
     total = sum((1 / Δt) * (x .^ 2))
     return sum((1 / total) * (1 / Δt) * (x .* ts))
 end
@@ -336,7 +336,7 @@ function rand(dist::MvGBM, n_steps; Δt)
     n = length(dist.x)
     prices = fill(0.0, n_steps + 1, n)
     prices[1, :] = dist.x
-    for i ∈ 2:(n_steps + 1)
+    for i ∈ 2:(n_steps+1)
         increment!(dist; Δt)
         prices[i, :] = dist.x
     end

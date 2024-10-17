@@ -49,7 +49,7 @@ function plot_gradient(
 
     # fit normal distributions
     xx = range(extrema(X)..., length = n_divions_x)
-    xᵢ = [(xx[i], xx[i + 1]) for i = 1:(length(xx) - 1)]
+    xᵢ = [(xx[i], xx[i + 1]) for i = 1:(length(xx)-1)]
     x₀ = mean.(xᵢ)
     μ = similar(x₀)
     σ = similar(x₀)
@@ -71,7 +71,7 @@ function plot_gradient(
     qq = @. quantile(truncated(Normal(μp, σp), 0, Inf), LinRange(0.025, 0.975, n_slices))
     α = [LinRange(0.15, 0.5, n_slices ÷ 2); LinRange(0.5, 0.15, n_slices ÷ 2)]
     p1 = plot(legend = false, grid = false)
-    for i = 2:(n_slices - 1)
+    for i = 2:(n_slices-1)
         yᵢ = getindex.(qq, i)
         dy = yᵢ - getindex.(qq, i - 1)
         plot!(

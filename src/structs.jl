@@ -212,7 +212,7 @@ function Model(;
     duration,
     start_age,
     start_amount,
-    log_times = (start_age + Δt):Δt:(start_age + duration),
+    log_times = (start_age+Δt):Δt:(start_age+duration),
     state = State(),
     withdraw! = withdraw!,
     invest! = invest!,
