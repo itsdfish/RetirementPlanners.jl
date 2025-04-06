@@ -260,7 +260,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 - 1 / 12,
-                        end_age = start_age = 25 - 1 / 12,
+                        end_age =  start_age = 25 - 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 200,
                             percent_of_real_growth = 0.0,
@@ -268,7 +268,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 + 1 / 12,
-                        end_age = start_age = 25 + 1 / 12,
+                        end_age =  start_age = 25 + 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 100,
                             percent_of_real_growth = 0.0,
@@ -305,7 +305,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 - 1 / 12,
-                        end_age = start_age = 25 - 1 / 12,
+                        end_age =  start_age = 25 - 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 200,
                             percent_of_real_growth = 0.0,
@@ -313,7 +313,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 + 1 / 12,
-                        end_age = start_age = 25 + 1 / 12,
+                        end_age =  start_age = 25 + 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 100,
                             percent_of_real_growth = 0.0,
@@ -357,7 +357,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 - 1 / 12,
-                        end_age = start_age = 25 - 1 / 12,
+                        end_age =  start_age = 25 - 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 200,
                             percent_of_real_growth = 0.0,
@@ -365,7 +365,7 @@
                             volitility = 0.0)),
                     Transaction(;
                         start_age = 25 + 1 / 12,
-                        end_age = start_age = 25 + 1 / 12,
+                        end_age =  start_age = 25 + 1 / 12 ,
                         amount = AdaptiveWithdraw(;
                             min_withdraw = 100,
                             percent_of_real_growth = 0.0,
