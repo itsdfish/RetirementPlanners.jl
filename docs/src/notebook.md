@@ -1,6 +1,6 @@
 # User-Friendly Interface 
 
-You can stress test your retirement plan with a user-friendly interface via an interactive Pluto notebook. As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test%20(5).html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
+You can stress test your retirement plan with a user-friendly interface via an interactive Pluto notebook. As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test.html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
 
 
 # Instructions

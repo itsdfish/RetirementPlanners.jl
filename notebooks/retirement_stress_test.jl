@@ -24,6 +24,7 @@ begin
     using HypertextLiteral
     using LaTeXStrings
     using Plots
+    using Plots.PlotMeasures
     using PlutoExtras
     using PlutoUI
     using Random
@@ -282,13 +283,43 @@ end
 # ╔═╡ bc85326b-60c3-4cd4-bc3a-70ce83800110
 @bind switch_view PlutoExtras.@NTBond "" begin
     switch = (@htl("Switch View"), CheckBox(default = false))
-    show_growth_rate = (@htl("Show Growth Rate"), CheckBox(default = false))
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
 md"
 # Results
 "
+
+# ╔═╡ cf860556-a4c7-441d-94b2-13c4d9f608a4
+md"
+## Robustness Analysis
+"
+
+# ╔═╡ 63d97245-a135-4cb8-9221-524b436dc0c5
+md"
+## Single Scenario
+"
+
+# ╔═╡ fb097e5d-71dc-4530-a250-6a721ca10b8f
+let
+    retirement_age_range = (retirement_age.min):(retirement_age.step):(retirement_age.max)
+    withdraw_rate_range = (withdraw_amount.min):(withdraw_amount.step):(withdraw_amount.max)
+    mean_growth_rate_range =
+        (investment_growth.min):(investment_growth.step):(investment_growth.max)
+    @bind single_plot_menu PlutoExtras.@NTBond "Single Scenario Plot Settings" begin
+        retirement_age = (@htl("Retirement Age"), NumberField(retirement_age_range))
+        min_withdraw_rate = (@htl("Min Withdraw Rate"), NumberField(withdraw_rate_range))
+        mean_growth_rate =
+            (@htl("Mean Growth Rate"), NumberField(mean_growth_rate_range))
+    end
+
+    # @bind single_plot_menu PlutoExtras.@NTBond "Single Scenario Plot Settings" begin
+    #     retirement_age = (@htl("Retirement Age"), NumberField(global_parms.start_age:100))
+    #     min_withdraw_rate = (@htl("Min Withdraw Rate"), NumberField(500:500:5000))
+    #     mean_growth_rate =
+    #         (@htl("Mean Growth Rate"), NumberField(0:.01:.12))
+    # end
+end
 
 # ╔═╡ 1d89b285-07b2-400b-804f-88f52b0b96dd
 begin
@@ -563,7 +594,160 @@ begin
         df2.mean_growth_rate = map(x -> x.αμ, df2.market_gbm)
         return df2
     end
+
+    function simulate_single()
+        investments = (
+            Transaction(;
+                start_age = global_parms.start_age,
+                end_age = single_plot_menu.retirement_age,
+                amount = Normal(primary_investment.mean, primary_investment.std)
+            ),
+            Transaction(;
+                start_age = supplemental_investment1.start_age,
+                end_age = supplemental_investment1.end_age,
+                amount = Normal(
+                    supplemental_investment1.mean,
+                    supplemental_investment1.std
+                )
+            ),
+            Transaction(;
+                start_age = supplemental_investment2.start_age,
+                end_age = supplemental_investment2.end_age,
+                amount = Normal(
+                    supplemental_investment2.mean,
+                    supplemental_investment2.std
+                )
+            )
+        )
+
+        # configuration options
+        config = (
+            # time step in years
+            Δt = 1 / 12,
+            # start age of simulation
+            start_age = global_parms.start_age,
+            # duration of simulation in years
+            duration = global_parms.end_age - global_parms.start_age,
+            # initial investment amount
+            start_amount = global_parms.start_amount,
+            # withdraw parameters
+            kw_withdraw = (withdraws = Transaction(;
+                start_age = single_plot_menu.retirement_age,
+                amount = AdaptiveWithdraw(;
+                    min_withdraw = single_plot_menu.min_withdraw_rate,
+                    percent_of_real_growth = withdraw_parms.percent_of_real_growth,
+                    income_adjustment = withdraw_parms.income_adjustment,
+                    volitility = withdraw_parms.volitility
+                )),
+            ),
+            # invest parameters
+            kw_invest = (; investments),
+            # interest parameters
+            kw_market = (
+                # dynamic model of the stock market
+                gbm = VarGBM(;
+                    αμ = single_plot_menu.mean_growth_rate,
+                    ημ = investment_parms.std_rate,
+                    ασ = investment_parms.mean_volitility,
+                    ησ = investment_parms.std_volitility,
+                    αμᵣ = -0.05,
+                    ημᵣ = 0.010,
+                    ασᵣ = 0.040,
+                    ησᵣ = 0.010
+                ),
+                recessions = Transaction(; start_age = 0, end_age = 0)
+            ),
+            # inflation parameters
+            kw_inflation = (gbm = VarGBM(;
+                αμ = 0.035,
+                ημ = 0.005,
+                ασ = 0.005,
+                ησ = 0.0025
+            ),),
+            # income parameters
+            kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
+        )
+        model = Model(; config...)
+        times = get_times(model)
+        n_reps = global_parms.n_reps
+        n_steps = length(times)
+        logger = Logger(; n_steps, n_reps)
+        simulate!(model, logger, n_reps)
+        return logger, model
+    end
     nothing
+end
+
+# ╔═╡ c853496d-babe-4267-a2c1-62b8472426b8
+let
+    if run_simulation.run
+        logger, model = simulate_single()
+        times = get_times(model)
+        survival_probs = mean(logger.net_worth .> 0, dims = 2)
+        survival_plot = plot(
+            times,
+            survival_probs,
+            leg = false,
+            xlabel = "Age",
+            grid = false,
+            ylabel = "Survival Probability",
+            xlims = (model.config.kw_withdraw.withdraws.start_age, times[end]),
+            ylims = (0.5, 1.05),
+            color = :black
+        )
+
+        # networth as a function of time. Darker shading indicates more likely values
+        net_worth_plot = plot_gradient(
+            times,
+            logger.net_worth;
+            xlabel = "Age",
+            ylabel = "Investment Value",
+            n_lines = 0
+        )
+
+        # growth rate distribution across repetitions of the simulation
+        growth = logger.interest[:]
+        interest_plot = histogram(
+            growth,
+            norm = true,
+            xlabel = "Market Growth",
+            ylabel = "Density",
+            color = RGB(148 / 255, 173 / 255, 144 / 255),
+            bins = 100,
+            label = false,
+            grid = false,
+            xlims = (-0.7, 0.7)
+        )
+        vline!(
+            interest_plot,
+            [0.0],
+            color = :black,
+            linewidth = 1.5,
+            linestyle = :dash,
+            label = false
+        )
+
+        # income as a function of time.
+        income_plot = plot_gradient(
+            times,
+            logger.total_income;
+            xlabel = "Age",
+            ylabel = "Total Income",
+            xlims = (model.config.kw_withdraw.withdraws.start_age, times[end]),
+            n_lines = 0,
+            color = :blue
+        )
+        plot(
+            survival_plot,
+            net_worth_plot,
+            interest_plot,
+            income_plot,
+            layout = (2, 2),
+            size = (1200, 600),
+            left_margin = 8mm,
+            bottom_margin = 8mm
+        )
+    end
 end
 
 # ╔═╡ 441f980e-3d6b-445a-ad04-ec0db72a5bfe
@@ -893,38 +1077,6 @@ run_simulation.run ? header_recession2 : nothing
 # ╔═╡ 6637f8ea-a336-46d4-8a2e-4bc0e88de392
 # ╠═╡ show_logs = false
 run_simulation.run ? plot_recession2 : nothing
-
-# ╔═╡ 40897f3d-6a68-4058-95fc-762aef7c7268
-let
-    if run_simulation.run
-        if switch_view.show_growth_rate
-            n_rates =
-                length((investment_growth.min):(investment_growth.step):(investment_growth.max))
-            @df df_recession histogram(
-                :interest,
-                norm = true,
-                leg = true,
-                grid = false,
-                group = :mean_growth_rate,
-                xlabel = "Investment Growth Rate",
-                ylabel = "Density",
-                xlims = (-0.6, 0.9),
-                color = RGB(148 / 255, 173 / 255, 144 / 255),
-                layout = n_rates,
-                legendtitle = "rate",
-                legendtitlefontsize = 9
-                #size = (900, 400)
-            )
-            vline!(
-                fill(0, 1, n_rates),
-                color = :black,
-                linestyle = :dash,
-                linewidth = 2,
-                label = ""
-            )
-        end
-    end
-end
 
 # ╔═╡ a71ae122-24d4-45d8-9880-4730307aa4b6
 TableOfContents()
@@ -3094,6 +3246,7 @@ version = "1.8.1+0"
 # ╟─bc85326b-60c3-4cd4-bc3a-70ce83800110
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
+# ╟─cf860556-a4c7-441d-94b2-13c4d9f608a4
 # ╟─b881055c-09ee-4869-8e36-5bf069d6bc23
 # ╟─44c12623-53b5-4e4a-bd57-786fe6906191
 # ╟─86349e14-31b8-439b-bde1-8659d02eefac
@@ -3102,7 +3255,9 @@ version = "1.8.1+0"
 # ╟─967d7765-ecdf-4ae2-8197-12e69f274104
 # ╟─9e5b896b-16ad-495c-8d62-ccdaf318993a
 # ╟─6637f8ea-a336-46d4-8a2e-4bc0e88de392
-# ╟─40897f3d-6a68-4058-95fc-762aef7c7268
+# ╟─63d97245-a135-4cb8-9221-524b436dc0c5
+# ╟─fb097e5d-71dc-4530-a250-6a721ca10b8f
+# ╟─c853496d-babe-4267-a2c1-62b8472426b8
 # ╟─f1276ea5-1a18-4309-8eca-e47da653f924
 # ╟─1d89b285-07b2-400b-804f-88f52b0b96dd
 # ╟─441f980e-3d6b-445a-ad04-ec0db72a5bfe
