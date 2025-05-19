@@ -311,6 +311,7 @@ let
         min_withdraw_rate = (@htl("Min Withdraw Rate"), NumberField(withdraw_rate_range))
         mean_growth_rate =
             (@htl("Mean Growth Rate"), NumberField(mean_growth_rate_range))
+        recession = (@htl("Assume Recession"), CheckBox(default = false))
     end
 
     # @bind single_plot_menu PlutoExtras.@NTBond "Single Scenario Plot Settings" begin
@@ -373,7 +374,7 @@ begin
                 ημ = investment_parms.std_rate,
                 ασ = investment_parms.mean_volitility,
                 ησ = investment_parms.std_volitility,
-                αμᵣ = -0.05,
+                αμᵣ = 0.00,
                 ημᵣ = 0.010,
                 ασᵣ = 0.040,
                 ησᵣ = 0.010
@@ -620,6 +621,15 @@ begin
             )
         )
 
+        if single_plot_menu.recession
+            recessions = Transaction(;
+                start_age = single_plot_menu.retirement_age,
+                end_age = single_plot_menu.retirement_age + recession_parms.duration
+            )
+        else
+            recessions = Transaction(; start_age = 0, end_age = 0)
+        end
+
         # configuration options
         config = (
             # time step in years
@@ -650,19 +660,19 @@ begin
                     ημ = investment_parms.std_rate,
                     ασ = investment_parms.mean_volitility,
                     ησ = investment_parms.std_volitility,
-                    αμᵣ = -0.05,
-                    ημᵣ = 0.010,
-                    ασᵣ = 0.040,
-                    ησᵣ = 0.010
+                    αμᵣ = recession_parms.mean_rate,
+                    ημᵣ = recession_parms.std_rate,
+                    ασᵣ = recession_parms.mean_volitility,
+                    ησᵣ = recession_parms.std_volitility
                 ),
-                recessions = Transaction(; start_age = 0, end_age = 0)
+                recessions
             ),
             # inflation parameters
             kw_inflation = (gbm = VarGBM(;
-                αμ = 0.035,
-                ημ = 0.005,
-                ασ = 0.005,
-                ησ = 0.0025
+                αμ = inflation.mean_rate,
+                ημ = inflation.std_rate,
+                ασ = inflation.mean_volitility,
+                ησ = inflation.std_volitility
             ),),
             # income parameters
             kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
