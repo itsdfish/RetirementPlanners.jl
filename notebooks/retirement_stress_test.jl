@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.8
+# v0.20.10
 
 using Markdown
 using InteractiveUtils
@@ -313,13 +313,6 @@ let
             (@htl("Mean Growth Rate"), NumberField(mean_growth_rate_range))
         recession = (@htl("Assume Recession"), CheckBox(default = false))
     end
-
-    # @bind single_plot_menu PlutoExtras.@NTBond "Single Scenario Plot Settings" begin
-    #     retirement_age = (@htl("Retirement Age"), NumberField(global_parms.start_age:100))
-    #     min_withdraw_rate = (@htl("Min Withdraw Rate"), NumberField(500:500:5000))
-    #     mean_growth_rate =
-    #         (@htl("Mean Growth Rate"), NumberField(0:.01:.12))
-    # end
 end
 
 # ╔═╡ 1d89b285-07b2-400b-804f-88f52b0b96dd
@@ -675,7 +668,13 @@ begin
                 ησ = inflation.std_volitility
             ),),
             # income parameters
-            kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000),)
+            kw_income = (income_sources = Transaction(;
+                start_age = social_security.start,
+                amount = NominalAmount(;
+                    amount = social_security.amount,
+                    adjust = !social_security.adjust
+                )
+            ),)
         )
         model = Model(; config...)
         times = get_times(model)
@@ -702,7 +701,7 @@ let
             grid = false,
             ylabel = "Survival Probability",
             xlims = (model.config.kw_withdraw.withdraws.start_age, times[end]),
-            ylims = (0.5, 1.05),
+            ylims = (0.0, 1.05),
             color = :black
         )
 
