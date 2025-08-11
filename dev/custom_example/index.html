@@ -43,27 +43,27 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
 # setup retirement model
-model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
+model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model</span>
 ┌─────────────────────┬─────────────────────────────────────────────────────────
-│ Field               │ Value                                                  ⋯
+│<span class="sgr1"> Field               </span>│<span class="sgr1"> Value                                                 </span> ⋯
 ├─────────────────────┼─────────────────────────────────────────────────────────
-│ Δt                  │  0.08                                                  ⋯
-│ duration            │ 40.00                                                  ⋯
-│ start_age           │ 50.00                                                  ⋯
-│ start_amount        │ 1000000.00                                             ⋯
-│ log_times           │ 50.083333333333336:0.08333333333333333:90.0            ⋯
-│ state               │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
-│ withdraw!           │ withdraw!                                              ⋯
-│ invest!             │ invest!                                                ⋯
-│ update_income!      │ update_income!                                         ⋯
-│ update_inflation!   │ dynamic_inflation                                      ⋯
-│ update_market!      │ dynamic_market                                         ⋯
-│ update_investments! │ update_investments_fee!                                ⋯
-│ log!                │ default_log!                                           ⋯
-│ config              │ (kw_investments = (fee_rate = 0.01,), kw_withdraw = (w ⋯
+│<span class="sgr1"> Δt                  </span>│  0.08                                                  ⋯
+│<span class="sgr1"> duration            </span>│ 40.00                                                  ⋯
+│<span class="sgr1"> start_age           </span>│ 50.00                                                  ⋯
+│<span class="sgr1"> start_amount        </span>│ 1000000.00                                             ⋯
+│<span class="sgr1"> log_times           </span>│ 50.083333333333336:0.08333333333333333:90.0            ⋯
+│<span class="sgr1"> state               </span>│ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
+│<span class="sgr1"> withdraw!           </span>│ withdraw!                                              ⋯
+│<span class="sgr1"> invest!             </span>│ invest!                                                ⋯
+│<span class="sgr1"> update_income!      </span>│ update_income!                                         ⋯
+│<span class="sgr1"> update_inflation!   </span>│ dynamic_inflation                                      ⋯
+│<span class="sgr1"> update_market!      </span>│ dynamic_market                                         ⋯
+│<span class="sgr1"> update_investments! </span>│ update_investments_fee!                                ⋯
+│<span class="sgr1"> log!                </span>│ default_log!                                           ⋯
+│<span class="sgr1"> config              </span>│ (kw_investments = (fee_rate = 0.01,), kw_withdraw = (w ⋯
 └─────────────────────┴─────────────────────────────────────────────────────────
-<span class="sgr36">                                                                1 column omitted
-</span></span></code></pre><pre><code class="language-julia hljs">config2 = (
+<span class="sgr36">                                                                1 column omitted</span>
+</code></pre><pre><code class="language-julia hljs">config2 = (
     # time step in years
     Δt = 1 / 12,
     # start age of simulation
@@ -88,27 +88,27 @@ model = Model(; config...)</code></pre><pre class="documenter-example-output"><c
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
 # setup retirement model
-model2 = Model(; config2...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model
+model2 = Model(; config2...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model</span>
 ┌─────────────────────┬─────────────────────────────────────────────────────────
-│ Field               │ Value                                                  ⋯
+│<span class="sgr1"> Field               </span>│<span class="sgr1"> Value                                                 </span> ⋯
 ├─────────────────────┼─────────────────────────────────────────────────────────
-│ Δt                  │  0.08                                                  ⋯
-│ duration            │ 40.00                                                  ⋯
-│ start_age           │ 50.00                                                  ⋯
-│ start_amount        │ 1000000.00                                             ⋯
-│ log_times           │ 50.083333333333336:0.08333333333333333:90.0            ⋯
-│ state               │ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
-│ withdraw!           │ withdraw!                                              ⋯
-│ invest!             │ invest!                                                ⋯
-│ update_income!      │ update_income!                                         ⋯
-│ update_inflation!   │ dynamic_inflation                                      ⋯
-│ update_market!      │ dynamic_market                                         ⋯
-│ update_investments! │ update_investments_fee!                                ⋯
-│ log!                │ default_log!                                           ⋯
-│ config              │ (kw_investments = (fee_rate = 0.0,), kw_withdraw = (wi ⋯
+│<span class="sgr1"> Δt                  </span>│  0.08                                                  ⋯
+│<span class="sgr1"> duration            </span>│ 40.00                                                  ⋯
+│<span class="sgr1"> start_age           </span>│ 50.00                                                  ⋯
+│<span class="sgr1"> start_amount        </span>│ 1000000.00                                             ⋯
+│<span class="sgr1"> log_times           </span>│ 50.083333333333336:0.08333333333333333:90.0            ⋯
+│<span class="sgr1"> state               </span>│ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
+│<span class="sgr1"> withdraw!           </span>│ withdraw!                                              ⋯
+│<span class="sgr1"> invest!             </span>│ invest!                                                ⋯
+│<span class="sgr1"> update_income!      </span>│ update_income!                                         ⋯
+│<span class="sgr1"> update_inflation!   </span>│ dynamic_inflation                                      ⋯
+│<span class="sgr1"> update_market!      </span>│ dynamic_market                                         ⋯
+│<span class="sgr1"> update_investments! </span>│ update_investments_fee!                                ⋯
+│<span class="sgr1"> log!                </span>│ default_log!                                           ⋯
+│<span class="sgr1"> config              </span>│ (kw_investments = (fee_rate = 0.0,), kw_withdraw = (wi ⋯
 └─────────────────────┴─────────────────────────────────────────────────────────
-<span class="sgr36">                                                                1 column omitted
-</span></span></code></pre><h1 id="Run-Simulations"><a class="docs-heading-anchor" href="#Run-Simulations">Run Simulations</a><a id="Run-Simulations-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Simulations" title="Permalink"></a></h1><p>In the code block below, we will run both simulations 1000 times each. </p><pre><code class="language-julia hljs">seed = 8564
+<span class="sgr36">                                                                1 column omitted</span>
+</code></pre><h1 id="Run-Simulations"><a class="docs-heading-anchor" href="#Run-Simulations">Run Simulations</a><a id="Run-Simulations-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Simulations" title="Permalink"></a></h1><p>In the code block below, we will run both simulations 1000 times each. </p><pre><code class="language-julia hljs">seed = 8564
 times = get_times(model)
 n_reps = 1000
 n_steps = length(times)
@@ -131,15 +131,15 @@ simulate!(model2, logger2, n_reps, seed)</code></pre><p>The code block below com
  0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
  0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
  ⋮                                             ⋱                    
- 1.25046  1.39089  1.09447  0.709746  3.24595     1.64924  1.97433  0.635295
- 1.26336  1.39325  1.10879  0.71349   3.2125      1.64549  1.99378  0.640352
- 1.29199  1.40353  1.123    0.71724   3.17463     1.65308  2.01014  0.642064
- 1.30638  1.40968  1.11393  0.729441  3.16108     1.66822  2.03034  0.645841
- 1.32086  1.41171  1.1283   0.733126  3.18488  …  1.65892  2.05415  0.644411
- 1.29021  1.40372  1.128    0.742763  3.22529     1.67237  2.05504  0.645181
- 1.31123  1.42007  1.13715  0.750082  3.21727     1.68905  2.06861  0.642919
- 1.30055  1.42974  1.11091  0.758419  3.20156     1.70879  2.09321  0.653705
- 1.35924  1.44121  1.11761  0.781706  3.27117     1.7397   2.1594   0.649018</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. </p><details>
+ 1.25041  1.39089  1.09447  0.709746  3.24595     1.64924  1.97433  0.635295
+ 1.26332  1.39325  1.10879  0.71349   3.2125      1.64549  1.99378  0.640352
+ 1.29194  1.40353  1.123    0.71724   3.17463     1.65308  2.01014  0.642064
+ 1.30633  1.40968  1.11393  0.729441  3.16108     1.66822  2.03034  0.645841
+ 1.32081  1.41171  1.1283   0.733126  3.18488  …  1.65892  2.05415  0.644411
+ 1.29017  1.40372  1.128    0.742763  3.22529     1.67237  2.05504  0.645181
+ 1.31118  1.42007  1.13715  0.750082  3.21727     1.68905  2.06861  0.642919
+ 1.3005   1.42974  1.11091  0.758419  3.20156     1.70879  2.09321  0.653705
+ 1.35919  1.44121  1.11761  0.781706  3.27117     1.7397   2.1594   0.649018</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. </p><details>
 <summary><b>Show Code </b></summary><pre><code class="language-julia hljs">idx = 12 * 10
 p10 = histogram(
     net_worth_diff[idx, :],
@@ -174,4 +174,4 @@ p40 = histogram(
     leg = false,
     grid = false,
     title = &quot;40 years&quot;
-)</code></pre><img src="2d329a70.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="e08d4547.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Monday 11 August 2025 23:19">Monday 11 August 2025</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+)</code></pre><img src="a412d8c8.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="3f820b30.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Monday 11 August 2025 23:26">Monday 11 August 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
