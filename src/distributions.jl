@@ -489,3 +489,183 @@ mean(dist::MvGBM, t::Real) = dist.ratios .* exp.(dist.μ * t)
 var(dist::MvGBM, t::Real) =
     dist.ratios .^ 2 .* exp.(2 .* dist.μ .* t) .* (exp.(dist.σ .^ 2 .* t) .- 1)
 std(dist::MvGBM, t::Real) = sqrt.(var(dist, t))
+
+"""
+    RCPSGBM{T <: Real} <: AbstractGBM
+
+A distribution object for Regime Change Poisson Spike Geometric Brownian Motion (RCPSGBM). This model add two components to the
+    standard geometric Brownian motion model: (1) a Poisson spike process to account for brief shocks to the stock market and (2) 
+    a regime change mechanism which transitions between normal and recession states. 
+
+# Fields 
+
+- `μ::T`: growth rate
+- `σ::T`: volitility in growth rate
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
+- `μⱼ::T`: mean of jump size  
+- `σⱼ::T`: standard deviation of jump size 
+- `λⱼ::T`: jump intensity 
+- `λᵢₙ::T`: recession entrace rate
+- `λₒᵤₜ::T`: recession exist rate
+- `x0::T`: initial value of stock 
+- `x::T`: current value
+"""
+mutable struct RCPSGBM{T <: Real} <: AbstractGBM
+    μ::T
+    σ::T
+    μᵣ::T
+    σᵣ::T
+    μⱼ::T
+    σⱼ::T
+    λⱼ::T
+    λᵢₙ::T
+    λₒᵤₜ::T
+    x0::T
+    x::T
+    in_recession::Bool
+end
+
+"""
+    GBM(; μ, σ, μᵣ = μ, σᵣ = σ, x0 = 1.0, x = x0)
+
+A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
+growth of stocks. 
+
+# Keywords 
+
+- `μ::T`: growth rate
+- `σ::T`: volitility in growth rate
+- `μᵣ::T`: growth rate during recession 
+- `σᵣ::T`: volitility in growth rate during recession 
+- `x0::T=1.0`: initial value of stock 
+- `x::T=x0`: current value
+
+# Example 
+
+```julia 
+using RetirementPlanners
+
+model = RCPSGBM(; 
+    μ = .11, 
+    σ = .15, 
+    μᵣ = -.20, 
+    σᵣ = .10, 
+    μⱼ = -.03, 
+    σⱼ = .02, 
+    λⱼ = .75, 
+    λᵢₙ = .31, 
+    λₒᵤₜ = .66, 
+    x0 = 6614.0,
+    in_recession = false
+)
+duration = 36
+Δt = 1 / 365
+n_sim = 1000
+prices = rand(model, duration, n_sim; Δt)
+```
+"""
+function RCPSGBM(;
+    μ,
+    σ,
+    μᵣ = μ,
+    σᵣ = σ,
+    μⱼ,
+    σⱼ = σ,
+    λⱼ,
+    λᵢₙ,
+    λₒᵤₜ,
+    x0 = 1.0,
+    x = x0,
+    in_recession = false
+)
+    return RCPSGBM(promote(μ, σ, μᵣ, σᵣ, μⱼ, σⱼ, λⱼ, λᵢₙ, λₒᵤₜ, x0, x)..., in_recession)
+end
+
+"""
+    increment!(dist::RCPSGBM; Δt, t = 0, _...)
+
+Increment the stock price over the period `Δt`.
+
+# Arguments 
+
+- `dist::RCPSGBM`: a distribution object for Geometric Brownian Motion with regime switching (normal vs. recession)
+    and a Poisson spike process. 
+
+# Keywords
+
+- `Δt`: the time step for Geometric Brownian Motion
+- `t`: current time (age)
+"""
+function increment!(dist::RCPSGBM; Δt, t = 0, _...)
+    (; x, μ, σ, μᵣ, σᵣ, μⱼ, σⱼ, λⱼ, in_recession) = dist
+    μ′ = in_recession ? μᵣ : μ
+    σ′ = in_recession ? σᵣ : σ
+    κ = exp(μⱼ + 0.5 * σⱼ^2) - 1
+    # diffusion component
+    diff = (μ′ - λⱼ * κ - 0.5 * σ′^2) * Δt + σ′ * randn() * √(Δt)
+    # jump component
+    x_jump = jump(dist; Δt)
+    dist.x += x * (diff + x_jump)
+    # regime change
+    update_state!(dist; Δt)
+    return nothing
+end
+
+"""
+    jump(dist::RCPSGBM; Δt)
+
+Computes the component of the Poisson spike process. 
+
+# Arguments 
+
+- `dist::RCPSGBM`: a distribution object for Geometric Brownian Motion with regime switching (normal vs. recession)
+    and a Poisson spike process. 
+
+# Keywords
+
+- `Δt`: the time step for Geometric Brownian Motion
+"""
+function jump(dist::RCPSGBM; Δt)
+    (; μⱼ, σⱼ, λⱼ) = dist
+    # jump component
+    k = rand(Poisson(λⱼ * Δt))
+    jump = k > 0 ? rand(Normal(μⱼ * k, σⱼ * √(k))) : 0.0
+    return jump
+end
+
+"""
+    update_state!(dist::RCPSGBM)
+
+Updates the state of the model based on parameters `λᵢₙ` and `λₒᵤₜ`.  The transition rate from normal to recession is 
+    determined by `λᵢₙ` and the transition rate from recession to normal is determined by `λₒᵤₜ`.
+
+# Arguments
+
+- `dist::RCPSGBM`: a distribution object for Geometric Brownian Motion with regime switching (normal vs. recession)
+    and a Poisson spike process. 
+"""
+function update_state!(dist::RCPSGBM; Δt)
+    (; λᵢₙ, λₒᵤₜ) = dist
+    if !dist.in_recession
+        dist.in_recession = (rand() ≤ 1 - exp(-λᵢₙ * Δt)) ? true : false
+    else
+        dist.in_recession = (rand() ≤ 1 - exp(-λₒᵤₜ * Δt)) ? false : true
+    end
+end
+
+"""
+    reset!(dist::RCPSGBM)
+
+Resets the state of the model to `in_recession false` and sets the current price to the initial price.
+
+# Arguments
+
+- `dist::RCPSGBM`: a distribution object for Geometric Brownian Motion with regime switching (normal vs. recession)
+    and a Poisson spike process. 
+"""
+function reset!(dist::RCPSGBM)
+    dist.x = dist.x0
+    dist.in_recession = false
+    return nothing
+end

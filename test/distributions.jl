@@ -180,3 +180,117 @@ end
         @test sum(dist.x) ≈ true_val
     end
 end
+
+@safetestset "Geometric Brownian Motion Poisson Spike and Regime Change" begin
+    @safetestset "update_state 1!" begin
+        using Test
+        using Random
+        using RetirementPlanners
+        using RetirementPlanners: RCPSGBM
+        using RetirementPlanners: update_state!
+        Random.seed!(23)
+        # p = 1 - exp(-λ * Δt)
+        # -p + 1 = exp(-λ * Δt)
+        # log(-p + 1) = -λ * Δt
+        # - log(-p + 1) / Δt = λ
+
+        Δt = 1
+        p = 0.20
+        λᵢₙ = - log(-p + 1) / Δt
+        model = RCPSGBM(;
+            μ = 0.11,
+            σ = 0.15,
+            μᵣ = -0.20,
+            σᵣ = 0.10,
+            μⱼ = -0.03,
+            σⱼ = 0.02,
+            λⱼ = 0.75,
+            λᵢₙ,
+            λₒᵤₜ = 0.66,
+            x0 = 6614.0,
+            in_recession = false
+        )
+
+        x = map(1:10000) do _
+            model.in_recession = false
+            update_state!(model; Δt)
+            model.in_recession
+        end
+
+        @test mean(x) ≈ p atol = 0.005
+    end
+
+    @safetestset "update_state 2!" begin
+        using Test
+        using Random
+        using RetirementPlanners
+        using RetirementPlanners: RCPSGBM
+        using RetirementPlanners: update_state!
+        Random.seed!(56)
+        # p = 1 - exp(-λ * Δt)
+        # -p + 1 = exp(-λ * Δt)
+        # log(-p + 1) = -λ * Δt
+        # - log(-p + 1) / Δt = λ
+
+        Δt = 1
+        # probability of transitioning from recession to normal
+        p = 0.05
+        λₒᵤₜ = - log(-p + 1) / Δt
+        model = RCPSGBM(;
+            μ = 0.11,
+            σ = 0.15,
+            μᵣ = -0.20,
+            σᵣ = 0.10,
+            μⱼ = -0.03,
+            σⱼ = 0.02,
+            λⱼ = 0.75,
+            λᵢₙ = 0.1,
+            λₒᵤₜ,
+            x0 = 6614.0,
+            in_recession = true
+        )
+
+        x = map(1:10000) do _
+            model.in_recession = true
+            update_state!(model; Δt)
+            model.in_recession
+        end
+
+        @test mean(.!x) ≈ p atol = 0.005
+    end
+
+    @safetestset "jump" begin
+        using Test
+        using Distributions
+        using Random
+        using RetirementPlanners
+        using RetirementPlanners: RCPSGBM
+        using RetirementPlanners: jump
+        Random.seed!(7454)
+
+        Δt = 1
+        μⱼ = -0.03
+        σⱼ = 0.02
+        λⱼ = 0.75
+        model = RCPSGBM(;
+            μ = 0.11,
+            σ = 0.15,
+            μᵣ = -0.20,
+            σᵣ = 0.10,
+            μⱼ,
+            σⱼ,
+            λⱼ,
+            λᵢₙ = 0.10,
+            λₒᵤₜ = 0.66,
+            x0 = 6614.0,
+            in_recession = true
+        )
+
+        dist = Poisson(λⱼ)
+        x = map(_ -> jump(model; Δt), 1:100_000)
+
+        @test mean(x .== 0) ≈ pdf(dist, 0) atol = 0.01
+        @test mean(dist) * μⱼ ≈ mean(x) atol = 0.01
+        @test mean(dist) * σⱼ^2 ≈ var(x) atol = 0.01
+    end
+end

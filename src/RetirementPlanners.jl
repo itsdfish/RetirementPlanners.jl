@@ -2,10 +2,7 @@ module RetirementPlanners
 
 using ConcreteStructs
 using Distributions: ContinuousUnivariateDistribution
-using Distributions: Distribution
-using Distributions: MvNormal
-using Distributions: Normal
-using Distributions: truncated
+using Distributions
 using NamedTupleTools
 using PrettyTables
 using ProgressMeter

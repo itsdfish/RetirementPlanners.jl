@@ -75,7 +75,7 @@
         color = :blue
     )
 
-    @test true 
+    @test true
 end
 
 @safetestset "plot_sensitivity1" begin
@@ -104,7 +104,11 @@ end
     )
 
     investments = [
-        Transaction(; start_age = 27, end_age = a, amount = Normal(contribute(5e4, p), 100))
+        Transaction(;
+            start_age = 27,
+            end_age = a,
+            amount = Normal(contribute(5e4, p), 100)
+        )
         for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
     ]
 
@@ -151,13 +155,13 @@ end
     @test true
 end
 
-@safetestset "plot_sensitivity2" begin 
+@safetestset "plot_sensitivity2" begin
     using Distributions
     using DataFrames
     using Plots
     using RetirementPlanners
     using StatsPlots
-    using Test 
+    using Test
 
     # montly contribution 
     contribute(x, r) = (x / 12) * r
@@ -177,7 +181,11 @@ end
     )
 
     investments = [
-        Transaction(; start_age = 27, end_age = a, amount = Normal(contribute(5e4, p), 100))
+        Transaction(;
+            start_age = 27,
+            end_age = a,
+            amount = Normal(contribute(5e4, p), 100)
+        )
         for p ∈ 0.10:0.05:0.30 for a ∈ 55:65
     ]
 
@@ -198,15 +206,15 @@ end
         # interest parameters
         kw_market = (
             gbm = VarGBM(;
-                αμ = 0.070,
-                ημ = 0.010,
-                ασ = 0.035,
-                ησ = 0.010,
-                αμᵣ = -0.05,
-                ημᵣ = 0.010,
-                ασᵣ = 0.035,
-                ησᵣ = 0.010
-            ),
+            αμ = 0.070,
+            ημ = 0.010,
+            ασ = 0.035,
+            ησ = 0.010,
+            αμᵣ = -0.05,
+            ημᵣ = 0.010,
+            ασᵣ = 0.035,
+            ησᵣ = 0.010
+        ),
         ),
         # inflation parameters
         kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
@@ -221,8 +229,10 @@ end
     df.survived = df.net_worth .> 0
     df.retirement_age = map(x -> x.end_age, df.invest_investments)
     df.mean_investment = map(x -> x.amount.μ, df.invest_investments)
-    df1 = combine(groupby(df, [:retirement_age, :mean_investment, :time]), :net_worth => mean)
-    df2 = combine(groupby(df, [:retirement_age, :mean_investment, :time]), :survived => mean)
+    df1 =
+        combine(groupby(df, [:retirement_age, :mean_investment, :time]), :net_worth => mean)
+    df2 =
+        combine(groupby(df, [:retirement_age, :mean_investment, :time]), :survived => mean)
 
     plot_sensitivity(
         df,
