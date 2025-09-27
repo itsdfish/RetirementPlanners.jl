@@ -1,7 +1,7 @@
 [![](docs/src/assets/large_logo.png)](https://itsdfish.github.io/RetirementPlanners.jl/dev/)
 # RetirementPlanner
 
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://itsdfish.github.io/RetirementCalculators.jl/dev/) [![CI](https://github.com/itsdfish/RetirementCalculators.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itsdfish/RetirementPlanners.jl/actions/workflows/CI.yml) [![CodeCov][codecov-img]][codecov-url] 
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://itsdfish.github.io/RetirementPlanners.jl/dev/) [![CI](https://github.com/itsdfish/RetirementCalculators.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itsdfish/RetirementPlanners.jl/actions/workflows/CI.yml) [![CodeCov][codecov-img]][codecov-url] 
 
 [codecov-img]: https://codecov.io/github/itsdfish/RetirementPlanners.jl/badge.svg?branch=main
 [codecov-url]: https://codecov.io/github/itsdfish/RetirementPlanners.jl?branch=main
