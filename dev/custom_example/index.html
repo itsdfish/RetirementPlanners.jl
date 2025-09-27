@@ -43,14 +43,14 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
 # setup retirement model
-model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model</span>
+model = Model(; config...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">                                     Model</span>
 ┌─────────────────────┬─────────────────────────────────────────────────────────
-│<span class="sgr1"> Field               </span>│<span class="sgr1"> Value                                                 </span> ⋯
+│<span class="sgr1"> Parameter           </span>│<span class="sgr1"> Value                                                 </span> ⋯
 ├─────────────────────┼─────────────────────────────────────────────────────────
-│<span class="sgr1"> Δt                  </span>│  0.08                                                  ⋯
-│<span class="sgr1"> duration            </span>│ 40.00                                                  ⋯
-│<span class="sgr1"> start_age           </span>│ 50.00                                                  ⋯
-│<span class="sgr1"> start_amount        </span>│ 1000000.00                                             ⋯
+│<span class="sgr1"> Δt                  </span>│ 0.08333333333333333                                    ⋯
+│<span class="sgr1"> duration            </span>│ 40.0                                                   ⋯
+│<span class="sgr1"> start_age           </span>│ 50.0                                                   ⋯
+│<span class="sgr1"> start_amount        </span>│ 1.0e6                                                  ⋯
 │<span class="sgr1"> log_times           </span>│ 50.083333333333336:0.08333333333333333:90.0            ⋯
 │<span class="sgr1"> state               </span>│ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
 │<span class="sgr1"> withdraw!           </span>│ withdraw!                                              ⋯
@@ -88,14 +88,14 @@ model = Model(; config...)</code></pre><pre class="documenter-example-output"><c
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
 # setup retirement model
-model2 = Model(; config2...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Model</span>
+model2 = Model(; config2...)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">                                     Model</span>
 ┌─────────────────────┬─────────────────────────────────────────────────────────
-│<span class="sgr1"> Field               </span>│<span class="sgr1"> Value                                                 </span> ⋯
+│<span class="sgr1"> Parameter           </span>│<span class="sgr1"> Value                                                 </span> ⋯
 ├─────────────────────┼─────────────────────────────────────────────────────────
-│<span class="sgr1"> Δt                  </span>│  0.08                                                  ⋯
-│<span class="sgr1"> duration            </span>│ 40.00                                                  ⋯
-│<span class="sgr1"> start_age           </span>│ 50.00                                                  ⋯
-│<span class="sgr1"> start_amount        </span>│ 1000000.00                                             ⋯
+│<span class="sgr1"> Δt                  </span>│ 0.08333333333333333                                    ⋯
+│<span class="sgr1"> duration            </span>│ 40.0                                                   ⋯
+│<span class="sgr1"> start_age           </span>│ 50.0                                                   ⋯
+│<span class="sgr1"> start_amount        </span>│ 1.0e6                                                  ⋯
 │<span class="sgr1"> log_times           </span>│ 50.083333333333336:0.08333333333333333:90.0            ⋯
 │<span class="sgr1"> state               </span>│ State{Float64}(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1)        ⋯
 │<span class="sgr1"> withdraw!           </span>│ withdraw!                                              ⋯
@@ -174,4 +174,4 @@ p40 = histogram(
     leg = false,
     grid = false,
     title = &quot;40 years&quot;
-)</code></pre><img src="70f5feec.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="43c00da4.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Friday 26 September 2025 19:48">Friday 26 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+)</code></pre><img src="306a8df3.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="b921c08d.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Saturday 27 September 2025 11:52">Saturday 27 September 2025</span>. Using Julia version 1.11.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
