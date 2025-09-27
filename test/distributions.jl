@@ -208,7 +208,6 @@ end
             λᵢₙ,
             λₒᵤₜ = 0.66,
             x0 = 6614.0,
-            in_recession = false
         )
 
         x = map(1:10000) do _
@@ -247,7 +246,6 @@ end
             λᵢₙ = 0.1,
             λₒᵤₜ,
             x0 = 6614.0,
-            in_recession = true
         )
 
         x = map(1:10000) do _
@@ -283,7 +281,6 @@ end
             λᵢₙ = 0.10,
             λₒᵤₜ = 0.66,
             x0 = 6614.0,
-            in_recession = true
         )
 
         dist = Poisson(λⱼ)
