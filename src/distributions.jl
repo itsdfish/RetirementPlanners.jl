@@ -510,36 +510,6 @@ A distribution object for Regime Change Poisson Spike Geometric Brownian Motion 
 - `λₒᵤₜ::T`: recession exist rate
 - `x0::T`: initial value of stock 
 - `x::T`: current value
-"""
-mutable struct RCPSGBM{T <: Real} <: AbstractGBM
-    μ::T
-    σ::T
-    μᵣ::T
-    σᵣ::T
-    μⱼ::T
-    σⱼ::T
-    λⱼ::T
-    λᵢₙ::T
-    λₒᵤₜ::T
-    x0::T
-    x::T
-    in_recession::Bool
-end
-
-"""
-    GBM(; μ, σ, μᵣ = μ, σᵣ = σ, x0 = 1.0, x = x0)
-
-A constructor for the Geometric Brownian Motion (GBM) model, which is used to model 
-growth of stocks. 
-
-# Keywords 
-
-- `μ::T`: growth rate
-- `σ::T`: volitility in growth rate
-- `μᵣ::T`: growth rate during recession 
-- `σᵣ::T`: volitility in growth rate during recession 
-- `x0::T=1.0`: initial value of stock 
-- `x::T=x0`: current value
 
 # Example 
 
@@ -557,14 +527,28 @@ model = RCPSGBM(;
     λᵢₙ = .31, 
     λₒᵤₜ = .66, 
     x0 = 6614.0,
-    in_recession = false
 )
+
 duration = 36
 Δt = 1 / 365
 n_sim = 1000
 prices = rand(model, duration, n_sim; Δt)
-```
 """
+mutable struct RCPSGBM{T <: Real} <: AbstractGBM
+    μ::T
+    σ::T
+    μᵣ::T
+    σᵣ::T
+    μⱼ::T
+    σⱼ::T
+    λⱼ::T
+    λᵢₙ::T
+    λₒᵤₜ::T
+    x0::T
+    x::T
+    in_recession::Bool
+end
+
 function RCPSGBM(;
     μ,
     σ,
@@ -576,10 +560,9 @@ function RCPSGBM(;
     λᵢₙ,
     λₒᵤₜ,
     x0 = 1.0,
-    x = x0,
-    in_recession = false
+    x = x0
 )
-    return RCPSGBM(promote(μ, σ, μᵣ, σᵣ, μⱼ, σⱼ, λⱼ, λᵢₙ, λₒᵤₜ, x0, x)..., in_recession)
+    return RCPSGBM(promote(μ, σ, μᵣ, σᵣ, μⱼ, σⱼ, λⱼ, λᵢₙ, λₒᵤₜ, x0, x)..., false)
 end
 
 """
