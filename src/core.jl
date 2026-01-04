@@ -70,11 +70,11 @@ end
             
 Performs an update on each time step by calling the following functions defined in `model`:
 
+- `update_inflation!`: compute inflation
+- `update_market!`: compute interest 
 - `update_income!`: update sources of income, such as social security, pension etc. 
 - `withdraw!`: withdraw money
 - `invest!`: invest money
-- `update_inflation!`: compute inflation
-- `update_market!`: compute interest 
 - `update_investments!`: compute net worth for the time step 
 - `log!`: log desired variables 
 

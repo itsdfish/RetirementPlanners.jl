@@ -79,8 +79,16 @@ default_log!
 ```@docs
 update_investments!
 ```
+
 ### Update Withdraw
 
 ```@docs 
 withdraw!
+```
+# Plots
+
+```@docs
+plot_gradient
+plot_quantiles
+plot_sensitivity
 ```

@@ -47,6 +47,7 @@ export increment!
 export is_event_time
 export mean
 export plot_gradient
+export plot_quantiles
 export plot_sensitivity
 export rand
 export simulate!

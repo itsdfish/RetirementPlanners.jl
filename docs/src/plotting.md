@@ -90,12 +90,24 @@ survival_probs = mean(logger.net_worth .> 0, dims = 2)
 ```@example plotting 
 income_plot = plot_gradient(
     times,
-    logger.total_income;
+    logger.net_worth;
     xlabel = "Age",
-    ylabel = "Total Income",
-    xlims = (config.kw_withdraw.withdraws.start_age, times[end]),
+    ylabel = "Net Worth",
     n_lines = 0,
     color = :blue
+)
+```
+
+## Quantile Plot 
+
+The function `plot_quantiles` fulfills the same function as `plot_gradient`, except the color gradient is replaced with quantiles. 
+
+```@example plotting 
+income_plot = plot_quantiles(
+    times,
+    logger.net_worth;
+    xlabel = "Age",
+    ylabel = "Net Worth",
 )
 ```
 

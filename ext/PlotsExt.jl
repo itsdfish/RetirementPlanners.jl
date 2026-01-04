@@ -7,6 +7,7 @@ using SmoothingSplines
 using DataFrames
 
 import RetirementPlanners: plot_gradient
+import RetirementPlanners: plot_quantiles
 import RetirementPlanners: plot_sensitivity
 import RetirementPlanners: to_dataframe
 
@@ -87,6 +88,45 @@ function plot_gradient(
     end
     plot!(x, y[:, 1:n_lines])
     return p1
+end
+
+"""
+    plot_quantiles(
+        x,
+        y::Array{<:Number, 2};
+        percentiles = [.10,.25,.50,.75,.90],
+        kwargs...
+    )
+
+Returns a plot of the quantiles for `y` at each point in `x`.
+    
+# Arguments
+
+- `x`: x-axis variable, typically time  
+- `y::Array{<:Number, 2}`: a 2D array in which the first dimension is time and the second dimension is repetitions of the simulation
+
+# Keywords 
+
+- `percentiles = [.10,.25,.50,.75,.90]`: percentiles at which the quantiles are computed
+- `kwargs...`: optional keyword arguments for the plot 
+"""
+function plot_quantiles(
+    x,
+    y::Array{<:Number, 2};
+    percentiles = [0.10, 0.25, 0.50, 0.75, 0.90],
+    kwargs...
+)
+    quantiles = map(percentiles) do p
+        map(x -> quantile(x, p), eachrow(y))
+    end
+    return plot(
+        x,
+        quantiles,
+        legendtitle = "Percentiles",
+        label = percentiles',
+        grid = false;
+        kwargs...
+    )
 end
 
 """

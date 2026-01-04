@@ -167,8 +167,8 @@ end
 @bind withdraw_parms PlutoExtras.@NTBond "Withdraw Parameters" begin
     income_adjustment = (@htl("Income Adjustment"), NumberField(0:1e-3:1, default = 0.0))
     percent_of_real_growth =
-        (@htl("Percent of Real Growth"), NumberField(0:1e-3:1, default = 0.15))
-    volitility = (@htl(" Volility"), NumberField(0:1e-3:1, default = 0.05))
+        (@htl("Percent of Real Growth"), NumberField(0:1e-3:1, default = 0.0))
+    volitility = (@htl(" Volility"), NumberField(0:1e-3:1, default = 0.00))
 end
 
 # ╔═╡ 31803b5b-3205-4d1f-b49e-98ebf7cb3eb9
@@ -198,10 +198,10 @@ end
 
 # ╔═╡ 7e4cbe2a-dd08-4298-b9a4-32f0f659efa8
 @bind investment_parms PlutoExtras.@NTBond "Growth Parameters" begin
-    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
-    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.020))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.140))
     std_volitility =
-        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.040))
 end
 
 # ╔═╡ 989bd0e5-33d5-4974-a044-bd2af180b5e4
@@ -225,11 +225,11 @@ md"""
 
 # ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
 @bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
-    mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:0, default = -0.05))
+    mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:0, default = -0.10))
     std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
-    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.040))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.100))
     std_volitility =
-        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.010))
+        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.020))
     duration = (@htl("Duration"), NumberField(0:1e-3:30, default = 3))
 end
 
@@ -689,6 +689,7 @@ end
 
 # ╔═╡ c853496d-babe-4267-a2c1-62b8472426b8
 let
+    logger = nothing
     if run_simulation.run
         logger, model = simulate_single()
         times = get_times(model)
@@ -727,14 +728,6 @@ let
             grid = false,
             xlims = (-0.7, 0.7)
         )
-        vline!(
-            interest_plot,
-            [0.0],
-            color = :black,
-            linewidth = 1.5,
-            linestyle = :dash,
-            label = false
-        )
 
         # income as a function of time.
         income_plot = plot_gradient(
@@ -746,12 +739,12 @@ let
             n_lines = 0,
             color = :blue
         )
+        layout = @layout([a b; c])
         plot(
             survival_plot,
             net_worth_plot,
-            interest_plot,
             income_plot,
-            layout = (2, 2),
+            layout = layout,
             size = (1200, 600),
             left_margin = 8mm,
             bottom_margin = 8mm
@@ -1482,10 +1475,10 @@ DataFrames = "~1.8.1"
 Distributions = "~0.25.122"
 HypertextLiteral = "~0.9.5"
 LaTeXStrings = "~1.4.0"
-Plots = "~1.41.2"
+Plots = "~1.41.3"
 PlutoExtras = "~0.7.16"
-PlutoUI = "~0.7.75"
-RetirementPlanners = "~0.6.5"
+PlutoUI = "~0.7.77"
+RetirementPlanners = "~0.6.6"
 StatsPlots = "~0.15.8"
 """
 
@@ -1493,9 +1486,9 @@ StatsPlots = "~0.15.8"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.2"
+julia_version = "1.12.3"
 manifest_format = "2.0"
-project_hash = "1ab77b4e26dc28b21fd9081c14f4fdc2151a80a9"
+project_hash = "78b874b48df1424095f8b6bf181ed487482eb5f7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1513,6 +1506,11 @@ deps = ["Pkg"]
 git-tree-sha1 = "6e1d2a35f2f90a4bc7c2ed98079b2ba09c35b83a"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
 version = "1.3.2"
+
+[[deps.AbstractTrees]]
+git-tree-sha1 = "2d9c9a55f9c93e8887ad391fbae72f8ef55e1177"
+uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+version = "0.4.5"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
@@ -1571,10 +1569,10 @@ uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
 version = "0.5.4"
 
 [[deps.Arpack_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "OpenBLAS_jll", "Pkg"]
-git-tree-sha1 = "5ba6c757e8feccf03a1554dfaf3e26b3cfc7fd5e"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "libblastrampoline_jll"]
+git-tree-sha1 = "7f54761502ff149a9d492e4acefe9805898e29b3"
 uuid = "68821587-b530-5797-8361-c406ea357684"
-version = "3.5.1+1"
+version = "3.5.2+0"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -1866,9 +1864,9 @@ version = "0.4.5"
 
 [[deps.FFMPEG_jll]]
 deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
-git-tree-sha1 = "ccc81ba5e42497f4e76553a5545665eed577a663"
+git-tree-sha1 = "01ba9d15e9eae375dc1eb9589df76b3572acd3f2"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
-version = "8.0.0+0"
+version = "8.0.1+0"
 
 [[deps.FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "Libdl", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
@@ -1934,9 +1932,9 @@ version = "1.11.0"
 
 [[deps.GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll", "libdecor_jll", "xkbcommon_jll"]
-git-tree-sha1 = "fcb0584ff34e25155876418979d4c8971243bb89"
+git-tree-sha1 = "b7bfd56fa66616138dfe5237da4dc13bbd83c67f"
 uuid = "0656b61e-2033-5cc2-a64a-77c0f6c09b89"
-version = "3.4.0+2"
+version = "3.4.1+0"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Preferences", "Printf", "Qt6Wayland_jll", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "p7zip_jll"]
@@ -2115,9 +2113,9 @@ version = "1.3.0"
 
 [[deps.JpegTurbo_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "4255f0032eafd6451d707a51d5f0248b8a165e4d"
+git-tree-sha1 = "b6893345fd6658c8e475d40155789f4860ac3b21"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "3.1.3+0"
+version = "3.1.4+0"
 
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
@@ -2354,10 +2352,10 @@ uuid = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 version = "0.14.3"
 
 [[deps.NearestNeighbors]]
-deps = ["Distances", "StaticArrays"]
-git-tree-sha1 = "e45bb6034fdef63d0c49b82ba9b889215bf8b344"
+deps = ["AbstractTrees", "Distances", "StaticArrays"]
+git-tree-sha1 = "2949f294f82b5ad7192fd544a988a1e785438ee2"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.24"
+version = "0.4.26"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -2428,9 +2426,9 @@ version = "10.44.0+1"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "d922b4d80d1e12c658da7785e754f4796cc1d60d"
+git-tree-sha1 = "e4cff168707d441cd6bf3ff7e4832bdf34278e4a"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
-version = "0.11.36"
+version = "0.11.37"
 weakdeps = ["StatsBase"]
 
     [deps.PDMats.extensions]
@@ -2457,7 +2455,7 @@ version = "0.44.2+0"
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-version = "1.12.0"
+version = "1.12.1"
 weakdeps = ["REPL"]
 
     [deps.Pkg.extensions]
@@ -2477,9 +2475,9 @@ version = "1.4.4"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "TOML", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "7b990898534ea9797bf9bf21bd086850e5d9f817"
+git-tree-sha1 = "459d8913a8b83c7222eb629664283653dadfe2b6"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.41.2"
+version = "1.41.3"
 
     [deps.Plots.extensions]
     FileIOExt = "FileIO"
@@ -2502,10 +2500,10 @@ uuid = "ed5d0301-4775-4676-b788-cf71e66ff8ed"
 version = "0.7.16"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "db8a06ef983af758d285665a0398703eb5bc1d66"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "6ed167db158c7c1031abf3bd67f8e689c8bdf2b7"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.75"
+version = "0.7.77"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
@@ -2521,9 +2519,9 @@ version = "1.3.3"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "0f27480397253da18fe2c12a4ba4eb9eb208bf3d"
+git-tree-sha1 = "522f093a29b31a93e34eaea17ba055d850edea28"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.0"
+version = "1.5.1"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
@@ -2640,9 +2638,9 @@ version = "1.3.1"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "2d69e482d8a7262c59b48d55eca9332149acb65f"
+git-tree-sha1 = "286dd3991bf99a614a326f2dbf9bf80f4ae555bd"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.5"
+version = "0.6.6"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2672,9 +2670,9 @@ version = "1.3.0"
 
 [[deps.SentinelArrays]]
 deps = ["Dates", "Random"]
-git-tree-sha1 = "712fb0231ee6f9120e005ccd56297abbc053e7e0"
+git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
 uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.8"
+version = "1.4.9"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -2747,9 +2745,9 @@ version = "1.0.4"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "b8693004b385c842357406e3af647701fe783f98"
+git-tree-sha1 = "eee1b9ad8b29ef0d936e3ec9838c7ec089620308"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.15"
+version = "1.9.16"
 weakdeps = ["ChainRulesCore", "Statistics"]
 
     [deps.StaticArrays.extensions]
@@ -2961,9 +2959,9 @@ version = "1.0.0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "fee71455b0aaa3440dfdd54a9a36ccef829be7d4"
+git-tree-sha1 = "9cce64c0fdd1960b597ba7ecda2950b5ed957438"
 uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
-version = "5.8.1+0"
+version = "5.8.2+0"
 
 [[deps.Xorg_libICE_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3169,9 +3167,9 @@ version = "1.28.1+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "5cb3c5d039f880c0b3075803c8bf45cb95ae1e91"
+git-tree-sha1 = "de8ab4f01cb2d8b41702bab9eaad9e8b7d352f73"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.51+0"
+version = "1.6.53+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll"]
