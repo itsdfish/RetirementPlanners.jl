@@ -15,6 +15,124 @@ The purpose of this example is to illustrate how to customize update functions i
 
 As an illustrative example, consider a person who is considering the cost of a financial advisor who charges an annual 1% fee of the value of the assets. Estimating the cost is not straightforward because the fee decreases future growth potential. To estimate the cost, we will run simulations of identical scenarios, except in one case there is a 1% fee, but in the other case there is no fee.   
 
+A full version of the code can be found by expanding the information below:
+
+```@raw html
+<details>
+<summary><b>Show Code </b></summary>
+```
+```julia
+using Plots
+using Random
+using RetirementPlanners
+
+import RetirementPlanners: simulate!
+using RetirementPlanners: simulate_once! 
+using RetirementPlanners: compute_real_growth_rate
+
+function simulate!(model::AbstractModel, logger::AbstractLogger, n_reps, seed)
+    for rep ∈ 1:n_reps
+        Random.seed!(seed + rep)
+        simulate_once!(model, logger, rep)
+    end
+    return nothing
+end
+
+function update_investments_fee!(model::AbstractModel, t; fee_rate = 0.0, _...)
+    model.state.net_worth -= model.state.withdraw_amount
+    model.state.net_worth += model.state.invest_amount
+    if mod(t, 1) ≈ 0
+        model.state.net_worth *= (1 - fee_rate)
+    end
+    real_growth = compute_real_growth_rate(model)
+    model.state.net_worth *= (1 + real_growth)^model.Δt
+    return nothing
+end
+
+config = (
+    # time step in years 
+    Δt = 1 / 12,
+    # start age of simulation 
+    start_age = 50,
+    # duration of simulation in years
+    duration = 40,
+    # initial investment amount 
+    start_amount = 1_000_000,
+    update_investments! = update_investments_fee!,
+    # investment parameters
+    kw_investments = (; fee_rate = 0.01),
+    # withdraw parameters 
+    kw_withdraw = (;
+        withdraws = Transaction(; start_age = 55, amount = Normal(2000, 200)),),
+    # invest parameters
+    kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
+    # interest parameters
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    # inflation parameters
+    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
+    # income parameters 
+    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
+)
+# setup retirement model
+model_fee = Model(; config...)
+
+# setup retirement model
+model_no_fee = Model(; config..., kw_investments = (; fee_rate = 0.00))
+
+seed = 8564
+times = get_times(model_fee)
+n_reps = 1000
+n_steps = length(times)
+logger_fee = Logger(; n_steps, n_reps)
+logger_no_fee = Logger(; n_steps, n_reps)
+
+# simulate scenario with fee
+simulate!(model_fee, logger_fee, n_reps, seed)
+
+# simulate scenario without fee
+simulate!(model_no_fee, logger_no_fee, n_reps, seed)
+
+idx = 12 * 10
+p10 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = "10 years"
+)
+
+idx = 12 * 20
+p20 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = "20 years"
+)
+
+idx = 12 * 30
+p30 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = "30 years"
+)
+
+idx = 12 * 40
+p40 = histogram(
+    net_worth_diff[idx, :],
+    norm = true,
+    leg = false,
+    grid = false,
+    title = "40 years"
+)
+```
+```@raw html
+</details>
+```
+
+
 # Load Packages 
 
 Below, we load the required packages. 
@@ -61,7 +179,7 @@ end
 
 # Configuration 
 
-We will define a configuration for both conditions. The first configuration corresponds to the advisor fee condition. The second configuration is identical except the fee is eliminated.  
+We will define a baseline configuration in which the advisor fee is set to `.01`. This will serve as the advisor fee condition.  
 
 ```@example custom_example
 config = (
@@ -89,36 +207,14 @@ config = (
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
 # setup retirement model
-model = Model(; config...)
+model_fee = Model(; config...)
 ```
 
+The configuration for the no advisor fee condition is identitical except we also pass `kw_investments = (; fee_rate = 0.00)` to overwrite the default fee of `.01`. 
+
 ```@example custom_example
-config2 = (
-    # time step in years 
-    Δt = 1 / 12,
-    # start age of simulation 
-    start_age = 50,
-    # duration of simulation in years
-    duration = 40,
-    # initial investment amount 
-    start_amount = 1_000_000,
-    update_investments! = update_investments_fee!,
-    # investment parameters
-    kw_investments = (; fee_rate = 0.00),
-    # withdraw parameters 
-    kw_withdraw = (;
-        withdraws = Transaction(; start_age = 55, amount = Normal(2000, 200)),),
-    # invest parameters
-    kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
-    # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
-    # inflation parameters
-    kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
-    # income parameters 
-    kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
-)
 # setup retirement model
-model2 = Model(; config2...)
+model_no_fee = Model(; config..., kw_investments = (; fee_rate = 0.00))
 ```
 
 # Run Simulations 
@@ -127,23 +223,23 @@ In the code block below, we will run both simulations 1000 times each.
 
 ```@example custom_example
 seed = 8564
-times = get_times(model)
+times = get_times(model_fee)
 n_reps = 1000
 n_steps = length(times)
-logger1 = Logger(; n_steps, n_reps)
-logger2 = Logger(; n_steps, n_reps)
+logger_fee = Logger(; n_steps, n_reps)
+logger_no_fee = Logger(; n_steps, n_reps)
 
 # simulate scenario with fee
-simulate!(model, logger1, n_reps, seed)
+simulate!(model_fee, logger_fee, n_reps, seed)
 
 # simulate scenario without fee
-simulate!(model2, logger2, n_reps, seed)
+simulate!(model_no_fee, logger_no_fee, n_reps, seed)
 ```
 
 The code block below computes the cost as the difference in investment value between the simulations with an advisor fee and the simulations without the advisor fee. The units are expressed in millions of dollars for ease of interpretation. 
 
 ```@example custom_example
-net_worth_diff = (logger2.net_worth .- logger1.net_worth) / 1_000_000
+net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
 ```
 
 # Plot Results

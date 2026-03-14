@@ -4,7 +4,60 @@ using RetirementPlanners
 ```
 # Overview
 
-The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benefit of making the API clear, but will not result in a valid stress test of your retirement plan. For a more realistic example, please read the documentation for the [advanced example](advanced_example.md). 
+The purpose of this example is to demonstrate how to use `RetirementPlanners.jl` with a simple, retirement simulation. Our focus on a simple simulation will have the benefit of making the API clear, but will not result in a valid stress test of your retirement plan. For a more realistic example, please read the documentation for the [advanced example](advanced_example.md). A version of the code that can easily copied and pasted can be found by clicking on 'all code' below.
+
+```@raw html
+<details>
+<summary><b>All Code</b></summary>
+```
+```julia
+using RetirementPlanners
+using Plots
+
+config = (
+    # time step in years
+    Δt = 1 / 12,
+    # starting age of simulation
+    start_age = 25,
+    # duration of simulation
+    duration = 58,
+    # initial investment amount 
+    start_amount = 10_000,
+    # function for simulating growth in the market
+    update_market! = fixed_market,
+    # interest parameters
+    kw_market = (interest_rate = 0.07,),
+    # function for updating inflation
+    update_inflation! = fixed_inflation,
+    # inflation parameters
+    kw_inflation = (inflation_rate = 0.035,),
+    # invest parameters
+    kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
+    # withdraw parameters 
+    kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
+)
+
+model = Model(; config...)
+
+times = get_times(model)
+n_steps = length(times)
+n_reps = 1
+logger = Logger(; n_reps, n_steps)
+
+simulate!(model, logger, n_reps)
+
+plot(
+    times,
+    logger.net_worth,
+    grid = false,
+    label = false,
+    xlabel = "Age",
+    ylabel = "Net Worth"
+)
+```
+```@raw html
+</details>
+```
 
 # API
 
@@ -186,56 +239,3 @@ plot(times, logger.net_worth, grid=false, label=false, xlabel="Age", ylabel="Net
 ```
 
 Based on the assumptions we have made, you will have `$`219,771 remaining in investments at age 85. Needless to say, this simulation is too simplistic stress test your financial situation. Perhaps the most significant limitation is that is deterministic: investments, withdraws, infation, and interest are fixed throughout. In actuality, these values vary across time, thus introducing uncertainty into the planning process. The [advanced example](advanced_example.md) will show you how to introduce random variables into the simulation to account for various sources of uncertainty.
-
-```@raw html
-<details>
-<summary><b>All Code</b></summary>
-```
-```julia
-using RetirementPlanners
-using Plots
-
-config = (
-    # time step in years
-    Δt = 1 / 12,
-    # starting age of simulation
-    start_age = 25,
-    # duration of simulation
-    duration = 58,
-    # initial investment amount 
-    start_amount = 10_000,
-    # function for simulating growth in the market
-    update_market! = fixed_market,
-    # interest parameters
-    kw_market = (interest_rate = 0.07,),
-    # function for updating inflation
-    update_inflation! = fixed_inflation,
-    # inflation parameters
-    kw_inflation = (inflation_rate = 0.035,),
-    # invest parameters
-    kw_invest = (investments = Transaction(; end_age = 60, amount = 625),),
-    # withdraw parameters 
-    kw_withdraw = (withdraws = Transaction(; start_age = 60, amount = 2200),)
-)
-
-model = Model(; config...)
-
-times = get_times(model)
-n_steps = length(times)
-n_reps = 1
-logger = Logger(; n_reps, n_steps)
-
-simulate!(model, logger, n_reps)
-
-plot(
-    times,
-    logger.net_worth,
-    grid = false,
-    label = false,
-    xlabel = "Age",
-    ylabel = "Net Worth"
-)
-```
-```@raw html
-</details>
-```

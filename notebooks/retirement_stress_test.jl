@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -62,7 +62,7 @@ md"
     start_amount = ("Portfolio Value", NumberField(0:1e7, default = 10_000))
     start_age = ("Start Age", NumberField(0.0:120, default = 27))
     end_age = ("End age", NumberField(0.0:120, default = 85))
-    n_reps = ("Repetitions", NumberField(50:10_000, default = 200))
+    n_reps = ("Repetitions", NumberField(50:10_000, default = 1000))
     seed = ("Seed", NumberField(0:100000000, default = rand(1:1000000)))
 end
 
@@ -153,7 +153,7 @@ end
 
 # ╔═╡ 2b9e3b46-18f1-4d00-8a40-cb99e8bd1691
 md"
-## Withdrawing from Investments
+## Withdraw Schedule
 "
 
 # ╔═╡ 50d919c6-4f86-4e4d-a08d-7f23486ff9ec
@@ -204,6 +204,21 @@ end
         (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.040))
 end
 
+# ╔═╡ 42ac4169-ec26-4882-aa64-aeed3e609ce0
+md"""
+### Recession
+"""
+
+# ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
+@bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
+    mean_rate = (@htl("Mean Rate of Decrease"), NumberField(-2:1e-5:0, default = -0.10))
+    std_rate = (@htl("Standard Deviation Rate of Decrease"), NumberField(0:1e-5:2, default = 0.010))
+    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.100))
+    std_volitility =
+        (@htl("Standard Deviation of Volitility"), NumberField(0:1e-5:2, default = 0.020))
+    duration = (@htl("Duration"), NumberField(0:1e-3:30, default = 3))
+end
+
 # ╔═╡ 989bd0e5-33d5-4974-a044-bd2af180b5e4
 md"""
 ### Inflation
@@ -216,33 +231,6 @@ md"""
     mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.005))
     std_volitility =
         (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.0025))
-end
-
-# ╔═╡ 42ac4169-ec26-4882-aa64-aeed3e609ce0
-md"""
-### Recession
-"""
-
-# ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
-@bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
-    mean_rate = (@htl("Mean Rate"), NumberField(-2:1e-5:0, default = -0.10))
-    std_rate = (@htl("Standard Deviation Rate"), NumberField(0:1e-5:2, default = 0.010))
-    mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.100))
-    std_volitility =
-        (@htl("Standard Deviation Volitility"), NumberField(0:1e-5:2, default = 0.020))
-    duration = (@htl("Duration"), NumberField(0:1e-3:30, default = 3))
-end
-
-# ╔═╡ 29008274-3a15-4283-98fb-7a9a10bd4a2a
-md"""
-## Run Simulation
-
-
-"""
-
-# ╔═╡ 05f0763a-e78f-4aa6-9f3f-31015490cacb
-@bind run_simulation PlutoExtras.@NTBond "" begin
-    run = (@htl("Check the Box to Run the Simulation"), CheckBox(default = false))
 end
 
 # ╔═╡ 75523d40-71e9-44d9-abd4-fc963fc42fc2
@@ -283,6 +271,18 @@ end
 # ╔═╡ bc85326b-60c3-4cd4-bc3a-70ce83800110
 @bind switch_view PlutoExtras.@NTBond "" begin
     switch = (@htl("Switch View"), CheckBox(default = false))
+end
+
+# ╔═╡ 29008274-3a15-4283-98fb-7a9a10bd4a2a
+md"""
+## Run Simulation
+
+
+"""
+
+# ╔═╡ 05f0763a-e78f-4aa6-9f3f-31015490cacb
+@bind run_simulation PlutoExtras.@NTBond "" begin
+    run = (@htl(""), Editable(false, "Click to pause simulation", "Click to update simulation"))
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
@@ -707,12 +707,12 @@ let
         )
 
         # networth as a function of time. Darker shading indicates more likely values
-        net_worth_plot = plot_gradient(
+        net_worth_plot = plot_quantiles(
             times,
             logger.net_worth;
             xlabel = "Age",
             ylabel = "Investment Value",
-            n_lines = 0
+			legend = :topleft
         )
 
         # growth rate distribution across repetitions of the simulation
@@ -730,25 +730,28 @@ let
         )
 
         # income as a function of time.
-        income_plot = plot_gradient(
+        income_plot = plot(
             times,
-            logger.total_income;
+            mean(logger.total_income, dims = 2);
             xlabel = "Age",
             ylabel = "Total Income",
+			grid = false,
+			leg = false,
+			color = :black,
             xlims = (model.config.kw_withdraw.withdraws.start_age, times[end]),
-            n_lines = 0,
-            color = :blue
         )
+		
         layout = @layout([a b; c])
         plot(
             survival_plot,
+			income_plot,
             net_worth_plot,
-            income_plot,
             layout = layout,
             size = (1200, 600),
             left_margin = 8mm,
             bottom_margin = 8mm
         )
+		
     end
 end
 
@@ -1104,7 +1107,7 @@ let
 
     The purpose of this notebook is to stress test your retirement plan under a wide range of conditions, allowing you to identify potential points of failure. Based on your goals and risk tolerance, the results of the stress test can help you decide when to retire and whether you should make adjustments to your plan. 
 
-    The stress test evaluates your retirement plan in terms of survival probability and mean total income while varying your retirement plan along three important dimensions---(1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate. In addition, the stress test examines the robustness of your retirement plan to sequence-of-return risk by evaluating your plan under two conditions: (1) no rececssion upon retirement, and (2) a recession upon retirement. The results are conviniently displayed as a matrix of contour plots, allowing you to analyze the effect of these important variables across time. 
+    The stress test examines how the survival probability and mean monthly income of your retirement plan varies according to (1) retirement age, (2) monthly withdraw amount, and (3) investment growth rate as a function of time. In addition, the stress test examines the robustness of your retirement plan to sequence-of-return risk by evaluating your plan under two conditions: (1) no rececssion upon retirement, and (2) a recession upon retirement. The results are conviniently displayed as a matrix of contour plots, allowing you to analyze the effect of these important variables across time. 
 
     ###### Instructions
 
@@ -1113,10 +1116,10 @@ let
     3. After the stress test completes, the results will populate a matrix of contour plots in the *results* section.
 
     ##### Miscellaneous  Information
-    You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. The default number of reps (200) is useful for quick exploration, but 1,000 generates plots with higher fidelity. Although the stress test below  is sufficiently flexible to meet the needs of most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
+    You can use the hyperlinks in the table of contents to the right to quickly navigate between sections. Also keep in mind that generating the plots may require a long time if the number of repetitions and conditions is large. Although the stress test below is sufficiently flexible to meet the needs of most people, it is possible to edit the code for further customization. The underlying code can be viewed by hovering the cursor over a given cell and clicking the icon located at the top left. For more details, see the package documentation at  [RetirementPlanners](https://itsdfish.github.io/RetirementPlanners.jl/dev/).
 
     """
-    details(text; summary = "Overview and Instructions")
+    details(text; summary = "Click for Overview and Instructions")
 end
 
 # ╔═╡ 6e8320a8-920b-4384-b3be-62682aec0e57
@@ -1124,14 +1127,14 @@ let
     text = md"""
     Global parameters control various aspects of the simulation, including timing and initial conditions. 
 
-    * Start Age: your age at the beginng of the simulation, typically corresponding to your current age.
+    * `Start Age`: your age at the beginng of the simulation, typically corresponding to your current age.
 
-    * End Age: your age at the end of the simulation. 
+    * `End Age`: your age at the end of the simulation. 
 
-    * Repetitions: the number of times each condition is repeated, each with a different set of random outcomes. Using a value of 200 is sufficient for initial exploration. Using a value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
+    * `Repetitions`: the number of times each condition is repeated, each with a different set of random outcomes. Using a value of 200 is sufficient for initial exploration. Using a value of 1,000 results in a medium to high fidelity plot, but requires more computation time. 
 
-    * Portfolio Value: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
-    * Seed: initializes the random number generator in a specified state. Setting the seed to a specific value will result in a reproducible random set of on each run. By default, the seed is selected at random. You may input an integer.
+    * `Portfolio Value`: the value of your investment portfolio at the beginning of the simulation (i.e., start age)  
+    * `Seed`: an integer that sets the state of the random number generator. Inputing a value will ensure that the results are repeatable. By default, the seed is selected at random.
 
     ##### Additional Information
 
@@ -1145,15 +1148,16 @@ end
 let
     text = md"""
 
-     The *Time Points* parameters specify snapshots in time of your retirement plan's performance. The time points correspond to the column of the matrix of contour plots.  
+ The *Time Points* parameters specify at which ages the contour plots are displayed.   
 
-     - Min: the minimum time point considered
-     - Max: the naximum time point considered 
-     - Step: the increment between successive time points
+ - Min: the minimum time point considered
+ - Max: the naximum time point considered 
+ - Step: the increment between successive time points
 
-     !!! warning "Warning"
-         Selecting a large number of time points will increase the simulation run time. Four to five time points is recommended.
+ For example `Min: 60`, `Max: 70` and `Step: 5` will create contour plots at ages 60, 65 and 70. 
 
+!!! warning "Warning"
+	Selecting a large number of time points will increase the simulation run time. Four to five time points is recommended.
      """
     details(text; summary = "Additional Information")
 end
@@ -1163,17 +1167,17 @@ let
     text = md"""
     In the *Investment Schedule* panel, you can configure up to three investment schedules. Note that the contributions are made on a monthly basis within the specified time range. The contribution amounts are sampled from a normal distribution to reflect uncertainty in the contribution amount. The parameters for the contributions are as follows:   
 
-    * Mean: the arithmatic average contribution
+    * `Mean`: the arithmatic average contribution
 
-    * Standard Deviation: controls the width of the distribution
+    * `Standard Deviation`: controls the width of the distribution
 
-    * Start Age: the age at which the contributions begin
+    * `Start Age`: the age at which the contributions begin
 
-    * End Age: the age at which the contributions end
+    * `End Age`: the age at which the contributions end
 
     ##### Contributions
 
-    At the top, the primary contribution represents a job or standard income source. Unlike the other contributions, the schedule for the primary contribution is yoked to retirement: it starts at *start age* defined in *Global Parameters* and ends at the specified retirement age. The two supplemental contributions represent income from rental properties, a side hustle, or an inheritence (configured by setting start age equal to end age). By default, the two supplemental contributions are inactive, and have no constraints on the start and end ages.  
+    At the top, the primary contribution represents a job or standard income source. Unlike the other contributions, the schedule for the primary contribution is tied to retirement: it starts at *start age* defined in *Global Parameters* and ends at the specified retirement age. The two supplemental contributions represent income from rental properties, a side hustle, or an inheritence (configured by setting start age equal to end age). By default, the two supplemental contributions are inactive, and have no constraints on the start and end ages.  
 
     ##### Additional Information
 
@@ -1185,16 +1189,17 @@ end
 # ╔═╡ 5e027840-c886-409f-bda2-01a232212b88
 let
     text = md"""
-    Both stress tests vary retirement age to determine whether your retirement plan breaks down at any point. Retirement age is an important determinant of portfolio survival probability and monthly income because it delays withdraws while taking advantage of growth potential and investment contributions. 
+The *Retirement Age* panel allows you to specify a set of possible retirement ages to evaluate in the stress test. The parameters are as follows:
 
-    - Min: the minimum retirement age considered 
-    - Max: the maximum retirement age considered
-    - Step: the increment between successive retirement ages
+- Min: the minimum retirement age considered 
+- Max: the maximum retirement age considered
+- Step: the increment between successive retirement ages
 
-    !!! warning "Warning"
-        Selecting a large number of retirement ages will increase the simulation run time. Typically, A range of approximately 5 retirement ages strikes the right balance between speed and informativeness.
+For example `Min: 60`, `Max: 70` and `Step: 5` will add retirement ages of 60, 65 and 70 to the x-axis of each contour plot in the *Results Section*. 
 
 
+!!! warning "Warning"
+	Selecting a large number of retirement ages will increase the simulation run time. Typically, A range of approximately 5 retirement ages strikes the right balance between speed and informativeness.
     """
     details(text; summary = "Additional Information")
 end
@@ -1221,26 +1226,31 @@ end
 # ╔═╡ 9800fe86-71b2-4c64-8151-6e05bb0a83b2
 let
     text = md"""
-    The stress tests vary the monthly withdraw amount to determine whether your retirement plan breaks down at any point. Monthly withdraw amount is an important determinant of portfolio survival probability and monthly total income because it determines how quickly your investments grow or deplete during retirement. 
+The *Withdraw Schedule* panel allows you to specify a range of minimum monthly withdraw amounts for the stress test.  
 
-    The following parameters correspond to the range of minimum monthly withdraw amount:
+The following parameters correspond to the range of minimum monthly withdraw amount:
 
-    - Min: the smallest minimum withdraw amount considered 
-    - Max: the largest minimum withdraw amount considered 
-    - Step: the increment between successive minimum withdraw amounts
+- Min: the smallest minimum withdraw amount considered 
+- Max: the largest minimum withdraw amount considered 
+- Step: the increment between successive minimum withdraw amounts
 
-    The following parameters modulate the withdraw amount. 
+For example selecting `Min: 2000`, `Max: 3000` and `Step: 500` will add minimum withdraw amounts of 2000, 2500, and 3000 to the y-axis of each contour plot. 
+	
+!!! tip "Tip"
+	Set *Min* to the minimum amount you need and set *Max* to a larger but feasible amount that would be nice to have. 
 
-    - Income Adjustment: a number ranging between 0 and 1, which determines how much of other income sources (e.g., social security, pension, etc.) are subtracted from your investment withdraw amount. For example, setting this parameter is set to zero means no adjustment is made: total income is investment withdraw + Social Security + Pension + Supplemental Income. 
-    - Percent of Real Growth: a number between 0 and 1 representing real (i.e., inflation adjusted) growth, which is multipled by the investment return of the current month. If this number is greater than the minimum withdraw amount, it is selected. Otherwise the minimum withdraw amount is selected.
-    - volitility: a number between 0 and 1 which controls the standard deviation of the withdraw amount. This allows you to withdraw more than minimum withdraw amount subject to the constraint that the amount withdrawn cannot be less than the target minimum withdraw amount. The standard deviation scales with withdraw amount: standard deviation = volitlity $\times$ mean withdraw amount. Typical values range between 0 and .10. 
+Depending on the values of *Withdraw Parameters*, it might be possible to withdraw more than the minimum amount. The *Withdraw Parameters* are defined as follows:
 
-    ##### Overview of Withdraw Strategy.
+- Income Adjustment: a number ranging between 0 and 1, which determines how much of other income sources (e.g., social security, pension, etc.) are subtracted from your investment withdraw amount. For example, setting this parameter is set to zero means no adjustment is made: total income is investment withdraw + Social Security + Pension + Supplemental Income. 
+- Percent of Real Growth: a number between 0 and 1 representing real (i.e., inflation adjusted) growth, which is multipled by the investment return of the current month. If this number is greater than the minimum withdraw amount, it is selected. Otherwise the minimum withdraw amount is selected.
+- volitility: a number between 0 and 1 which controls the standard deviation of the withdraw amount. This allows you to withdraw more than minimum withdraw amount subject to the constraint that the amount withdrawn cannot be less than the target minimum withdraw amount. The standard deviation scales with withdraw amount: standard deviation = volitlity $\times$ mean withdraw amount. Typical values range between 0 and .10. 
 
-    The withdraw strategy assumes there is a bare minimum amount needed to sustain one's lifestyle. The minimum amount will be withdrawn unless there are insufficient funds, in which case the non-zero amount in the investment prortfolio will be withdrawn. However, there are two adaptive components to the withdraw strategy. First, the amount withdrawn can exceed the minimum if the growth of your investments exceeds a specified threshold determined by the parameter *percent of real growth*. As an example, suppose *percent of real growth* is set to .50, your minimum monthly withdraw is `$`2,500, and the real growth for that month is `$`6,000. In this case, you will with draw half of `$`6,000 or `$`3,000 because it exceeds the minimum of `$`2,500. The second adaptive component allows you to withdraw less when other sources of income, such as social security, are received. If *Income Adjustment* is set to zero, total income is the sum of all of your income sources. If *Income Adjustment*  is .50, then half of the other income sources (e.g., social security) are subtracted from the minimum withdraw amount (subject to the constraint that the amount withdrawn is non-negative). 
+##### Overview of Withdraw Strategy.
 
-    !!! warning "Warning"
-        Selecting a large number of minimum withdraw amounts increase the simulation run time. A range of five values often strikes an optimal balance between speed and informativeness.
+The withdraw strategy assumes there is a bare minimum amount needed to sustain one's lifestyle. The minimum amount will be withdrawn unless there are insufficient funds, in which case the non-zero amount in the investment prortfolio will be withdrawn. However, there are two adaptive components to the withdraw strategy. First, the amount withdrawn can exceed the minimum if the growth of your investments exceeds a specified threshold determined by the parameter *percent of real growth*. As an example, suppose *percent of real growth* is set to .50, your minimum monthly withdraw is `$`2,500, and the real growth for that month is `$`6,000. In this case, you will with draw half of `$`6,000 or `$`3,000 because it exceeds the minimum of `$`2,500. The second adaptive component allows you to withdraw less when other sources of income, such as social security, are received. If *Income Adjustment* is set to zero, total income is the sum of all of your income sources. If *Income Adjustment*  is .50, then half of the other income sources (e.g., social security) are subtracted from the minimum withdraw amount (subject to the constraint that the amount withdrawn is non-negative). 
+
+!!! warning "Warning"
+	Selecting a large number of minimum withdraw amounts increase the simulation run time. A range of five values often strikes an optimal balance between speed and informativeness.
     """
     details(text; summary = "Additional Information")
 end
@@ -1303,10 +1313,10 @@ end
 let
     text = md"""
 
-     Stress testing your retirement plan under multiple growth rate parameters is important because it is one of the primary determinants of the financial outcomes plotted below. The following values correspond to the range of minimum monthly withdraw amount:
+    The investment growth panel controls the growth rate and volitility of investments. Values for growth rate and volitility are sampled from a normal (i.e., bell-shaped) distribution to reflect uncertainty in investment conditions. To see how robust your retirement plan is to different economic conditions, the mean growth rate is varied systematically. The parameters below control the range of mean growth rates. The default values correspond to poor, OK, and good growth conditions. 
 
-     - Min: the minimum growth rate considered
-     - Max: the naximum growth rate considered 
+     - Min: the minimum mean growth rate considered
+     - Max: the maximum mean growth rate considered 
      - Step: the increment between successive growth rates
 
     - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
@@ -1342,16 +1352,43 @@ let
     details(text; summary = "Additional Information")
 end
 
+# ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
+let
+    text = md"""
+The parameters in this panel control the magnitude and duration of the recession in the recession condition. To model a worst case scenario, the recession begins concurrently with retirement. The parameters for the recession are as follows:
+
+* `Mean Rate of Decrease `: a negative number reflecting the average rate of decrease of your investment porfolio
+* `Standard Deviation Rate of Decrease `: controls how much the `mean rate of decrease` varies from simulation to simulation
+* `Mean Volitility`: the average volitility across simulations
+* `Standard Deviation Volitility`: the standard deviation of volitility across simulations
+* `Duration`: the duration of the recession in years
+
+
+##### Additional Information
+
+As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. Letting $\mu_{\alpha} < 0$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
+
+$\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
+
+$\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
+
+$\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
+
+$\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
+    """
+    details(text; summary = "Additional Information")
+end
+
 # ╔═╡ 86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 let
     text = md"""
 
-    Inflation---the general increase in prices---is important to consider because it decreases purchasing power and therefore the *real* growth of your investments. 
+    The inflation panel allows you to control inflation in the simulation. Accounting for inflation is important because it reduces purchacing power. Note that the plots below reflect *real* growth, which takes into account inflation. For this reason, net worth can be interpreted in constant dollars based on the starting date of the simulation. The parameters for inflation are as follows:
 
-    - Mean Rate: the average growth rate of inflation across simulations.
-    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
-    - Mean Volitility: the average volitility across simulations
-    - Standard Deviation Volitility: the standard deviation of volitility across simulations
+    - `Mean Rate`: the average growth rate of inflation across simulations.
+    - `Standard Deviation Growth Rate`: the standard deviation of growth rates across simulations
+    - `Mean Volitility`: the average volitility across simulations
+    - `Standard Deviation Volitility`: the standard deviation of volitility across simulations
 
     ##### Additional Information
 
@@ -1373,47 +1410,34 @@ let
     details(text; summary = "Additional Information")
 end
 
-# ╔═╡ f2e6ffca-782f-4c40-ad9b-32615f783f0c
+# ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
 let
     text = md"""
+The *Plot Settings* panel allows you to change the outcome variable of the plots as well as the order of the plots. 
 
-    The parameters in this panel control the magnitude and duration of the recession in the recession condition. To maximize its effect, the recession begins concurrently with retirement. The two parameters are:
+* `Plot 1`: select the outcome variable of plot 1
+* `Plot 2`: select the outcome variable of plot 2
+Outcome variables for plot 1 and 2 are as follows:
 
-    * Growth Rate: a negative number reflecting the rate of decrease of your investment porfolio
+* `survival probability`: the probability that the investments have a positive amount of money. Note that they exclude other sources of income.
+* `mean income`: the average amount withdrawn each month across all income sources, including Social Security 
+* `standard deviation`: a measure of variability in the amount withdrawn each month. Approximately 70% of outcomes fall within $\pm$ 1 standard deviation.
+* `90th percentile`: the monthly withdraw amount in the top 90% of the distribution.
+* `10th percentile`: the monthly withdraw amount in the bottom 10% of the distribution.
 
-    * Duration: the duration of the recession in years
-
-    - Standard Deviation Growth Rate: the standard deviation of growth rates across simulations
-    - Mean Volitility: the average volitility across simulations
-    - Standard Deviation Volitility: the standard deviation of volitility across simulations
-
-    ##### Additional Information
-
-    As with investment growth and inflation, the recession is modeled as Geometric Brownian Motion (GBM), with negative mean growth rate $\mu_\alpha$. Letting $\mu_{\alpha} < 0$ represent the mean of the growth rate, $\sigma_{\alpha}$ represent the standard deviation of the growth rate, $\mu_{\eta}$ represent the mean of volitility, and $\sigma_{\eta}$ repreent the standard deviation of volitlity, we have:
-
-    $\mu \sim \mathrm{Normal}(\mu_{\alpha}, \sigma_{\alpha})$
-
-    $\sigma \sim \mathrm{TNormal}(\mu_{\eta}, \sigma_{\eta})_{0}^{\infty}$
-
-    $\mu \sim \mathrm{Normal}(\mu_\alpha, .01)$
-
-    $\sigma \sim \mathrm{TNormal}(.04, .010)_{0}^{\infty}$
-
-    In sequence-of-return risk, the worst placement of a recession is during the first years of retirement because relative to a person in his or her 20s, there are few years for recovery, but relative to a person in his or her 80s, there are still many years of retirement remaining. Therefore, your retirement plan is considered robust if performance remains satisfactory after an early recession. Also, note that recessions can emerge naturally from the dynamics of the GBM. Consquentially, the results reported below reflect a mixture of recessions occuring at different times. 
 
     """
     details(text; summary = "Additional Information")
 end
 
-# ╔═╡ 7616b2ee-8df3-4de8-9831-1b6ac0e791c3
+# ╔═╡ 9cbaac82-9047-4f80-b5a7-f420ea4367aa
 let
     text = md"""
 
-    Note: that the simulations may run for a few moments depending on the number of repetitions and conditions is large.
-
-    !!! tip "Tip"
-    	Uncheck the box for *run simulation* to prevent the simulation from repeatedly restarting while editing the parameters.		
+While editing the values in the panels above, you may want to turn off automatic updating of the simulation. Otherwise, it will run each time you make a change. To pause automatic updating, click on the green button above when it says *Click to pause simulation*. To update the simulation, click the green button when it says *Click to update simulation*.
+		
     """
+
     details(text; summary = "Additional Information")
 end
 
@@ -1421,34 +1445,30 @@ end
 let
     text = md"""
 
-    ##### Survival Probability
+##### Survival Probability
 
+Survival probability refers to the probability that your investments are greater than zero. In other words, its the chance that you have money to use. Note that survival probability does not include Social Security or Pension income. See *Technical Details* for further information. 
 
-    Surival probability is the relative frequency of simulations in which the portfolio investment is greater than zero. Formally, it is defined as
+##### Mean Total Income
 
-    $\Pr(V > 0) = \frac{1}{n}\sum_{i=1}^n x_i,$
+Mean total income is the average amount withdrawn each month in retirement. Note that this includes all income sources, including Social Security. 
 
-    where $n$ is the number of simulations, $V$ is a random value representing the value of the portfolio, $v_i$ is the value of portfolio on the $i$th simulation, and $x_i$ indcates whether the portfolio survived on the $i$th simulation:
+##### Interpreting Contour Plots
 
-    $x_i = \begin{cases}
-    1 \text{ if } v_i > 0,\\
-    0 \text{ otherwise}
-    \end{cases}$
+Each contour plot below illustrates how survival probability is affected by retirement age represented along the x-axis and minimum withdraw amount along the y-axis. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. 
+		
+In addition to retirement age and minimum withdraw amount, average market growth rate and time are inportant determinants of performance. Results for different market growth rates (e.g., poor, OK and good) are displayed in the rows of the contour plot matrix. The effect of market growth rate can be found by comparing rows within a given column. Results at different time points are organized as columns in the matrix of contour plots. To see the effect of time, select a row and compare contor plots across columns. 
 
-    Surivival probability is computed for each time point, each retirement age, each minimum withdraw amount, and each growth rate, but the indices for those conditions are supressed in $x_i$ for berivity. Mean total income is computed in a similar fashion.
+The factors for the contour plots are summarized below.
 
-    ##### Interpreting Contour Plots
+- x-axis: age of retirement
+- y-axis: minimum monthly withdraw amount 
+- outcome variable: the outcome variable for each plot is color coded as green for *good* or *preferred* and red for *bad* or *less preferred*. 
+- grid rows: each row of the grid corresponds to a different average investment growth rate, e.g.,  .05, .075, and .10
+- grid column: the contour plots within each column correspond to results are different ages, e.g., 70, 75, 80, and 85
 
-    Each contour plot below illustrates how survival probability is affected by retirement age represented along the x-axis and minimum withdraw amount along the y-axis. The survival probability is color coded from 0 (red) to 1 (green) with intermediate values indicated by orange and yellow. The effect of growth rate and time can be included arranging mutiple contour plots in a matrix where rows correspond to growth rate and columns correspond to time. The dimensions are summarized as follows:
-
-    - x-axis: age of retirement
-    - y-axis: minimum monthly withdraw amount 
-    - outcome variable: the outcome variable for each plot is color coded as green for *good* or *preferred* and red for *bad* or *less preferred*. 
-    - grid rows: each row of the grid corresponds to a different average investment growth rate, e.g.,  .05, .075, and .10
-    - grid column: the contour plots within each column correspond to results are different ages, e.g., 70, 75, 80, and 85
-
-
-    One way to interpret the contour plots is to examine the slope of the contour lines: vertical lines indicate retirement age is the only factor affecting survival probability, horizontal lines indicate minimum withdraw is the only factor affecting survival probability, and slanted lines indicate both variables contribute to survival probability (or mean total income). 	
+!!! info "Note"
+	Note that the plots below reflect *real* growth, which takes into account inflation. For this reason, income can be interpreted in constant dollars based on the starting date of the simulation. 
     """
 
     details(text; summary = "Additional Information")
@@ -1470,15 +1490,15 @@ RetirementPlanners = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 
 [compat]
-CommonMark = "~0.9.1"
+CommonMark = "~0.10.3"
 DataFrames = "~1.8.1"
-Distributions = "~0.25.122"
+Distributions = "~0.25.123"
 HypertextLiteral = "~0.9.5"
 LaTeXStrings = "~1.4.0"
-Plots = "~1.41.3"
-PlutoExtras = "~0.7.16"
-PlutoUI = "~0.7.77"
-RetirementPlanners = "~0.6.6"
+Plots = "~1.41.5"
+PlutoExtras = "~0.7.17"
+PlutoUI = "~0.7.79"
+RetirementPlanners = "~0.6.7"
 StatsPlots = "~0.15.8"
 """
 
@@ -1486,9 +1506,9 @@ StatsPlots = "~0.15.8"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.3"
+julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "78b874b48df1424095f8b6bf181ed487482eb5f7"
+project_hash = "0e26480f5a9f285e3fce67d0c1015a9e94f2af75"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1586,9 +1606,9 @@ version = "1.1.0"
 
 [[deps.BangBang]]
 deps = ["Accessors", "ConstructionBase", "InitialValues", "LinearAlgebra"]
-git-tree-sha1 = "a49f9342fc60c2a2aaa4e0934f06755464fcf438"
+git-tree-sha1 = "7edecc3b90af8373014393e98e8fcfbdf3b52543"
 uuid = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
-version = "0.4.6"
+version = "0.4.7"
 
     [deps.BangBang.extensions]
     BangBangChainRulesCoreExt = "ChainRulesCore"
@@ -1688,9 +1708,17 @@ version = "0.13.1"
 
 [[deps.CommonMark]]
 deps = ["PrecompileTools"]
-git-tree-sha1 = "351d6f4eaf273b753001b2de4dffb8279b100769"
+git-tree-sha1 = "65ea18ada9814f09c5013924c42fe8b53d6ee467"
 uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-version = "0.9.1"
+version = "0.10.3"
+
+    [deps.CommonMark.extensions]
+    CommonMarkMarkdownASTExt = "MarkdownAST"
+    CommonMarkMarkdownExt = "Markdown"
+
+    [deps.CommonMark.weakdeps]
+    Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
+    MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -1814,9 +1842,9 @@ version = "1.11.0"
 
 [[deps.Distributions]]
 deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
-git-tree-sha1 = "3bc002af51045ca3b47d2e1787d6ce02e68b943a"
+git-tree-sha1 = "fbcc7610f6d8348428f722ecbe0e6cfe22e672c6"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.122"
+version = "0.25.123"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -1863,22 +1891,16 @@ uuid = "c87230d0-a227-11e9-1b43-d7ebe4e7570a"
 version = "0.4.5"
 
 [[deps.FFMPEG_jll]]
-deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
+deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libva_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
 git-tree-sha1 = "01ba9d15e9eae375dc1eb9589df76b3572acd3f2"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 version = "8.0.1+0"
 
-[[deps.FFTW]]
-deps = ["AbstractFFTs", "FFTW_jll", "Libdl", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
-git-tree-sha1 = "97f08406df914023af55ade2f843c39e99c5d969"
-uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.10.0"
-
-[[deps.FFTW_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "6d6219a004b8cf1e0b4dbe27a2860b8e04eba0be"
-uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
-version = "3.3.11+0"
+[[deps.FFTA]]
+deps = ["AbstractFFTs", "DocStringExtensions", "LinearAlgebra", "MuladdMacro", "Primes", "Random", "Reexport"]
+git-tree-sha1 = "65e55303b72f4a567a51b174dd2c47496efeb95a"
+uuid = "b86e33f2-c0db-4aa1-a6e0-ab43e668529e"
+version = "0.3.1"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -1886,14 +1908,15 @@ version = "1.11.0"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "5bfcd42851cf2f1b303f51525a54dc5e98d408a3"
+git-tree-sha1 = "2f979084d1e13948a3352cf64a25df6bd3b4dca3"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "1.15.0"
-weakdeps = ["PDMats", "SparseArrays", "Statistics"]
+version = "1.16.0"
+weakdeps = ["PDMats", "SparseArrays", "StaticArrays", "Statistics"]
 
     [deps.FillArrays.extensions]
     FillArraysPDMatsExt = "PDMats"
     FillArraysSparseArraysExt = "SparseArrays"
+    FillArraysStaticArraysExt = "StaticArrays"
     FillArraysStatisticsExt = "Statistics"
 
 [[deps.FixedPointNumbers]]
@@ -1938,21 +1961,21 @@ version = "3.4.1+0"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Preferences", "Printf", "Qt6Wayland_jll", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "p7zip_jll"]
-git-tree-sha1 = "f305bdb91e1f3fcc687944c97f2ede40585b1bd5"
+git-tree-sha1 = "ee0585b62671ce88e48d3409733230b401c9775c"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.73.19"
+version = "0.73.22"
 
     [deps.GR.extensions]
-    GRIJuliaExt = "IJulia"
+    IJuliaExt = "IJulia"
 
     [deps.GR.weakdeps]
     IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "FreeType2_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Qt6Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "de439fbc02b9dc0e639e67d7c5bd5811ff3b6f06"
+git-tree-sha1 = "7dd7173f7129a1b6f84e0f03e0890cd1189b0659"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.73.19+1"
+version = "0.73.22+0"
 
 [[deps.GettextRuntime_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll"]
@@ -1968,9 +1991,9 @@ version = "9.55.1+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "6b4d2dc81736fe3980ff0e8879a9fc7c33c44ddf"
+git-tree-sha1 = "24f6def62397474a297bfcec22384101609142ed"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
-version = "2.86.2+0"
+version = "2.86.3+0"
 
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2037,11 +2060,10 @@ version = "1.4.5"
     ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
     Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 
-[[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
-git-tree-sha1 = "ec1debd61c300961f98064cfb21287613ad7f303"
-uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2025.2.0+0"
+[[deps.IntegerMathUtils]]
+git-tree-sha1 = "4c1acff2dc6b6967e7e750633c50bc3b8d83e617"
+uuid = "18e54dd8-cb9d-406c-a71d-865a43cbb235"
+version = "0.1.3"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -2101,9 +2123,9 @@ version = "1.7.1"
 
 [[deps.JSON]]
 deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
-git-tree-sha1 = "5b6bb73f555bc753a6153deec3717b8904f5551c"
+git-tree-sha1 = "b3ad4a0255688dcb895a52fafbaae3023b588a90"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "1.3.0"
+version = "1.4.0"
 
     [deps.JSON.extensions]
     JSONArrowExt = ["ArrowTypes"]
@@ -2123,10 +2145,10 @@ uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
 version = "1.12.0"
 
 [[deps.KernelDensity]]
-deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
-git-tree-sha1 = "ba51324b894edaf1df3ab16e2cc6bc3280a2f1a7"
+deps = ["Distributions", "DocStringExtensions", "FFTA", "Interpolations", "StatsBase"]
+git-tree-sha1 = "4260cfc991b8885bf747801fb60dd4503250e478"
 uuid = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
-version = "0.6.10"
+version = "0.6.11"
 
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2174,11 +2196,6 @@ version = "0.16.10"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
     tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
-
-[[deps.LazyArtifacts]]
-deps = ["Artifacts", "Pkg"]
-uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
-version = "1.11.0"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -2229,9 +2246,9 @@ version = "1.18.0+0"
 
 [[deps.Libmount_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "3acf07f130a76f87c041cfb2ff7d7284ca67b072"
+git-tree-sha1 = "97bbca976196f2a1eb9607131cb108c69ec3f8a6"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
-version = "2.41.2+0"
+version = "2.41.3+0"
 
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
@@ -2241,9 +2258,9 @@ version = "4.7.2+0"
 
 [[deps.Libuuid_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "2a7a12fc0a4e7fb773450d17975322aa77142106"
+git-tree-sha1 = "d0205286d9eceadc518742860bf23f703779a3d6"
 uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
-version = "2.41.2+0"
+version = "2.41.3+0"
 
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
@@ -2280,12 +2297,6 @@ version = "1.2.0"
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "1.1.0"
-
-[[deps.MKL_jll]]
-deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
-git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
-uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2025.2.0+0"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -2332,7 +2343,12 @@ version = "1.11.0"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
-version = "2025.5.20"
+version = "2025.11.4"
+
+[[deps.MuladdMacro]]
+git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
+uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
+version = "0.2.4"
 
 [[deps.MultivariateStats]]
 deps = ["Arpack", "Distributions", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
@@ -2353,9 +2369,9 @@ version = "0.14.3"
 
 [[deps.NearestNeighbors]]
 deps = ["AbstractTrees", "Distances", "StaticArrays"]
-git-tree-sha1 = "2949f294f82b5ad7192fd544a988a1e785438ee2"
+git-tree-sha1 = "e2c3bba08dd6dedfe17a17889131b885b8c082f0"
 uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.26"
+version = "0.4.27"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
@@ -2410,9 +2426,9 @@ version = "0.5.6+0"
 
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "c392fc5dd032381919e3b22dd32d6443760ce7ea"
+git-tree-sha1 = "e2bb57a313a74b8104064b7efd01406c0a50d2ff"
 uuid = "91d4177d-7536-5919-b921-800302f37372"
-version = "1.5.2+0"
+version = "1.6.1+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
@@ -2475,9 +2491,9 @@ version = "1.4.4"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "TOML", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "459d8913a8b83c7222eb629664283653dadfe2b6"
+git-tree-sha1 = "1cc8ad0762e59e713ee3ef28f9b78b2c9f4ca078"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.41.3"
+version = "1.41.5"
 
     [deps.Plots.extensions]
     FileIOExt = "FileIO"
@@ -2495,15 +2511,15 @@ version = "1.41.3"
 
 [[deps.PlutoExtras]]
 deps = ["AbstractPlutoDingetjes", "DocStringExtensions", "HypertextLiteral", "InteractiveUtils", "Markdown", "PlutoUI", "REPL", "Random"]
-git-tree-sha1 = "fed8c477f3028dcbffbc12b957d6b328196dcc00"
+git-tree-sha1 = "25cf04aa8e1b4303253c3833f65aa9d7d0209c8e"
 uuid = "ed5d0301-4775-4676-b788-cf71e66ff8ed"
-version = "0.7.16"
+version = "0.7.17"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "6ed167db158c7c1031abf3bd67f8e689c8bdf2b7"
+git-tree-sha1 = "3ac7038a98ef6977d44adeadc73cc6f596c08109"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.77"
+version = "0.7.79"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
@@ -2528,6 +2544,12 @@ deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REP
 git-tree-sha1 = "c5a07210bd060d6a8491b0ccdee2fa0235fc00bf"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 version = "3.1.2"
+
+[[deps.Primes]]
+deps = ["IntegerMathUtils"]
+git-tree-sha1 = "25cdd1d20cd005b52fc12cb6be3f75faaf59bb9b"
+uuid = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
+version = "0.5.7"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -2638,9 +2660,9 @@ version = "1.3.1"
 
 [[deps.RetirementPlanners]]
 deps = ["ConcreteStructs", "DataFrames", "Distributions", "NamedTupleTools", "PrettyTables", "ProgressMeter", "Random", "SmoothingSplines", "StatsBase", "ThreadsX"]
-git-tree-sha1 = "286dd3991bf99a614a326f2dbf9bf80f4ae555bd"
+git-tree-sha1 = "7bd42916792a4bebdcf83a63223eb81a0a8d0d04"
 uuid = "2683bf95-d0b8-4c71-a7d3-b42f78bf1cf0"
-version = "0.6.6"
+version = "0.6.7"
 weakdeps = ["Plots"]
 
     [deps.RetirementPlanners.extensions]
@@ -2776,10 +2798,10 @@ uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 version = "1.8.0"
 
 [[deps.StatsBase]]
-deps = ["AliasTables", "DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "be5733d4a2b03341bdcab91cea6caa7e31ced14b"
+deps = ["AliasTables", "DataAPI", "DataStructures", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "aceda6f4e598d331548e04cc6b2124a6148138e3"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.34.9"
+version = "0.34.10"
 
 [[deps.StatsFuns]]
 deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
@@ -2806,9 +2828,9 @@ version = "0.4.2"
 
 [[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "79529b493a44927dd5b13dde1c7ce957c2d049e4"
+git-tree-sha1 = "9297459be9e338e546f5c4bedb59b3b5674da7f1"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
-version = "2.6.0"
+version = "2.6.2"
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
@@ -2953,9 +2975,9 @@ version = "0.6.7"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "c1a7aa6219628fcd757dede0ca95e245c5cd9511"
+git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
-version = "1.0.0"
+version = "1.1.0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3034,6 +3056,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libX11_jll"]
 git-tree-sha1 = "7ed9347888fac59a618302ee38216dd0379c480d"
 uuid = "ea2f1a96-1ddc-540d-b46f-429655e07cfa"
 version = "0.9.12+0"
+
+[[deps.Xorg_libpciaccess_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "4909eb8f1cbf6bd4b1c30dd18b2ead9019ef2fad"
+uuid = "a65dc6b1-eb27-53a1-bb3e-dea574b5389e"
+version = "0.18.1+0"
 
 [[deps.Xorg_libxcb_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXau_jll", "Xorg_libXdmcp_jll"]
@@ -3147,6 +3175,12 @@ git-tree-sha1 = "9bf7903af251d2050b467f76bdbe57ce541f7f4f"
 uuid = "1183f4f0-6f2a-5f1a-908b-139f9cdfea6f"
 version = "0.2.2+0"
 
+[[deps.libdrm_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libpciaccess_jll"]
+git-tree-sha1 = "63aac0bcb0b582e11bad965cef4a689905456c03"
+uuid = "8e53e030-5e6c-5a89-a30b-be5b7263a166"
+version = "2.4.125+1"
+
 [[deps.libevdev_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "56d643b57b188d30cccc25e331d416d3d358e557"
@@ -3167,9 +3201,15 @@ version = "1.28.1+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "de8ab4f01cb2d8b41702bab9eaad9e8b7d352f73"
+git-tree-sha1 = "6ab498eaf50e0495f89e7a5b582816e2efb95f64"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.53+0"
+version = "1.6.54+0"
+
+[[deps.libva_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libX11_jll", "Xorg_libXext_jll", "Xorg_libXfixes_jll", "libdrm_jll"]
+git-tree-sha1 = "7dbf96baae3310fe2fa0df0ccbb3c6288d5816c9"
+uuid = "9a156e7d-b971-5f62-b2c9-67348b8fb97c"
+version = "2.23.0+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll"]
@@ -3187,12 +3227,6 @@ version = "1.1.7+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 version = "1.64.0+1"
-
-[[deps.oneTBB_jll]]
-deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
-git-tree-sha1 = "1350188a69a6e46f799d3945beef36435ed7262f"
-uuid = "1317d2d5-d96f-522e-a858-c73665f53c3e"
-version = "2022.0.0+1"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -3250,18 +3284,19 @@ version = "1.13.0+0"
 # ╟─bda54ee1-c009-461c-b7d4-d105e340da56
 # ╟─7e4cbe2a-dd08-4298-b9a4-32f0f659efa8
 # ╟─642254f2-c9e0-4638-a8e3-c4c6984a7b9c
-# ╟─989bd0e5-33d5-4974-a044-bd2af180b5e4
-# ╟─cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
-# ╟─86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 # ╟─42ac4169-ec26-4882-aa64-aeed3e609ce0
 # ╟─e437c0c7-f405-4e1f-94fc-79605774a824
 # ╟─f2e6ffca-782f-4c40-ad9b-32615f783f0c
-# ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
-# ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
+# ╟─989bd0e5-33d5-4974-a044-bd2af180b5e4
+# ╟─cb5e4707-5cc8-4a0d-a1f8-ac20875d94e9
+# ╟─86eef8d7-a07e-44e1-8a78-a4d65ed7f474
 # ╟─75523d40-71e9-44d9-abd4-fc963fc42fc2
-# ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
 # ╟─2075ba63-a576-4df5-a1d6-8be2f27c2d41
 # ╟─bc85326b-60c3-4cd4-bc3a-70ce83800110
+# ╟─7616b2ee-8df3-4de8-9831-1b6ac0e791c3
+# ╟─29008274-3a15-4283-98fb-7a9a10bd4a2a
+# ╟─05f0763a-e78f-4aa6-9f3f-31015490cacb
+# ╟─9cbaac82-9047-4f80-b5a7-f420ea4367aa
 # ╟─2c0b96a4-19fb-4d80-b68e-89af92722db7
 # ╟─65bcd946-ad12-4ea6-a94f-5d1c5d2f74e8
 # ╟─cf860556-a4c7-441d-94b2-13c4d9f608a4
