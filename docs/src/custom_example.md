@@ -22,6 +22,7 @@ A full version of the code can be found by expanding the information below:
 <summary><b>Show Code </b></summary>
 ```
 ```julia
+using Distributions
 using Plots
 using Random
 using RetirementPlanners
@@ -67,17 +68,18 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
-# setup retirement model
-model_fee = Model(; config...)
 
-# setup retirement model
+# setup scenario with fee
+model_fee = Model(; config...)
+# setup scenario without fee
 model_no_fee = Model(; config..., kw_investments = (; fee_rate = 0.00))
+
 
 seed = 8564
 times = get_times(model_fee)
@@ -92,41 +94,41 @@ simulate!(model_fee, logger_fee, n_reps, seed)
 # simulate scenario without fee
 simulate!(model_no_fee, logger_no_fee, n_reps, seed)
 
-idx = 12 * 10
+net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
+
+hist_config = (
+    norm = true,
+    leg = false,
+    grid = false,
+    xlims = (0, 5),
+)
+
 p10 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "10 years"
+    net_worth_diff[12 * 10, :],
+    title = "10 years";
+    hist_config...
 )
 
-idx = 12 * 20
+
 p20 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "20 years"
+    net_worth_diff[12 * 20, :],
+    title = "20 years";
+    hist_config...
 )
 
-idx = 12 * 30
 p30 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "30 years"
+    net_worth_diff[12 * 30, :],
+    title = "30 years";
+    hist_config...
 )
 
-idx = 12 * 40
 p40 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "40 years"
+    net_worth_diff[12 * 40, :],
+    title = "40 years";
+    hist_config...
 )
+
+plot(p10, p20, p30, p40, layout = (2, 2), xlabel = "Cost in millions")
 ```
 ```@raw html
 </details>
@@ -137,6 +139,7 @@ p40 = histogram(
 
 Below, we load the required packages. 
 ```@example custom_example
+using Distributions
 using Plots
 using Random
 using RetirementPlanners
@@ -200,7 +203,7 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -244,47 +247,45 @@ net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
 
 # Plot Results
 
-Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. 
+Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .09 - .18 million, and increases to .270 - 1.16 million after 30 years. 
 
 ```@raw html
 <details>
 <summary><b>Show Code </b></summary>
 ```
 ```@example custom_example
-idx = 12 * 10
+net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
+
+hist_config = (
+    norm = true,
+    leg = false,
+    grid = false,
+    xlims = (0, 5),
+)
+
 p10 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "10 years"
+    net_worth_diff[12 * 10, :],
+    title = "10 years";
+    hist_config...
 )
 
-idx = 12 * 20
+
 p20 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "20 years"
+    net_worth_diff[12 * 20, :],
+    title = "20 years";
+    hist_config...
 )
 
-idx = 12 * 30
 p30 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "30 years"
+    net_worth_diff[12 * 30, :],
+    title = "30 years";
+    hist_config...
 )
 
-idx = 12 * 40
 p40 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = "40 years"
+    net_worth_diff[12 * 40, :],
+    title = "40 years";
+    hist_config...
 )
 ```
 ```@raw html
