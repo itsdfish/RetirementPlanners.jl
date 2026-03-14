@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Custom Example · RetirementPlanners</title><meta name="title" content="Custom Example · RetirementPlanners"/><meta property="og:title" content="Custom Example · RetirementPlanners"/><meta property="twitter:title" content="Custom Example · RetirementPlanners"/><meta name="description" content="Documentation for RetirementPlanners."/><meta property="og:description" content="Documentation for RetirementPlanners."/><meta property="twitter:description" content="Documentation for RetirementPlanners."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://fonts.googleapis.com/css?family=Montserrat|Source+Code+Pro&amp;display=swap" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="RetirementPlanners logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">RetirementPlanners</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox" checked/><label class="tocitem" for="menuitem-2"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../basic_example/">Basic Example</a></li><li><a class="tocitem" href="../advanced_example/">Advanced Example</a></li><li class="is-active"><a class="tocitem" href>Custom Example</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Load-Packages"><span>Load Packages</span></a></li><li class="toplevel"><a class="tocitem" href="#Custom-Functions"><span>Custom Functions</span></a></li><li class="toplevel"><a class="tocitem" href="#Configuration"><span>Configuration</span></a></li><li class="toplevel"><a class="tocitem" href="#Run-Simulations"><span>Run Simulations</span></a></li><li class="toplevel"><a class="tocitem" href="#Plot-Results"><span>Plot Results</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../plotting/">Plotting</a></li><li><a class="tocitem" href="../notebook/">Notebook</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Custom Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Custom Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/itsdfish/RetirementPlanners.jl/blob/main/docs/src/custom_example.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Overview"><a class="docs-heading-anchor" href="#Overview">Overview</a><a id="Overview-1"></a><a class="docs-heading-anchor-permalink" href="#Overview" title="Permalink"></a></h1><p>The purpose of this example is to illustrate how to customize update functions in <code>RetirementPlanners.jl</code>. The general process of creating a custom update function involves the following steps:</p><ol><li>Define a function with the following signature <code>your_update_function(model::AbstractModel, t; kwargs...)</code> where <code>kwargs...</code> is an optional set of keyword arguments. </li><li>Pass the function to the configuration data structure <code>config</code>. For example <code>update_investments! = your_update_function</code>.</li><li>Optionally pass keyword arguments to <code>config</code>, e.g., <code>kw_investments = (kwargs...)</code></li></ol><p>As an illustrative example, consider a person who is considering the cost of a financial advisor who charges an annual 1% fee of the value of the assets. Estimating the cost is not straightforward because the fee decreases future growth potential. To estimate the cost, we will run simulations of identical scenarios, except in one case there is a 1% fee, but in the other case there is no fee.   </p><p>A full version of the code can be found by expanding the information below:</p><details>
-<summary><b>Show Code </b></summary><pre><code class="language-julia hljs">using Plots
+<summary><b>Show Code </b></summary><pre><code class="language-julia hljs">using Distributions
+using Plots
 using Random
 using RetirementPlanners
 
@@ -45,17 +46,18 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
     kw_income = (income_sources = Transaction(; start_age = 67, amount = 2000.0),)
 )
-# setup retirement model
-model_fee = Model(; config...)
 
-# setup retirement model
+# setup scenario with fee
+model_fee = Model(; config...)
+# setup scenario without fee
 model_no_fee = Model(; config..., kw_investments = (; fee_rate = 0.00))
+
 
 seed = 8564
 times = get_times(model_fee)
@@ -70,41 +72,42 @@ simulate!(model_fee, logger_fee, n_reps, seed)
 # simulate scenario without fee
 simulate!(model_no_fee, logger_no_fee, n_reps, seed)
 
-idx = 12 * 10
+net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
+
+hist_config = (
+    norm = true,
+    leg = false,
+    grid = false,
+    xlims = (0, 5),
+)
+
 p10 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;10 years&quot;
+    net_worth_diff[12 * 10, :],
+    title = &quot;10 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 20
+
 p20 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;20 years&quot;
+    net_worth_diff[12 * 20, :],
+    title = &quot;20 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 30
 p30 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;30 years&quot;
+    net_worth_diff[12 * 30, :],
+    title = &quot;30 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 40
 p40 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;40 years&quot;
-)</code></pre></details><h1 id="Load-Packages"><a class="docs-heading-anchor" href="#Load-Packages">Load Packages</a><a id="Load-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Packages" title="Permalink"></a></h1><p>Below, we load the required packages. </p><pre><code class="language-julia hljs">using Plots
+    net_worth_diff[12 * 40, :],
+    title = &quot;40 years&quot;;
+    hist_config...
+)
+
+plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre></details><h1 id="Load-Packages"><a class="docs-heading-anchor" href="#Load-Packages">Load Packages</a><a id="Load-Packages-1"></a><a class="docs-heading-anchor-permalink" href="#Load-Packages" title="Permalink"></a></h1><p>Below, we load the required packages. </p><pre><code class="language-julia hljs">using Distributions
+using Plots
 using Random
 using RetirementPlanners</code></pre><h1 id="Custom-Functions"><a class="docs-heading-anchor" href="#Custom-Functions">Custom Functions</a><a id="Custom-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-Functions" title="Permalink"></a></h1><p>We will define an custom update function for <code>update_investments!</code>, which requires <code>model</code> and time <code>t</code> as positional inputs, and <code>fee_rate</code> as a keyword argument. The custom function is the same as the default function for <code>update_investments!</code>, except the fee is applied once a year to the net_worth of investments. </p><pre><code class="language-julia hljs">function update_investments_fee!(model::AbstractModel, t; fee_rate = 0.0, _...)
     model.state.net_worth -= model.state.withdraw_amount
@@ -141,7 +144,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.010, ασ = 0.035, ησ = 0.010),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters
@@ -201,58 +204,56 @@ simulate!(model_fee, logger_fee, n_reps, seed)
 
 # simulate scenario without fee
 simulate!(model_no_fee, logger_no_fee, n_reps, seed)</code></pre><p>The code block below computes the cost as the difference in investment value between the simulations with an advisor fee and the simulations without the advisor fee. The units are expressed in millions of dollars for ease of interpretation. </p><pre><code class="language-julia hljs">net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">480×1000 Matrix{Float64}:
- 0.0      0.0      0.0      0.0       0.0      …  0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0      …  0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- 0.0      0.0      0.0      0.0       0.0         0.0      0.0      0.0
- ⋮                                             ⋱                    
- 1.25041  1.39089  1.09447  0.709746  3.24595     1.64924  1.97433  0.635295
- 1.26332  1.39325  1.10879  0.71349   3.2125      1.64549  1.99378  0.640352
- 1.29194  1.40353  1.123    0.71724   3.17463     1.65308  2.01014  0.642064
- 1.30633  1.40968  1.11393  0.729441  3.16108     1.66822  2.03034  0.645841
- 1.32081  1.41171  1.1283   0.733126  3.18488  …  1.65892  2.05415  0.644411
- 1.29017  1.40372  1.128    0.742763  3.22529     1.67237  2.05504  0.645181
- 1.31118  1.42007  1.13715  0.750082  3.21727     1.68905  2.06861  0.642919
- 1.3005   1.42974  1.11091  0.758419  3.20156     1.70879  2.09321  0.653705
- 1.35919  1.44121  1.11761  0.781706  3.27117     1.7397   2.1594   0.649018</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .32 - .48 million, and increases to .60 - 1.10 million after 30 years. </p><details>
-<summary><b>Show Code </b></summary><pre><code class="language-julia hljs">idx = 12 * 10
+ 0.0       0.0      0.0       0.0       …  0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0       …  0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
+ ⋮                                      ⋱                              
+ 0.201476  1.54831  0.409696  0.219703     0.245665  1.07067  1.15138  0.0
+ 0.207086  1.54523  0.426577  0.221205     0.250883  1.04314  1.1878   0.0
+ 0.221052  1.56038  0.444202  0.223526     0.25485   1.05158  1.21524  0.0
+ 0.225743  1.58591  0.425429  0.234736     0.255285  1.07899  1.25591  0.0
+ 0.232121  1.58998  0.438892  0.236296  …  0.250979  1.03802  1.30691  0.0
+ 0.214261  1.51391  0.434248  0.245411     0.252841  1.06446  1.28845  0.0
+ 0.223164  1.5841   0.44781   0.251258     0.248096  1.09584  1.30849  0.0
+ 0.212105  1.60845  0.403524  0.259918     0.255982  1.13891  1.35691  0.0
+ 0.228072  1.5249   0.393658  0.27717      0.251661  1.14971  1.45306  0.0</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .09 - .18 million, and increases to .270 - 1.16 million after 30 years. </p><details>
+<summary><b>Show Code </b></summary><pre><code class="language-julia hljs">net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
+
+hist_config = (
+    norm = true,
+    leg = false,
+    grid = false,
+    xlims = (0, 5),
+)
+
 p10 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;10 years&quot;
+    net_worth_diff[12 * 10, :],
+    title = &quot;10 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 20
+
 p20 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;20 years&quot;
+    net_worth_diff[12 * 20, :],
+    title = &quot;20 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 30
 p30 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;30 years&quot;
+    net_worth_diff[12 * 30, :],
+    title = &quot;30 years&quot;;
+    hist_config...
 )
 
-idx = 12 * 40
 p40 = histogram(
-    net_worth_diff[idx, :],
-    norm = true,
-    leg = false,
-    grid = false,
-    title = &quot;40 years&quot;
-)</code></pre><img src="f6d897c8.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="1efa7abc.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 09:27">Saturday 14 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    net_worth_diff[12 * 40, :],
+    title = &quot;40 years&quot;;
+    hist_config...
+)</code></pre><img src="d762fa1c.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="a7c93dc1.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 13:35">Saturday 14 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
