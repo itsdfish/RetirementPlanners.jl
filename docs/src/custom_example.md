@@ -68,7 +68,7 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.10, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -100,7 +100,7 @@ hist_config = (
     norm = true,
     leg = false,
     grid = false,
-    xlims = (0, 5),
+    xlims = (0, 7),
 )
 
 p10 = histogram(
@@ -203,7 +203,7 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.10, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -247,7 +247,7 @@ net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
 
 # Plot Results
 
-Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .09 - .18 million, and increases to .270 - 1.16 million after 30 years. 
+Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .11 - .22 million, and increases to .522 - 2.16 million after 30 years. 
 
 ```@raw html
 <details>
@@ -260,7 +260,7 @@ hist_config = (
     norm = true,
     leg = false,
     grid = false,
-    xlims = (0, 5),
+    xlims = (0, 7),
 )
 
 p10 = histogram(
