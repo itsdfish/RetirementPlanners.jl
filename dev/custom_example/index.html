@@ -46,7 +46,7 @@ config = (
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.10, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters 
@@ -78,7 +78,7 @@ hist_config = (
     norm = true,
     leg = false,
     grid = false,
-    xlims = (0, 5),
+    xlims = (0, 7),
 )
 
 p10 = histogram(
@@ -144,7 +144,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     # invest parameters
     kw_invest = (investments = Transaction(; start_age = 0, end_age = 0, amount = 0.0),),
     # interest parameters
-    kw_market = (; gbm = VarGBM(; αμ = 0.080, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
+    kw_market = (; gbm = VarGBM(; αμ = 0.10, ημ = 0.02, ασ = 0.14, ησ = 0.020),),
     # inflation parameters
     kw_inflation = (gbm = VarGBM(; αμ = 0.035, ημ = 0.005, ασ = 0.005, ησ = 0.0025),),
     # income parameters
@@ -204,33 +204,33 @@ simulate!(model_fee, logger_fee, n_reps, seed)
 
 # simulate scenario without fee
 simulate!(model_no_fee, logger_no_fee, n_reps, seed)</code></pre><p>The code block below computes the cost as the difference in investment value between the simulations with an advisor fee and the simulations without the advisor fee. The units are expressed in millions of dollars for ease of interpretation. </p><pre><code class="language-julia hljs">net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">480×1000 Matrix{Float64}:
- 0.0       0.0      0.0       0.0       …  0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0       …  0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- 0.0       0.0      0.0       0.0          0.0       0.0      0.0      0.0
- ⋮                                      ⋱                              
- 0.201476  1.54831  0.409696  0.219703     0.245665  1.07067  1.15138  0.0
- 0.207086  1.54523  0.426577  0.221205     0.250883  1.04314  1.1878   0.0
- 0.221052  1.56038  0.444202  0.223526     0.25485   1.05158  1.21524  0.0
- 0.225743  1.58591  0.425429  0.234736     0.255285  1.07899  1.25591  0.0
- 0.232121  1.58998  0.438892  0.236296  …  0.250979  1.03802  1.30691  0.0
- 0.214261  1.51391  0.434248  0.245411     0.252841  1.06446  1.28845  0.0
- 0.223164  1.5841   0.44781   0.251258     0.248096  1.09584  1.30849  0.0
- 0.212105  1.60845  0.403524  0.259918     0.255982  1.13891  1.35691  0.0
- 0.228072  1.5249   0.393658  0.27717      0.251661  1.14971  1.45306  0.0</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .09 - .18 million, and increases to .270 - 1.16 million after 30 years. </p><details>
+ 0.0       0.0      0.0      0.0       …  0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0       …  0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ 0.0       0.0      0.0      0.0          0.0       0.0      0.0      0.0
+ ⋮                                     ⋱                              
+ 0.515523  3.58857  1.05537  0.518926     0.621997  2.53934  2.67463  0.0
+ 0.530734  3.58739  1.10061  0.523338     0.636243  2.47827  2.76367  0.0
+ 0.56741   3.62856  1.14791  0.529697     0.647363  2.50245  2.8321   0.0
+ 0.580397  3.69394  1.10131  0.557145     0.649543  2.57183  2.93158  0.0
+ 0.597759  3.70953  1.138    0.561773  …  0.639666  2.47846  3.05551  0.0
+ 0.552755  3.53823  1.12785  0.584377     0.645476  2.5457   3.01742  0.0
+ 0.578533  3.70817  1.16494  0.599273     0.634436  2.62498  3.06936  0.0
+ 0.555777  3.77134  1.05167  0.620924     0.655656  2.7325   3.18804  0.0
+ 0.610126  3.58993  1.03719  0.667436     0.651196  2.77197  3.42732  0.0</code></pre><h1 id="Plot-Results"><a class="docs-heading-anchor" href="#Plot-Results">Plot Results</a><a id="Plot-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-Results" title="Permalink"></a></h1><p>Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .11 - .22 million, and increases to .522 - 2.16 million after 30 years. </p><details>
 <summary><b>Show Code </b></summary><pre><code class="language-julia hljs">net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
 
 hist_config = (
     norm = true,
     leg = false,
     grid = false,
-    xlims = (0, 5),
+    xlims = (0, 7),
 )
 
 p10 = histogram(
@@ -256,4 +256,4 @@ p40 = histogram(
     net_worth_diff[12 * 40, :],
     title = &quot;40 years&quot;;
     hist_config...
-)</code></pre><img src="d762fa1c.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="a7c93dc1.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 13:35">Saturday 14 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+)</code></pre><img src="0e8d2373.svg" alt="Example block output"/></details><pre><code class="language-julia hljs">plot(p10, p20, p30, p40, layout = (2, 2), xlabel = &quot;Cost in millions&quot;)</code></pre><img src="6080d63e.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../advanced_example/">« Advanced Example</a><a class="docs-footer-nextpage" href="../plotting/">Plotting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 14:50">Saturday 14 March 2026</span>. Using Julia version 1.11.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
