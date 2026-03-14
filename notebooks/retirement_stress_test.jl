@@ -212,7 +212,10 @@ md"""
 # ╔═╡ e437c0c7-f405-4e1f-94fc-79605774a824
 @bind recession_parms PlutoExtras.@NTBond "Recession Parameters" begin
     mean_rate = (@htl("Mean Rate of Decrease"), NumberField(-2:1e-5:0, default = -0.10))
-    std_rate = (@htl("Standard Deviation Rate of Decrease"), NumberField(0:1e-5:2, default = 0.010))
+    std_rate = (
+        @htl("Standard Deviation Rate of Decrease"),
+        NumberField(0:1e-5:2, default = 0.010)
+    )
     mean_volitility = (@htl("Mean Volitility"), NumberField(0:1e-5:2, default = 0.100))
     std_volitility =
         (@htl("Standard Deviation of Volitility"), NumberField(0:1e-5:2, default = 0.020))
@@ -282,7 +285,10 @@ md"""
 
 # ╔═╡ 05f0763a-e78f-4aa6-9f3f-31015490cacb
 @bind run_simulation PlutoExtras.@NTBond "" begin
-    run = (@htl(""), Editable(false, "Click to pause simulation", "Click to update simulation"))
+    run = (
+        @htl(""),
+        Editable(false, "Click to pause simulation", "Click to update simulation")
+    )
 end
 
 # ╔═╡ 2c0b96a4-19fb-4d80-b68e-89af92722db7
@@ -712,7 +718,7 @@ let
             logger.net_worth;
             xlabel = "Age",
             ylabel = "Investment Value",
-			legend = :topleft
+            legend = :topleft
         )
 
         # growth rate distribution across repetitions of the simulation
@@ -735,23 +741,22 @@ let
             mean(logger.total_income, dims = 2);
             xlabel = "Age",
             ylabel = "Total Income",
-			grid = false,
-			leg = false,
-			color = :black,
-            xlims = (model.config.kw_withdraw.withdraws.start_age, times[end]),
+            grid = false,
+            leg = false,
+            color = :black,
+            xlims = (model.config.kw_withdraw.withdraws.start_age, times[end])
         )
-		
+
         layout = @layout([a b; c])
         plot(
             survival_plot,
-			income_plot,
+            income_plot,
             net_worth_plot,
             layout = layout,
             size = (1200, 600),
             left_margin = 8mm,
             bottom_margin = 8mm
         )
-		
     end
 end
 
