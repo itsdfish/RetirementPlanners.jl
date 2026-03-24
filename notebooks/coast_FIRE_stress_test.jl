@@ -581,20 +581,6 @@ begin
     if run_simulation.run
         # run the simulations
         df_results = simulate()
-		
-        # # compute clims for contour plot
-        # local vals = Float64[]
-        # if plot_menu.plot1 == "mean income"
-        #     push!(vals, get_mean_income_extrema(df_results)...)
-        # elseif plot_menu.plot1 == "standard deviation income"
-        #     push!(vals, get_std_income_extrema(df_results)...)
-        # elseif plot_menu.plot1 == "90th quantile income"
-        #     push!(vals, get_90_quantile_income_extrema(df_results)...)
-        # elseif plot_menu.plot1 == "10th quantile income"
-        #     push!(vals, get_10_quantile_income_extrema(df_results)...)
-        # end
-
-        # local clims = extrema(vals)
         # make plots
         if plot_menu.plot1 == "survival probability"
            	temp_plots = [plot_survival_probability(g) for g ∈ groupby(df_results, :coast_fire_age)]
