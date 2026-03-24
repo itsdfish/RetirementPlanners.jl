@@ -287,12 +287,12 @@ begin
     function simulate()
         retirement_age_range =
             (retirement_age.min):(retirement_age.step):(retirement_age.max)
-		
-		coast_age_range =
+
+        coast_age_range =
             (coast_age.min):1:(coast_age.max)
-		
+
         age_range = (time_points.min):(time_points.step):(time_points.max)
-		
+
         withdraws = [
             Transaction(;
                 start_age = a,
@@ -404,12 +404,12 @@ begin
             Logger,
             global_parms.n_reps,
             config;
-            threaded = true,
+            threaded = true
         )
         df1 = to_dataframe(Model(; config...), results)
         df1.survived = df1.net_worth .> 0
         df1.retirement_age = map(x -> x.start_age, df1.withdraw_withdraws)
-		df1.coast_fire_age = map(x -> x[1].end_age, df1.invest_investments)
+        df1.coast_fire_age = map(x -> x[1].end_age, df1.invest_investments)
         df1.min_withdraw_amount = map(x -> x.amount.min_withdraw, df1.withdraw_withdraws)
         df1.mean_growth_rate = map(x -> x.αμ, df1.market_gbm)
         return df1
@@ -444,7 +444,16 @@ begin
     function get_std_income_extrema(df)
         return extrema(
             combine(
-            groupby(df, [:retirement_age, :coast_fire_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            groupby(
+                df,
+                [
+                    :retirement_age,
+                    :coast_fire_age,
+                    :min_withdraw_amount,
+                    :mean_growth_rate,
+                    :time
+                ]
+            ),
             :total_income => std => :std
         ).std
         )
@@ -475,7 +484,16 @@ begin
     function get_90_quantile_income_extrema(df)
         return extrema(
             combine(
-            groupby(df, [:retirement_age, :coast_fire_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            groupby(
+                df,
+                [
+                    :retirement_age,
+                    :coast_fire_age,
+                    :min_withdraw_amount,
+                    :mean_growth_rate,
+                    :time
+                ]
+            ),
             :total_income => (x -> quantile(x, 0.90)) => :x
         ).x
         )
@@ -506,7 +524,16 @@ begin
     function get_10_quantile_income_extrema(df)
         return extrema(
             combine(
-            groupby(df, [:retirement_age, :coast_fire_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            groupby(
+                df,
+                [
+                    :retirement_age,
+                    :coast_fire_age,
+                    :min_withdraw_amount,
+                    :mean_growth_rate,
+                    :time
+                ]
+            ),
             :total_income => (x -> quantile(x, 0.10)) => :x
         ).x
         )
@@ -536,7 +563,16 @@ begin
     function get_mean_income_extrema(df)
         return extrema(
             combine(
-            groupby(df, [:retirement_age, :coast_fire_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            groupby(
+                df,
+                [
+                    :retirement_age,
+                    :coast_fire_age,
+                    :min_withdraw_amount,
+                    :mean_growth_rate,
+                    :time
+                ]
+            ),
             :total_income => mean => :mean
         ).mean
         )
@@ -566,7 +602,16 @@ begin
     function get_survival_prob_extrema(df)
         return extrema(
             combine(
-            groupby(df, [:retirement_age, :coast_fire_age, :min_withdraw_amount, :mean_growth_rate, :time]),
+            groupby(
+                df,
+                [
+                    :retirement_age,
+                    :coast_fire_age,
+                    :min_withdraw_amount,
+                    :mean_growth_rate,
+                    :time
+                ]
+            ),
             :total_income => mean => :mean
         ).mean
         )
@@ -583,31 +628,40 @@ begin
         df_results = simulate()
         # make plots
         if plot_menu.plot1 == "survival probability"
-           	temp_plots = [plot_survival_probability(g) for g ∈ groupby(df_results, :coast_fire_age)]
-			results_plot1 = plot(temp_plots[1])
-			results_plot2 = plot(temp_plots[2])
+            temp_plots =
+                [plot_survival_probability(g) for g ∈ groupby(df_results, :coast_fire_age)]
+            results_plot1 = plot(temp_plots[1])
+            results_plot2 = plot(temp_plots[2])
         elseif plot_menu.plot1 == "mean income"
-			clims = get_mean_income_extrema(df_results)
-			temp_plots = [plot_mean_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
-			results_plot1 = plot(temp_plots[1])
-			results_plot2 = plot(temp_plots[2])
+            clims = get_mean_income_extrema(df_results)
+            temp_plots =
+                [plot_mean_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
+            results_plot1 = plot(temp_plots[1])
+            results_plot2 = plot(temp_plots[2])
         elseif plot_menu.plot1 == "standard deviation income"
-			clims = get_std_income_extrema(df_results)
-			temp_plots = [plot_std_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
-			results_plot1 = plot(temp_plots[1])
-			results_plot2 = plot(temp_plots[2])
+            clims = get_std_income_extrema(df_results)
+            temp_plots =
+                [plot_std_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
+            results_plot1 = plot(temp_plots[1])
+            results_plot2 = plot(temp_plots[2])
         elseif plot_menu.plot1 == "90th quantile income"
-			clims = get_90_quantile_income_extrema(df_results)
-			temp_plots = [plot_90_quantile_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
-			results_plot1 = plot(temp_plots[1])
-			results_plot2 = plot(temp_plots[2])
+            clims = get_90_quantile_income_extrema(df_results)
+            temp_plots = [
+                plot_90_quantile_income(g, clims) for
+                g ∈ groupby(df_results, :coast_fire_age)
+            ]
+            results_plot1 = plot(temp_plots[1])
+            results_plot2 = plot(temp_plots[2])
         elseif plot_menu.plot1 == "10th quantile income"
-			clims = get_10_quantile_income_extrema(df_results)
-			temp_plots = [plot_10_quantile_income(g, clims) for g ∈ groupby(df_results, :coast_fire_age)]
-			results_plot1 = plot(temp_plots[1])
-			results_plot2 = plot(temp_plots[2])
+            clims = get_10_quantile_income_extrema(df_results)
+            temp_plots = [
+                plot_10_quantile_income(g, clims) for
+                g ∈ groupby(df_results, :coast_fire_age)
+            ]
+            results_plot1 = plot(temp_plots[1])
+            results_plot2 = plot(temp_plots[2])
         end
-	end
+    end
     nothing
 end
 
