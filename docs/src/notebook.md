@@ -6,7 +6,7 @@ You can stress test your retirement plan with a user-friendly interface via an i
 2. [coast FIRE planning](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/coast_FIRE_stress_test.jl): robustness analysis that includes a transitionary phase between work and retirement in which a person takes a low-stress job 
 while investments grow.
 
- As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test.html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
+As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test.html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
 
 
 # Instructions
