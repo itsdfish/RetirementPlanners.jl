@@ -131,7 +131,7 @@ end
 
 """
     plot_sensitivity(
-        df::DataFrame, 
+        df::AbstractDataFrame, 
         factors::Vector{Symbol}, 
         z::Symbol; 
         age = maximum(df.time), 
@@ -142,7 +142,7 @@ Visualizes a sensitivity analysis of two variables with a contour plot.
 
 # Arguments  
 
-- `df::DataFrame`: long form dataframe containing columns for `factors` and `z`
+- `df::AbstractDataFrame`: long form dataframe containing columns for `factors` and `z`
 - `factors::Vector{Symbol}`: two factors forming the x and y dimensions
 - `z::Symbol`: third dimension represented as color
 
@@ -156,7 +156,7 @@ Visualizes a sensitivity analysis of two variables with a contour plot.
 - `kwargs...`: optional keyword arguments passed to `contour`
 """
 function plot_sensitivity(
-    df::DataFrame,
+    df::AbstractDataFrame,
     factors::Vector{Symbol},
     z::Symbol;
     age = maximum(df.time),
@@ -183,7 +183,7 @@ end
 
 """
     plot_sensitivity(
-        df::DataFrame,
+        df::AbstractDataFrame,
         factors::Vector{Symbol},
         z::Symbol,
         row_var::Symbol;
@@ -205,7 +205,7 @@ Generates a grid of contour plots for sensitivity analysis. The x and y coordina
 
 # Arguments  
 
-- `df::DataFrame`: long form dataframe containing data for sensitivity analysis
+- `df::AbstractDataFrame`: long form dataframe containing data for sensitivity analysis
 - `factors::Vector{Symbol}`: two factors forming the x and y dimensions of the contour plots
 - `z::Symbol`: third dimension represented as color
 - `row_var::Symbol`: variable name for the rows of the contour grid 
@@ -224,7 +224,7 @@ Generates a grid of contour plots for sensitivity analysis. The x and y coordina
 - `kwargs...`: optional keyword arguments passed to `contour`
 """
 function plot_sensitivity(
-    df::DataFrame,
+    df::AbstractDataFrame,
     factors::Vector{Symbol},
     z::Symbol,
     row_var::Symbol;
