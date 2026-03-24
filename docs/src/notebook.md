@@ -1,11 +1,17 @@
 # User-Friendly Interface 
 
-You can stress test your retirement plan with a user-friendly interface via an interactive Pluto notebook. As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test.html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
+You can stress test your retirement plan with a user-friendly interface via an interactive Pluto notebook. Currently, two notebooks are available:
+
+1. [Retirement planning](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/retirement_stress_test.jl): a robustness analysis of a typical retirement plan consisting of a work and investment phase followed by a retirement and withdraw phase. 
+2. [coast FIRE planning](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/coast_FIRE_stress_test.jl): robustness analysis that includes a transitionary phase between work and retirement in which a person takes a low-stress job 
+while investments grow.
+
+ As shown in this static [preview](https://itsdfish.github.io/retirement_simulator_html/retirement_stress_test.html), you can configure the stress test by entering your information into the fields without the need to write code. However, if desired, you can reveal the content of the cells and edit the code for further customization. 
 
 
 # Instructions
 
-1. [Download](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/retirement_stress_test.jl) the Pluto notebook by selecting *download* from the top right menu, pressing `Ctrl + Shift + s`, or via *git clone*.
+1. Download the Pluto notebook for [Retirement planning](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/retirement_stress_test.jl) or [coast FIRE planning](https://github.com/itsdfish/RetirementPlanners.jl/blob/main/notebooks/coast_FIRE_stress_test.jl) by selecting *download* from the top right menu, pressing `Ctrl + Shift + s`, or via *git clone*.
 2. [Download](https://julialang.org/downloads/#current_stable_release) and install the current stable release of Julia programming language. 
 3. Open Julia and type `]` to enter the package mode. Next, type `add Pluto` to install the Pluto notebook package:
 
