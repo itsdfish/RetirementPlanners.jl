@@ -1,4 +1,5 @@
 using Documenter
+using Markdown
 using RetirementPlanners
 using Plots
 

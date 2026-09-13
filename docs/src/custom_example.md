@@ -247,7 +247,7 @@ net_worth_diff = (logger_no_fee.net_worth .- logger_fee.net_worth) / 1_000_000
 
 # Plot Results
 
-Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is .11 - .22 million, and increases to .522 - 2.16 million after 30 years. 
+Markdown.parse("Histograms of the cost are panneled at 10, 20, 30, and 40 years. As expected, the cost increases across time and become increasingly variable. Importantly, the cost is quite large. After 20 years the interquartile range is $(round.(quantile(net_worth_diff[12 * 20, :], (.25, .75)), digits = 2)) million, and increases to $(round.(quantile(net_worth_diff[12 * 20, :], (.25, .75)), digits = 2))$ million after 30 years.") 
 
 ```@raw html
 <details>
