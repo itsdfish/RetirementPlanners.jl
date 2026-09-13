@@ -208,7 +208,7 @@ end
 
     yoked_values =
         [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
-    results = grid_search(Model, Logger, 1000, config; yoked_values);
+    results = grid_search(Model, Logger, 1000, config; yoked_values)
     df = to_dataframe(Model(; config...), results)
     df.survived = df.net_worth .> 0
     df.retirement_age = map(x -> x.end_age, df.invest_investments)
@@ -295,7 +295,7 @@ end
 
     yoked_values =
         [Pair((:kw_withdraw, :withdraws, :start_age), (:kw_invest, :investments, :end_age))]
-    results = grid_search(Model, Logger, 1000, config; yoked_values);
+    results = grid_search(Model, Logger, 1000, config; yoked_values)
     df = to_dataframe(Model(; config...), results)
     df.survived = df.net_worth .> 0
     df.retirement_age = map(x -> x.end_age, df.invest_investments)
